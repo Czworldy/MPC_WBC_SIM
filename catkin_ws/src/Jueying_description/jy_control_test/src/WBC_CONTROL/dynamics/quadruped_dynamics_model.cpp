@@ -91,14 +91,14 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
 
     Q.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world);
     Eigen::Quaterniond quat_base_in_c(quat_world_to_c * state.bodyOrientation);
-    Q[3]  = quat_base_in_c.x();
-    Q[4]  = quat_base_in_c.y();
-    Q[5]  = quat_base_in_c.z();
-    Q[18] = quat_base_in_c.w();
-    // Q[3]  = state.bodyOrientation.x();
-    // Q[4]  = state.bodyOrientation.y();
-    // Q[5]  = state.bodyOrientation.z();
-    // Q[18] = state.bodyOrientation.w();
+    // Q[3]  = quat_base_in_c.x();
+    // Q[4]  = quat_base_in_c.y();
+    // Q[5]  = quat_base_in_c.z();
+    // Q[18] = quat_base_in_c.w();
+    Q[3]  = state.bodyOrientation.x();
+    Q[4]  = state.bodyOrientation.y();
+    Q[5]  = state.bodyOrientation.z();
+    Q[18] = state.bodyOrientation.w();
     Q.segment(6, JYPro::num_act_joint) = state.q_leg;
 
     // QDot.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3); 
@@ -391,13 +391,19 @@ void QuadrupedDynamicsModel::CoM6DJacobian(){
 }
 
 void QuadrupedDynamicsModel::CoM6DJacobian_c_frame(){
+    MatrixNd _JCoM_tmp = MatrixNd::Zero(6, quadmodel->qdot_size);
+
     _Jcom_pre_c_frame = Jcom_c_frame;
     _JCoM_c_frame.setZero();
-    CalcPointJacobian6D(*quadmodel, Q_c_frame, body_id[Base], BodyCoM[Base], _JCoM_c_frame);
+    // CalcPointJacobian6D(*quadmodel, Q_c_frame, body_id[Base], BodyCoM[Base], _JCoM_c_frame);
+    CalcPointJacobian6D(*quadmodel, Q, body_id[Base], BodyCoM[Base], _JCoM_tmp);
+
     // std::cerr << "_JCoM_c_frame size:" << _JCoM_c_frame.rows() << "\t" << _JCoM_c_frame.cols() << "\n";
     // std::cerr << "_JCoM_c_frame" << _JCoM_c_frame << "\n";
-    Jcom_c_frame.topRows(3) = _JCoM_c_frame.bottomRows(3);
-    Jcom_c_frame.bottomRows(3) = _JCoM_c_frame.topRows(3);
+    // Jcom_c_frame.topRows(3) = _JCoM_c_frame.bottomRows(3);
+    // Jcom_c_frame.bottomRows(3) = _JCoM_c_frame.topRows(3);
+    Jcom_c_frame.topRows(3) = rotMat_world_to_c * _JCoM_tmp.bottomRows(3);
+    Jcom_c_frame.bottomRows(3) = rotMat_world_to_c * _JCoM_tmp.topRows(3);
 }
 
 const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian(size_t foot_id){
@@ -414,16 +420,31 @@ const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian(size_t foot_id){
 }
 
 const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian_c_frame(size_t foot_id){
+    // _JSwingFoot_c_frame.setZero();
+    // if(foot_id == legID::LF)
+    //     CalcPointJacobian(*quadmodel, Q_c_frame, body_id[LF_Shank], contact_point, _JSwingFoot_c_frame);
+    // else if(foot_id == legID::LB)
+    //     CalcPointJacobian(*quadmodel, Q_c_frame, body_id[LB_Shank], contact_point, _JSwingFoot_c_frame);
+    // else if(foot_id == legID::RF)
+    //     CalcPointJacobian(*quadmodel, Q_c_frame, body_id[RF_Shank], contact_point, _JSwingFoot_c_frame);
+    // else if(foot_id == legID::RB)
+    //     CalcPointJacobian(*quadmodel, Q_c_frame, body_id[RB_Shank], contact_point, _JSwingFoot_c_frame);
+    // return _JSwingFoot_c_frame;
+
+    MatrixNd _JCoM_tmp = MatrixNd::Zero(3, quadmodel->qdot_size);
     _JSwingFoot_c_frame.setZero();
     if(foot_id == legID::LF)
-        CalcPointJacobian(*quadmodel, Q_c_frame, body_id[LF_Shank], contact_point, _JSwingFoot_c_frame);
+        CalcPointJacobian(*quadmodel, Q, body_id[LF_Shank], contact_point, _JCoM_tmp);
     else if(foot_id == legID::LB)
-        CalcPointJacobian(*quadmodel, Q_c_frame, body_id[LB_Shank], contact_point, _JSwingFoot_c_frame);
+        CalcPointJacobian(*quadmodel, Q, body_id[LB_Shank], contact_point, _JCoM_tmp);
     else if(foot_id == legID::RF)
-        CalcPointJacobian(*quadmodel, Q_c_frame, body_id[RF_Shank], contact_point, _JSwingFoot_c_frame);
+        CalcPointJacobian(*quadmodel, Q, body_id[RF_Shank], contact_point, _JCoM_tmp);
     else if(foot_id == legID::RB)
-        CalcPointJacobian(*quadmodel, Q_c_frame, body_id[RB_Shank], contact_point, _JSwingFoot_c_frame);
-    return _JSwingFoot_c_frame;
+        CalcPointJacobian(*quadmodel, Q, body_id[RB_Shank], contact_point, _JCoM_tmp);
+    
+    _JSwingFoot_c_frame = rotMat_world_to_c * _JCoM_tmp;
+
+    return  _JSwingFoot_c_frame;
 }
 
 

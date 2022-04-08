@@ -60,7 +60,7 @@ const double kfe_PDStandUpMotion(1.7);
 const double xBase(0.0);
 const double yBase(-0.05);
 const double zBase(0.0);
-const double rollBase(0.2);
+const double rollBase(0.);
 const double pitchBase(0.);
 const double yawBase(0.);
 
@@ -142,8 +142,12 @@ int main(int argc, char**argv) {
         estStatesOutput.base_angular_vel_body = baseAngularVelBodyCur;
 
         Eigen::Vector3d baseRpyWorldCur = quaternionTOrpy(baseOriWorldCur);
-        estStatesOutput.frame_c_rpy_in_world << 0, 0, baseRpyWorldCur[2];
-        estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(0., 0., baseRpyWorldCur[2]);
+        // estStatesOutput.frame_c_rpy_in_world << 0, 0, baseRpyWorldCur[2];
+        // estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(0., 0., baseRpyWorldCur[2]);
+        estStatesOutput.frame_c_rpy_in_world = baseRpyWorldCur;
+        estStatesOutput.frame_c_quat_in_world = baseOriWorldCur; //yjy：先试试都转
+
+
         estStatesOutput.frame_c_xyz_in_world = basePosWorldCur;
 
 

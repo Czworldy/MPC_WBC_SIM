@@ -69,6 +69,7 @@ bool CoMAngularMotion<T>::Update_A(){
     DMat<T> A_in_frame_c = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
     A_in_frame_c.leftCols(TK::dim_config_) = _robot_sys->getCoM6DJacobian_c_frame().bottomRows(3).cast<T>();
     TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
+    // TK::A_ = A_in_frame_c; // yjy:不能这样写
 
     return true;
 }

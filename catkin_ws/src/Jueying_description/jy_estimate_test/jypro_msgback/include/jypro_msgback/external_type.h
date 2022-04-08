@@ -35,13 +35,25 @@ struct Data_feedback{
 };
 
 template<typename T>
+Eigen::Matrix<T,3,3> rpyTORotateMat(T roll, T pitch, T yaw){
+    Eigen::Matrix<T,3,3> RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll <<  1., 0., 0., 
+               0., cos(roll), -sin(roll),
+               0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+               0., 1., 0.,
+               -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+             sin(yaw), cos(yaw), 0.,
+             0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+
+template<typename T>
 Eigen::Quaternion<T> rpyTOquaternion(T roll, T pitch, T yaw){
-    Eigen::Quaternion<T> quat;
-    quat.x() = sin(roll/2) * cos(pitch/2) * cos(yaw/2) - cos(roll/2) * sin(pitch/2) * sin(yaw/2);
-    quat.y() = cos(roll/2) * sin(pitch/2) * cos(yaw/2) + sin(roll/2) * cos(pitch/2) * sin(yaw/2);
-    quat.z() = cos(roll/2) * cos(pitch/2) * sin(yaw/2) - sin(roll/2) * sin(pitch/2) * cos(yaw/2);
-    quat.w() = cos(roll/2) * cos(pitch/2) * cos(yaw/2) + sin(roll/2) * sin(pitch/2) * sin(yaw/2);
-    return quat;
+    Eigen::Quaternion<T> q(rpyTORotateMat(roll,pitch,yaw));
+    return q;
 }
 
 // template<typename T>

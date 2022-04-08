@@ -703,9 +703,11 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     desiredDataWBC_.aFoot_des[legID::LB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][2];
     desiredDataWBC_.aFoot_des[legID::RB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][3];
 
-    // desiredDataWBC_.pBody_RPY_des[0] += slope_delta_roll;
-    // desiredDataWBC_.pBody_RPY_des[1] += slope_delta_pitch;
     std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
+
+    // desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
+    // desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
+
 
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
@@ -766,7 +768,7 @@ void SimpleMotion::PDSafeGuardRun(LimbsCommand& command) {
 
 void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     Eigen::Matrix<float,19,1> q;
-    Eigen::Quaternion<float> quat = rpyTOquaternion(currentStatesWBC_.bodyStateEst.base_rpy_world);
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
     q.head(3) << 0,0,0;
     q.segment(3, 3)  << quat.x(), quat.y(), quat.z();
     q.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;

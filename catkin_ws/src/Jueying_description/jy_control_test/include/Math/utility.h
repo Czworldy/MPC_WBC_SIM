@@ -71,17 +71,7 @@ Vec31<T> quaternionTOrpy(Eigen::Quaternion<T> q){
     return rpy;
  };
 
-template<typename T>
-Eigen::Quaternion<T> rpyTOquaternion(Vec31<T> rpy){
-    Eigen::Quaternion<T> q;
-    const T roll = rpy[0], pitch = rpy[1], yaw = rpy[2];
-    q.w() = cos(pitch / 2.0f) * cos(roll / 2.0f) * cos(yaw / 2.0f) - sin(pitch / 2.0f) * sin(roll / 2.0f) * sin(yaw / 2.0f);
-    q.x() = cos(roll / 2.0f) * cos(yaw / 2.0f) * sin(pitch / 2.0f) - cos(pitch / 2.0f) * sin(roll / 2.0f) * sin(yaw / 2.0f);
-    q.y() = cos(pitch / 2) * cos(yaw / 2.0f) * sin(roll /2.0f) + cos(roll / 2.0f) * sin(pitch / 2.0f) * sin(yaw / 2.0f);
-    q.z() = cos(pitch / 2.0f) * cos(roll / 2.0f) * sin(yaw / 2.0f) + cos(yaw /2.0f) * sin(pitch / 2.0f) * sin(roll / 2.0f);
 
-    return q;
-}
 
 template<typename T>
 Mat3<T> rpyTORotateMat(T roll, T pitch, T yaw){
@@ -101,6 +91,13 @@ Mat3<T> rpyTORotateMat(T roll, T pitch, T yaw){
 
 template<typename T>
 Eigen::Quaternion<T> rpyTOquaternion(T roll, T pitch, T yaw){
+    Eigen::Quaternion<T> q(rpyTORotateMat(roll,pitch,yaw));
+    return q;
+}
+
+template<typename T>
+Eigen::Quaternion<T> rpyTOquaternion(const Vec31<T>& rpy){
+    const T roll = rpy[0], pitch = rpy[1], yaw = rpy[2];
     Eigen::Quaternion<T> q(rpyTORotateMat(roll,pitch,yaw));
     return q;
 }
