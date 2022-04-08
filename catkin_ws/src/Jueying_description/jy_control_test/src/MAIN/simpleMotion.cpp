@@ -560,7 +560,7 @@ void SimpleMotion::RecordData() {
 void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
 
     const int N_times = mpcMsg.stateTime.size();
-    std::cerr << "1 " << N_times <<"\n";
+    // std::cerr << "1 " << N_times <<"\n";
 
     mpcMsg_.swingFeetPosition.clear();
     mpcMsg_.swingFeetPosition.resize(N_times);
@@ -575,14 +575,14 @@ void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
     mpcMsg_.baseAcceleration.clear();
     mpcMsg_.baseAcceleration.resize(N_times);
     mpcMsg_.stateTime.resize(N_times);
-    std::cerr << "2" << "\n";
+    // std::cerr << "2" << "\n";
 
     // Gait
     mpcMsg_.firstGait  = mpcMsg.firstGait;
     mpcMsg_.secondGait = mpcMsg.secondGait;
     mpcMsg_.thirdGait  = mpcMsg.thirdGait;
     mpcMsg_.switchTime = mpcMsg.switchTime;
-    std::cerr << "3" << "\n";
+    // std::cerr << "3" << "\n";
 
     for (int i = 0; i < N_times; i++) { 
         // State Times
@@ -603,13 +603,13 @@ void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
         mpcMsg_.baseAcceleration[i] = mpcMsg.baseAcceleration[i];
     }
 
-    std::cerr << "4" << "\n";
+    // std::cerr << "4" << "\n";
 
     indexMPCStateTime_ = 0;
     indexMPCSwitchTime_ = 0;
     timeUpdateMPC_ = time_stamp;
 
-    std::cerr << "5" << "\n";
+    // std::cerr << "5" << "\n";
 }
 
 void SimpleMotion::UpdateControlFrame(const EstimatorOutput& input) {
@@ -705,8 +705,8 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
 
     std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
 
-    // desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
-    // desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
+    desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
+    desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
 
 
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -785,12 +785,26 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
 
     Vec31<float> terrNormal = terrEst.run(foot_lf,foot_lh,foot_rf,foot_rh,contact_flag);
     cout << "terrEst:\n" << terrNormal << "\n";
+
+    Mat3<float> terrFramToWorld;
+    float a = terrNormal[0], b = terrNormal[1];
+    float coff_a = std::sqrt(1+a*a),
+          coff_b = std::sqrt(1+b*b),
+          coff_c = std::sqrt(1+a*a+b*b);
+
+    terrFramToWorld << 1/coff_a, 0, a/coff_a,
+                        0, 1/coff_b, b/coff_b,
+                        -a/coff_c, -b/coff_c, 1/coff_c;
+    
+    Eigen::Quaternion<float> quat_terr(terrFramToWorld);
+    Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
+
     
     slope_delta_roll  = std::atan2(terrNormal[1],1);
     slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
 
     std::cout << "theta_x: " << slope_delta_roll
-                  << "\ttheta_y: " << slope_delta_pitch << "\n";  
+                  << "\ttheta_y: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
 
     // cout << "rpy_real:\n" << rpy_in_world << "\n";
     // terr << terrNormal[0] << "\t" << terrNormal[1] << "\n";  

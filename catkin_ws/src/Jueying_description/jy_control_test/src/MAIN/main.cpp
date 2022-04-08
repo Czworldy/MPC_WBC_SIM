@@ -332,7 +332,7 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
 
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     const int N_times = msg->stateTime.size();
-    std::cerr << "N_times: " << N_times << "\n";
+    // std::cerr << "N_times: " << N_times << "\n";
 
     mpcData.stateTime.resize(N_times);
     mpcData.baseAcceleration.clear();
