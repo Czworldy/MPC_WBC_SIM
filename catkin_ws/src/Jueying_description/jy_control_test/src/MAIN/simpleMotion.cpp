@@ -402,7 +402,17 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = 0;
 
+    static int wbc_count = 0;
+    static double totalTimes = 0;
+    wbc_count++;
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    double used_time = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cerr << "wbc run time: "<< used_time << "us\n";
+    totalTimes +=  used_time;
+    std::cerr << "wbc run avg time: "<< totalTimes/wbc_count << "us\n";
+
 
     for (int i(0); i < 3; i++) {
         command.lf_tau.value[i] = tauWBC_[i];
@@ -441,14 +451,19 @@ void SimpleMotion::WBCSetUpSwingFootInitialStates(){
     initialBaseStates_.pitch[0] = currentStatesWBC_.bodyStateEst.base_rpy_world[1];
     initialBaseStates_.yaw[0]   = currentStatesWBC_.bodyStateEst.base_rpy_world[2];
 
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
+    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
     // Q_.head(3) << 0, 0, 0;
     // Q_.segment(3, 3)  << 0, 0, 0;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
+    Q_[18] = quat.w();
+
 
     QDot_.head(3) << currentStatesWBC_.bodyStateEst.base_linear_vel_world;
     QDot_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_angular_vel_world;
@@ -529,12 +544,18 @@ void SimpleMotion::RecordData() {
     in_pitch_vel << desiredDataWBC_.vBody_RPY_des[1] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[1] << "\n";
     in_yaw_vel   << desiredDataWBC_.vBody_RPY_des[2] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[2] << "\n";
 
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
+    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
+    // Q_.head(3) << 0, 0, 0;
+    // Q_.segment(3, 3)  << 0, 0, 0;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
+    Q_[18] = quat.w();
 
     Vec31<float> foot_position = jueying_.swingFootPosition(legID::LF, Q_.cast<double>()).cast<float>();
     in_foot_lf_x << desiredDataWBC_.pFoot_des[legID::LF][0] << "\t" << foot_position[0] << "\n";
@@ -712,7 +733,7 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
+    std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
     // std::cerr << "11" << "\n";
     for (int i(0); i < 3; i++) {
