@@ -1,4 +1,4 @@
-#pragma GCC optimize(2)
+// #pragma GCC optimize(2)
 #include "wbc_ctrl.h"
 #include "time.h"
 
@@ -89,7 +89,7 @@ void WBC_Ctrl<T>::_UpdateModel(const BodyStateEstData<T> & bodyEst,
     _model->nonlinearEffect();
     // _model->CoM6DJacobian();
     _model->CoM6DJacobian_c_frame();
-    _model->transMatForTrackingTasks();
+    // _model->transMatForTrackingTasks();
 
     H_ = _model->getMassMatrix().cast<T>();
     CJ_ = _model->getContactJacobian().cast<T>();

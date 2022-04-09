@@ -1,4 +1,4 @@
-#pragma GCC optimize(2)
+// #pragma GCC optimize(2)
 #include "quadruped_dynamics_model.h"
 #include "wbc_ctrl.h"
 #include "Gait.h"

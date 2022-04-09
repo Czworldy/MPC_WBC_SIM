@@ -1,4 +1,4 @@
-#pragma GCC optimize(2)
+// #pragma GCC optimize(2)
 
 #include <pinocchio/fwd.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>

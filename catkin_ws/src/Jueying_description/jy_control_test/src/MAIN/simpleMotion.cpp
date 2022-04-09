@@ -402,7 +402,17 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = 0;
 
+    static int wbc_count = 0;
+    static double totalTimes = 0;
+    wbc_count++;
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    double used_time = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cerr << "wbc run time: "<< used_time << "us\n";
+    totalTimes +=  used_time;
+    std::cerr << "wbc run avg time: "<< totalTimes/wbc_count << "us\n";
+
 
     for (int i(0); i < 3; i++) {
         command.lf_tau.value[i] = tauWBC_[i];
@@ -712,7 +722,7 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
+    std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
     // std::cerr << "11" << "\n";
     for (int i(0); i < 3; i++) {

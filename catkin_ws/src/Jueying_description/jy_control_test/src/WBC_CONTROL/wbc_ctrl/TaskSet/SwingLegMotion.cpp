@@ -92,11 +92,11 @@ bool SwingLegMotion<T>::Update_A(){
         FJacobi.push_back( _robot_sys->swingFootJacobian_c_frame(legID::RB).cast<T>());
     }
     
-    DMat<T> A_in_frame_c = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
+    // DMat<T> A_in_frame_c = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
     for(size_t i(0); i<FJacobi.size();i++) {
-        A_in_frame_c.block(3*i, 0, 3, TK::dim_config_)  = FJacobi[i];
+        TK::A_.block(3*i, 0, 3, TK::dim_config_)  = FJacobi[i];
     }
-    TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
+    // TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
     
     return true;
 }

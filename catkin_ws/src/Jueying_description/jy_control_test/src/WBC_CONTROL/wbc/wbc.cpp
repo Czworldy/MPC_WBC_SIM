@@ -1,4 +1,4 @@
-#pragma GCC optimize(2)
+// #pragma GCC optimize(2)
 #include "wbc.h"
 #include "ros/ros.h"
 #include <chrono>   

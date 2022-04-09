@@ -68,7 +68,7 @@ public:
     void CoM6DJacobian_c_frame();
     void transMatForTrackingTasks();
     const DMat<double>& swingFootJacobian(size_t foot_id);
-    const DMat<double>& swingFootJacobian_c_frame(size_t foot_id);
+    const Eigen::Matrix<double, 3, 18>& swingFootJacobian_c_frame(size_t foot_id);
     DVec<double> swingFootPosition(size_t foot_id);
     DVec<double> swingFootPosition_c_frame(size_t foot_id);
     DVec<float> swingFootPosition(size_t foot_id, const VectorNd &given_Q);
@@ -82,12 +82,12 @@ public:
 
     const DMat<double> & getMassMatrix()  {return _H;}
     const DVec<double> & getNolinearEffect()  {return _N;}
-    const DMat<double>&  getContactJacobian()  {return _CJ;}
-    DMat<double> getCoM6DJacobian();
-    DMat<double> getCoM6DJacobian_c_frame();
+    const Eigen::Matrix<double, -1, 18, 0, 12, 18>&  getContactJacobian()  {return _CJ;}
+    Eigen::Matrix<double, 6, 18> getCoM6DJacobian(){return Jcom;}
+    Eigen::Matrix<double, 6, 18> getCoM6DJacobian_c_frame(){return Jcom_c_frame;}
     const DVec<double> & getCoM6DJDotQDot();
-    const DVec<double> & getCoM6DJDotQDot_c_frame();
-    const DVec<double>& getCJDotQDot();
+    const Eigen::Matrix<double, 6, 1> & getCoM6DJDotQDot_c_frame();
+    const Eigen::Matrix<double, -1, 1, 0, 12, 1>& getCJDotQDot(){return  _CJDotQDot;}
     
     const Vec31<double>& get_CoM_Position();
     const Vec31<double>& get_CoM_in_BaseFrame(const Vector3d& CoM_Pos);
@@ -108,7 +108,7 @@ public:
     Eigen::Quaterniond quat_world_to_c;
     Vec31<double> xyz_c_to_world;
 
-    MatrixNd rotMatForTracking;
+    // MatrixNd rotMatForTracking;
 
     
 protected:
@@ -172,20 +172,37 @@ protected:
 
     MatrixNd  _H;
     VectorNd  _N;
-    MatrixNd  _CJ,_FootJ, G;
-    MatrixNd  _CJ_pre, _FootJ_pre;
-    VectorNd  _CJDotQDot;
-    MatrixNd _JCoM, Jcom;
-    MatrixNd _Jcom_pre;
+    MatrixNd  G;
+    MatrixNd _JCoM;
     VectorNd _JCoMDotQDot;
     MatrixNd _JSwingFoot;
 
-    MatrixNd _JCoM_c_frame, Jcom_c_frame;
-    MatrixNd _Jcom_pre_c_frame;
-    VectorNd _JCoMDotQDot_c_frame;
-    MatrixNd _JSwingFoot_c_frame;
+    /*    
+    _CJ = MatrixNd::Zero(3*num_contact, quadmodel->qdot_size);
+    _CJ_pre= MatrixNd::Zero(3*num_contact, quadmodel->qdot_size);
+    _CJDotQDot =  VectorNd::Zero(3*num_contact);
+    _FootJ = MatrixNd::Zero(12, quadmodel->qdot_size);
+    _FootJ_pre = MatrixNd::Zero(12, quadmodel->qdot_size);
+    Jcom = MatrixNd::Zero(6, quadmodel->qdot_size);
+    _Jcom_pre = MatrixNd::Zero(6, quadmodel->qdot_size);
 
-    ConstraintSet constraint_set;
+    _JCoM_c_frame = MatrixNd::Zero(6, quadmodel->qdot_size);
+    Jcom_c_frame = MatrixNd::Zero(6, quadmodel->qdot_size);
+    _Jcom_pre_c_frame = MatrixNd::Zero(6, quadmodel->qdot_size);
+    _JCoMDotQDot_c_frame = VectorNd::Zero(6);
+    _JSwingFoot_c_frame = MatrixNd::Zero(3, quadmodel->qdot_size);
+    */
+
+    Eigen::Matrix<double, -1, 18, 0, 12, 18> _CJ, _CJ_pre;
+    Eigen::Matrix<double, -1, 1, 0, 12, 1> _CJDotQDot;
+    Eigen::Matrix<double, 12, -1, 0, 12, 18> _FootJ, _FootJ_pre;
+    Eigen::Matrix<double, 6, 18> Jcom, _Jcom_pre;
+    Eigen::Matrix<double, 6, 18> _JCoM_c_frame, Jcom_c_frame, _Jcom_pre_c_frame;
+    Eigen::Matrix<double, 6, 1> _JCoMDotQDot_c_frame;
+    Eigen::Matrix<double, 3, 18> _JSwingFoot_c_frame;
+
+
+    // ConstraintSet constraint_set;
     Vector3d _foot_position;
     Vector3d _foot_velocity;
     UserParameter<double> paramd;

@@ -1,4 +1,4 @@
-#pragma GCC optimize(2)
+// #pragma GCC optimize(2)
 #include <quadruped_dynamics_model.h>
 #include<utility.h>
 #include<iostream>
@@ -126,7 +126,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
 
     //contact related
     num_contact = 0;
-    constraint_set.clear();
+    // constraint_set.clear();
     if(state.contact_state_[legID::LF]){
         num_contact++;
     }
@@ -144,7 +144,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     _CJ_pre= MatrixNd::Zero(3*num_contact, quadmodel->qdot_size);
     _CJDotQDot =  VectorNd::Zero(3*num_contact);
 
-    rotMatForTracking = MatrixNd::Identity(quadmodel->qdot_size + 3*num_contact, quadmodel->qdot_size + 3*num_contact);
+    // rotMatForTracking = MatrixNd::Identity(quadmodel->qdot_size + 3*num_contact, quadmodel->qdot_size + 3*num_contact);
 }
 
 
@@ -402,8 +402,8 @@ void QuadrupedDynamicsModel::CoM6DJacobian_c_frame(){
     // std::cerr << "_JCoM_c_frame" << _JCoM_c_frame << "\n";
     // Jcom_c_frame.topRows(3) = _JCoM_c_frame.bottomRows(3);
     // Jcom_c_frame.bottomRows(3) = _JCoM_c_frame.topRows(3);
-    Jcom_c_frame.topRows(3) = rotMat_world_to_c * _JCoM_tmp.bottomRows(3);
-    Jcom_c_frame.bottomRows(3) = rotMat_world_to_c * _JCoM_tmp.topRows(3);
+    Jcom_c_frame.topRows(3).noalias() = rotMat_world_to_c * _JCoM_tmp.bottomRows(3);
+    Jcom_c_frame.bottomRows(3).noalias() = rotMat_world_to_c * _JCoM_tmp.topRows(3);
 }
 
 const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian(size_t foot_id){
@@ -419,7 +419,7 @@ const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian(size_t foot_id){
     return _JSwingFoot;
 }
 
-const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian_c_frame(size_t foot_id){
+const Eigen::Matrix<double, 3, 18>& QuadrupedDynamicsModel::swingFootJacobian_c_frame(size_t foot_id){
     // _JSwingFoot_c_frame.setZero();
     // if(foot_id == legID::LF)
     //     CalcPointJacobian(*quadmodel, Q_c_frame, body_id[LF_Shank], contact_point, _JSwingFoot_c_frame);
@@ -442,7 +442,7 @@ const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian_c_frame(size_t foo
     else if(foot_id == legID::RB)
         CalcPointJacobian(*quadmodel, Q, body_id[RB_Shank], contact_point, _JCoM_tmp);
     
-    _JSwingFoot_c_frame = rotMat_world_to_c * _JCoM_tmp;
+    _JSwingFoot_c_frame.noalias() = rotMat_world_to_c * _JCoM_tmp;
 
     return  _JSwingFoot_c_frame;
 }
@@ -570,25 +570,6 @@ Vec31<double> QuadrupedDynamicsModel::footPosition(size_t foot_id){
 }
 
 
-DMat<double> QuadrupedDynamicsModel::getCoM6DJacobian(){
-    return Jcom;
-}
-
-DMat<double> QuadrupedDynamicsModel::getCoM6DJacobian_c_frame(){
-    return Jcom_c_frame;
-}
-
-const DVec<double> & QuadrupedDynamicsModel::getCJDotQDot(){
-    // ROS_INFO_STREAM("_FOOTJ: \n"<<_FootJ);
-    // ROS_INFO_STREAM("_FOOTJ_PRE: \n"<<_FootJ_pre);
-    // ROS_INFO_STREAM("_FOOTJ_dt: \n"<<(_FootJ - _FootJ_pre));
-    // ROS_INFO_STREAM("_FOOTJ_dt/DURATION: \n"<<(_FootJ - _FootJ_pre)/duration);
-    // ROS_INFO_STREAM("DURATION: \n"<<duration);
-    // for(int i(0); i<_CJDotQDot.rows(); i++){
-    //     cout<<"THIS IS CJ: "<< _CJDotQDot[i];
-    // }
-    return  _CJDotQDot;
-}
 
 const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot(){
     _JCoMDotQDot = (Jcom - _Jcom_pre)/duration * QDot;
@@ -596,7 +577,7 @@ const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot(){
     return _JCoMDotQDot;
 }
 
-const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot_c_frame(){
+const Eigen::Matrix<double, 6, 1> & QuadrupedDynamicsModel::getCoM6DJDotQDot_c_frame(){
     _JCoMDotQDot_c_frame = (Jcom_c_frame - _Jcom_pre_c_frame)/duration * QDot_c_frame;
 
     return _JCoMDotQDot_c_frame;
