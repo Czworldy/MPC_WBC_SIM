@@ -12,12 +12,17 @@ class Task{
         Task():b_set_task_(false){}
         virtual ~Task(){}
 
-        //Ax=b
-        DMat<T> get_A(){return A_;}
-        DVec<T> get_b(){return b_;}
-        //Dx<=f
-        DMat<T> get_D(){return D_;}
-        DVec<T> get_f(){return f_;}
+        // //Ax=b
+        // DMat<T> get_A(){return A_;}
+        // DVec<T> get_b(){return b_;}
+        // //Dx<=f
+        // DMat<T> get_D(){return D_;}
+        // DVec<T> get_f(){return f_;}
+        
+        const Eigen::Matrix<T, -1, -1, 0, 12, 30>&  get_A(){return A_;}
+        const Eigen::Matrix<T, -1, 1, 0, 12, 1>&  get_b(){return b_;}
+        const Eigen::Matrix<T, -1, -1, 0, 24, 30>&  get_D(){return D_;}
+        const Eigen::Matrix<T, -1, 1, 0, 24, 1>&  get_f(){return f_;}
 
         bool IsTaskSet(){return b_set_task_;}
         size_t getDimOptVar(){return dim_optVar_;}
@@ -65,9 +70,14 @@ class Task{
         size_t dim_config_;
         size_t dim_contact_;
 
-        DMat<T> A_;
-        DVec<T> b_;
-        DMat<T> D_;
-        DVec<T> f_;
+        // DMat<T> A_;
+        // DVec<T> b_;
+        // DMat<T> D_;
+        // DVec<T> f_;
+
+        Eigen::Matrix<T, -1, -1, 0, 12, 30>   A_;
+        Eigen::Matrix<T, -1, 1, 0, 12, 1>     b_;
+        Eigen::Matrix<T, -1, -1, 0, 24, 30>   D_;
+        Eigen::Matrix<T, -1, 1, 0, 24, 1>     f_;
 };
 #endif

@@ -71,8 +71,8 @@ class WBC{
         DMat<T> stack_A_, stack_A_pre_;//A = [A1, A2, A3.....]
         DMat<T> N_stack_A_,N_stack_A_pre_;//NullSpace of A
 
-        DVec<int> Hier_;
-        DVec<T> Q_; 
+        Eigen::Matrix<int, -1, 1, 0, 2, 1> Hier_; 
+        Eigen::Matrix<T, -1, 1, 0, 8, 1> Q_; 
         size_t index_task_, index_task_pre_;
 
         //Var for UpdateSeting__________________________________________

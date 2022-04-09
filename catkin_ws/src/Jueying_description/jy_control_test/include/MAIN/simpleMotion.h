@@ -122,7 +122,7 @@ private:
     QuadrupedDynamicsModel jueying_;
     std::shared_ptr<WBC_Ctrl<float>> wbc_ctrl_;
     DVec<float> tauWBC_;
-    Eigen::Matrix<float,18,1> Q_;
+    Eigen::Matrix<float,19,1> Q_;
     Eigen::Matrix<float,18,1> QDot_;
     size_t foot_id_;
 

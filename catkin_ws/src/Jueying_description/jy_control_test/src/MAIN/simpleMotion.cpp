@@ -451,14 +451,19 @@ void SimpleMotion::WBCSetUpSwingFootInitialStates(){
     initialBaseStates_.pitch[0] = currentStatesWBC_.bodyStateEst.base_rpy_world[1];
     initialBaseStates_.yaw[0]   = currentStatesWBC_.bodyStateEst.base_rpy_world[2];
 
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
+    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
     // Q_.head(3) << 0, 0, 0;
     // Q_.segment(3, 3)  << 0, 0, 0;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
+    Q_[18] = quat.w();
+
 
     QDot_.head(3) << currentStatesWBC_.bodyStateEst.base_linear_vel_world;
     QDot_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_angular_vel_world;
@@ -539,12 +544,18 @@ void SimpleMotion::RecordData() {
     in_pitch_vel << desiredDataWBC_.vBody_RPY_des[1] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[1] << "\n";
     in_yaw_vel   << desiredDataWBC_.vBody_RPY_des[2] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[2] << "\n";
 
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
+    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
+    // Q_.head(3) << 0, 0, 0;
+    // Q_.segment(3, 3)  << 0, 0, 0;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
+    Q_[18] = quat.w();
 
     Vec31<float> foot_position = jueying_.swingFootPosition(legID::LF, Q_.cast<double>()).cast<float>();
     in_foot_lf_x << desiredDataWBC_.pFoot_des[legID::LF][0] << "\t" << foot_position[0] << "\n";

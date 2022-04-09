@@ -136,7 +136,10 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     fbar_Head = DVec<T>::Zero(dim_nv_now_);
     // std::cout<< "Hier_[0]" << Hier_[0] << "\n";
     for(size_t i(0); i<Hier_[0]; i++){
-        DMat<T> A, b, D,f;
+        Eigen::Matrix<T, -1, -1, 0, 12, 30>   A;
+        Eigen::Matrix<T, -1, 1, 0, 12, 1>     b;
+        Eigen::Matrix<T, -1, -1, 0, 24, 30>   D;
+        Eigen::Matrix<T, -1, 1, 0, 24, 1>     f;
         size_t nv;
         size_t eq;
         task = (*_task_list)[i];
@@ -248,7 +251,7 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     }
 
     //Set cmd
-    cmd = M_Js_ * x_star_ + h_.bottomRows(dim_confi_ - 6);
+    cmd.noalias() = M_Js_ * x_star_ + h_.bottomRows(dim_confi_ - 6);
 }
 
 
