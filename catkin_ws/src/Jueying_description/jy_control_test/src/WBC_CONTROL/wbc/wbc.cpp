@@ -3,6 +3,7 @@
 #include "ros/ros.h"
 #include <chrono>   
 #include "OsqpEigen/OsqpEigen.h"
+#include <omp.h>
 
 using namespace std;
 using namespace chrono;
@@ -34,9 +35,10 @@ Eigen::VectorXd WBC<T>::OsqpEigenSolve()
     min    0.5x^THx + cx
     s.t.  lower<=Dx<=upper
     */
+    omp_set_num_threads(4);
 
-    for (uint16_t i(0); i<dim_opt_;++i){
-        for(uint16_t j(0); j<dim_opt_;++j){
+    for (int i = 0; i<dim_opt_;++i){
+        for(int j = 0; j<dim_opt_;++j){
             if( i==j ) 
                 H_f.insert(i,i) = H_(i,j) + 10e-6;   //??
             if(H_(i,j)!=0 && i!=j)
@@ -44,8 +46,9 @@ Eigen::VectorXd WBC<T>::OsqpEigenSolve()
         }
         c_f[i] = c_[i];
     }
-    for (uint16_t i(0); i<dim_Dbar_R_;++i){
-        for(uint16_t j(0); j<dim_opt_;++j){
+
+    for (int i = 0; i<dim_Dbar_R_;++i){
+        for(int j = 0; j<dim_opt_;++j){
             if(Dbar_(i,j) != 0)
                 Dbar_f.insert(i,j) = Dbar_(i,j);
         }
@@ -108,7 +111,7 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     Task<T>* task;
     dim_nv_now_ = 0;
     dim_eq_now_ = 0;
-    for(size_t i(0); i<Hier_[0]; i++){
+    for(int i(0); i<Hier_[0]; i++){
         task = (*_task_list)[i]; 
         dim_nv_now_+= task->getDimTaskInEq();
         dim_eq_now_+=task->getDimTaskEq();
@@ -117,6 +120,9 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     dim_Dbar_R_ = 2*dim_nv_now_;
 
     //Resize H, c, Dbar, fbar
+    /*dim_opt_:58 dim_Dbar_R_:56 dim_n:30 dim_nv_now_:28*/
+    /*dim_opt_:30 dim_Dbar_R_:28 dim_n:30 dim_nv_now_:0*/
+
     H_  = DMat<T>::Zero(dim_opt_, dim_opt_);
     c_ = DVec<T>::Zero(dim_opt_);
     Dbar_ = DMat<T>::Zero(dim_Dbar_R_, dim_opt_);
@@ -126,29 +132,36 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     N_stack_A_pre_ = DMat<T>::Identity(dim_n_, dim_n_); 
 
     //Set H, c, Dbar, fbar
-    DMat<T> H_LTCore, H_RBCore, Dbar_LTCore;
-    DVec<T> c_Head, fbar_Head;
-    size_t index_nv(0);
+    // DMat<T> H_LTCore, H_RBCore, Dbar_LTCore;
+    // DVec<T> c_Head, fbar_Head;
+    Eigen::Matrix<T, 30, 30> H_LTCore;
+    Eigen::Matrix<T, 28, 28> H_RBCore;
+    Eigen::Matrix<T, 30, 1>  c_Head;
+    Eigen::Matrix<T, 28, 30>  Dbar_LTCore;
+    Eigen::Matrix<T, 28, 1>  fbar_Head;
+
+ 
+    int index_nv(0);
     H_LTCore = DMat<T>::Zero(dim_n_, dim_n_);
     H_RBCore = DMat<T>::Zero(dim_nv_now_, dim_nv_now_);
     c_Head = DVec<T>::Zero(dim_n_);
     Dbar_LTCore = DMat<T>::Zero(dim_nv_now_, dim_n_);
     fbar_Head = DVec<T>::Zero(dim_nv_now_);
     // std::cout<< "Hier_[0]" << Hier_[0] << "\n";
-    for(size_t i(0); i<Hier_[0]; i++){
+    for(int i(0); i<Hier_[0]; i++){
         Eigen::Matrix<T, -1, -1, 0, 12, 30>   A;
         Eigen::Matrix<T, -1, 1, 0, 12, 1>     b;
         Eigen::Matrix<T, -1, -1, 0, 24, 30>   D;
         Eigen::Matrix<T, -1, 1, 0, 24, 1>     f;
-        size_t nv;
-        size_t eq;
+        int nv;
+        // int eq;
         task = (*_task_list)[i];
         A = task->get_A();
         b = task->get_b();
         D = task->get_D();
         f = task->get_f();
         nv =  task->getDimTaskInEq();
-        eq = task->getDimTaskEq();
+        // eq = task->getDimTaskEq();
         //task->TaskPrint();
         H_LTCore += Q_[i]*A.transpose()*A;
         H_RBCore.block(index_nv, index_nv, nv, nv) = Q_[i]*DMat<T>::Identity(nv, nv);
@@ -179,16 +192,16 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     // sol.resize(dim_opt_);
 
     // //Set
-    // for (size_t i(0); i<dim_opt_;++i){
-    //     for(size_t j(0); j<dim_opt_;++j){
+    // for (int i(0); i<dim_opt_;++i){
+    //     for(int j(0); j<dim_opt_;++j){
     //         G[i][j] = H_(i,j);
     //         if(i==j)
     //             G[i][i]+=10e-5;//for float
     //     }
     //     g0[i] = c_[i];
     // }
-    // for (size_t i(0); i<dim_Dbar_R_; ++i){
-    //     for(size_t j(0); j<dim_opt_; ++j){
+    // for (int i(0); i<dim_Dbar_R_; ++i){
+    //     for(int j(0); j<dim_opt_; ++j){
     //         CI[j][i] = -Dbar_(i,j);
     //     }
     //     ci0[i] = fbar_[i];
@@ -201,20 +214,19 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
 
     //ROS_INFO("________TASK1_________Solve QP done!______________________________");
     //x*, v*
-    // for(size_t i(0); i<dim_n_;++i)
+    // for(int i(0); i<dim_n_;++i)
     //     x_star_[i] = sol[i];
-    // for(size_t i(0); i<dim_opt_ - dim_n_; ++i)
+    // for(int i(0); i<dim_opt_ - dim_n_; ++i)
     //     v_star_[i] = sol[i+dim_n_];
     // _v_list.push_back(v_star_);
 
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     Eigen::VectorXd QP_rst = OsqpEigenSolve();
-    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     // std::cerr << "first time:" << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << "us" << std::endl;
-    
-    for(size_t i(0); i<dim_n_;++i)
+    for(int i(0); i<dim_n_;++i)
         x_star_[i] = QP_rst[i];
-    for(size_t i(0); i<dim_opt_ - dim_n_; ++i)
+    for(int i(0); i<dim_opt_ - dim_n_; ++i)
         v_star_[i] = QP_rst[i+dim_n_];
     _v_list.push_back(v_star_);
 
@@ -223,7 +235,7 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     index_task_pre_ = 0;
     dim_nv_pre_ = dim_nv_now_;
     dim_eq_pre_ = dim_eq_now_;
-    for(size_t p(0); p<Hier_.rows()-1; p++){
+    for(int p(0); p<Hier_.rows()-1; p++){
 
         _Update_Nullspace(p+1);
         _SetOptimizationSize(p+1);
@@ -231,18 +243,18 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
         _Update_InEqConstraint(p+1);
         sol.resize(dim_opt_);
 
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
         double f = quadprogpp::solve_quadprog(G, g0, CE, ce0, CI, ci0, sol);
-        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
         // std::cerr << "second time:" << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << "us" << std::endl;
 
        // ROS_INFO("___________TASK2-end_______Solve QP done!______________________________");
         //x*, v*
         DVec<T> z_p1(dim_n_);
-        for(size_t i(0); i<dim_n_; i++)
+        for(int i(0); i<dim_n_; i++)
             z_p1[i] = sol[i];
         x_star_ =x_star_ +   N_stack_A_* z_p1;
-        for(size_t i(0); i<dim_opt_ - dim_n_; ++i)
+        for(int i(0); i<dim_opt_ - dim_n_; ++i)
             v_star_[i] = sol[i+dim_n_];
         _v_list.push_back(v_star_);
 
@@ -257,14 +269,15 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
 
 
 template<typename T>
-void WBC<T>::_Update_Nullspace(size_t p1_){
+void WBC<T>::_Update_Nullspace(int p1_){
     
     if(dim_eq_pre_!=0){
         DMat<T> A_(dim_eq_pre_, dim_n_);
-        size_t eq;
-        size_t index_eq(0);
-        for(size_t i(index_task_pre_); i<index_task_pre_+Hier_[p1_-1]; i++){
-            DMat<T> A;
+        int eq;
+        int index_eq(0);
+        for(int i(index_task_pre_); i<index_task_pre_+Hier_[p1_-1]; i++){
+            // DMat<T> A;
+            Eigen::Matrix<T, -1, -1, 0, 12, 30>   A;
             Task<T>* task;
             task = (*_task_list)[i];
             eq = task->getDimTaskEq();
@@ -288,10 +301,10 @@ void WBC<T>::_Update_Nullspace(size_t p1_){
 }
 
 template<typename T>
-void WBC<T>::_SetOptimizationSize(size_t p1_){
+void WBC<T>::_SetOptimizationSize(int p1_){
     dim_nv_now_ = 0;
     dim_eq_now_ = 0;
-    for(size_t i(index_task_); i<index_task_+Hier_[p1_];i++){
+    for(int i(index_task_); i<index_task_+Hier_[p1_];i++){
         Task<T>* task;
         task = (*_task_list)[i];
         dim_nv_now_+= task->getDimTaskInEq();
@@ -302,11 +315,14 @@ void WBC<T>::_SetOptimizationSize(size_t p1_){
     }
     dim_opt_ = dim_n_ + dim_nv_now_;
     dim_Dbar_R_ = 2*dim_nv_now_;
-    for(size_t i(0); i< index_task_; i++){
+    for(int i(0); i< index_task_; i++){
         Task<T>* task;
         task = (*_task_list)[i];
         dim_Dbar_R_+=task->getDimTaskInEq();
     }
+
+        /*dim_opt_:30 dim_Dbar_R_:28 dim_n:30 dim_nv_now_:0*/
+    // printf("dim_opt_:%d dim_Dbar_R_:%d dim_n:%d dim_nv_now_:%d", dim_opt_,dim_Dbar_R_,dim_n_,dim_nv_now_);
 
     H_  = DMat<T>::Identity(dim_opt_, dim_opt_);
     c_ = DVec<T>::Zero(dim_opt_);
@@ -331,17 +347,19 @@ void WBC<T>::_SetOptimizationSize(size_t p1_){
 
 
 template<typename T>
-void WBC<T>::_Update_CostFuntion(size_t p1_){
+void WBC<T>::_Update_CostFuntion(int p1_){
     DMat<T> H_LTCore, H_RBCore;
     DVec<T> c_Head;
-    size_t index_nv(0);
+    int index_nv(0);
     H_LTCore = DMat<T>::Zero(dim_n_, dim_n_);
     H_RBCore = DMat<T>::Identity(dim_nv_now_, dim_nv_now_);
     c_Head = DVec<T>::Zero(dim_n_);
 
-    for(size_t i(index_task_); i<index_task_+Hier_[p1_];i++){
-        DMat<T> A, b;
-        size_t nv;
+    for(int i(index_task_); i<index_task_+Hier_[p1_];i++){
+        // DMat<T> A, b;
+        Eigen::Matrix<T, -1, -1, 0, 12, 30>   A;
+        Eigen::Matrix<T, -1, 1, 0, 12, 1>     b;
+        int nv;
         Task<T>* task;
         task = (*_task_list)[i];
         A = task->get_A();
@@ -359,8 +377,8 @@ void WBC<T>::_Update_CostFuntion(size_t p1_){
     c_.head(dim_n_) = c_Head;
 
         //Set
-    for (size_t i(0); i<dim_opt_;++i){
-        for(size_t j(0); j<dim_opt_;++j){
+    for (int i(0); i<dim_opt_;++i){
+        for(int j(0); j<dim_opt_;++j){
             G[i][j] = H_(i,j);
             if(i==j)
                 G[i][i]+=10e-5;//for float
@@ -372,19 +390,19 @@ void WBC<T>::_Update_CostFuntion(size_t p1_){
 
 
 template<typename T>
-void WBC<T>::_Update_InEqConstraint(size_t p1_){
+void WBC<T>::_Update_InEqConstraint(int p1_){
     DMat<T> Dbar_LTCore, Dbar_LMCore;
     DVec<T> fbar_Head, fbar_Mid;
-    size_t index_nv(0);
+    int index_nv(0);
     Dbar_LTCore = DMat<T>::Zero(dim_nv_now_,dim_n_);
     Dbar_LMCore = DMat<T>::Zero(dim_Dbar_R_-2*dim_nv_now_, dim_n_);
     fbar_Head = DVec<T>::Zero(dim_nv_now_);
     fbar_Mid = DVec<T>::Zero(dim_Dbar_R_-2*dim_nv_now_);
 
-    for(size_t i(index_task_); i<index_task_+Hier_[p1_];i++){
-        DMat<T> D;
-        DVec<T> f;
-        size_t nv;
+    for(int i(index_task_); i<index_task_+Hier_[p1_];i++){
+        Eigen::Matrix<T, -1, -1, 0, 24, 30>   D;
+        Eigen::Matrix<T, -1, 1, 0, 24, 1>     f;
+        int nv;
         Task<T>* task;
         task = (*_task_list)[i];
         D = task->get_D();
@@ -397,10 +415,10 @@ void WBC<T>::_Update_InEqConstraint(size_t p1_){
     }
 
     index_nv=0;
-    for(size_t i(0); i<index_task_; i++){
-        DMat<T> D;
-        DVec<T> f;
-        size_t nv;
+    for(int i(0); i<index_task_; i++){
+        Eigen::Matrix<T, -1, -1, 0, 24, 30>   D;
+        Eigen::Matrix<T, -1, 1, 0, 24, 1>     f;
+        int nv;
         Task<T>* task;
         task = (*_task_list)[i];
         D = task->get_D();
@@ -412,8 +430,8 @@ void WBC<T>::_Update_InEqConstraint(size_t p1_){
         index_nv +=nv;
     }
     
-    size_t index_Hier(0);
-    for(size_t i(0); i<_v_list.size(); i++){
+    int index_Hier(0);
+    for(int i(0); i<_v_list.size(); i++){
         fbar_Mid.segment(index_Hier , _v_list[i].rows()) += _v_list[i];  
 
         index_Hier += _v_list[i].rows();
@@ -427,8 +445,8 @@ void WBC<T>::_Update_InEqConstraint(size_t p1_){
     fbar_.head(dim_nv_now_) = fbar_Head;
     fbar_.segment(dim_nv_now_,dim_Dbar_R_-2*dim_nv_now_) = fbar_Mid;
 
-    for (size_t i(0); i<dim_Dbar_R_; ++i){
-        for(size_t j(0); j<dim_opt_; ++j){
+    for (int i(0); i<dim_Dbar_R_; ++i){
+        for(int j(0); j<dim_opt_; ++j){
             CI[j][i] = -Dbar_(i,j);
         }
         ci0[i] = fbar_[i];
@@ -476,7 +494,7 @@ void WBC<T>::UpdateSetting(const DMat<T>& M,
 // 			S(i,i) = 1 / S(i, i);
 // 	}
 //     DMat<T> inv, ident;
-//     size_t col;
+//     int col;
 //     col = A.cols();
 //     ident = DMat<T>::Identity(col,col);
 // 	inv = V * S.transpose() * U.transpose();
@@ -486,7 +504,7 @@ template<typename T>
 void WBC<T>::_NullSpaceCal(const DMat<T>& A, DMat<T>& Anull ){
 
     DMat<T> inv, ident;
-    size_t col;
+    int col;
     col = A.cols();
     ident = DMat<T>::Identity(col,col);
 	this -> pseudoInverse(A, 0.0001, inv);

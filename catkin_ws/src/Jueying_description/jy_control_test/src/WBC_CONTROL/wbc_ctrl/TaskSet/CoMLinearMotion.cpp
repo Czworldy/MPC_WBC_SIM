@@ -75,7 +75,9 @@ bool CoMLinearMotion<T>::Update_A(){
 
 template<typename T>
 bool CoMLinearMotion<T>::Update_b(){   
-    DVec<T> Q_CoM, QDot_CoM, JDotQDot;
+    // DVec<T> Q_CoM, QDot_CoM;
+    Eigen::Matrix<T, 19, 1> Q_CoM;
+    Eigen::Matrix<T, 18, 1> QDot_CoM;
     Q_CoM = _robot_sys->Q_c_frame.cast<T>();
     QDot_CoM = _robot_sys->QDot_c_frame.cast<T>();
     // JDotQDot = _robot_sys->getCoM6DJDotQDot_c_frame().cast<T>();

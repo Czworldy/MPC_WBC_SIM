@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(jy_control_test)
 
 SET(CMAKE_BUILD_TYPE "Release")
-SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -fopenmp")
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)

@@ -33,7 +33,8 @@ bool TorqueLimits<T>::Update_size(){
 
 template<typename T>
 bool TorqueLimits<T>::Update_D(){
-    DMat<T> MassMatrix, ContactJacobian;
+    Eigen::Matrix<T, 18, 18> MassMatrix;
+    Eigen::Matrix<T, -1, 18, 0, 12, 18> ContactJacobian;
     MassMatrix = _robot_sys->getMassMatrix().cast<T>();
     ContactJacobian  = _robot_sys->getContactJacobian().cast<T>();
 

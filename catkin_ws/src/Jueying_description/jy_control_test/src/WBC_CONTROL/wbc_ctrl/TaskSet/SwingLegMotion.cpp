@@ -73,7 +73,7 @@ bool SwingLegMotion<T>::Update_size(){
 
 template<typename T>
 bool SwingLegMotion<T>::Update_A(){
-    std::vector<DMat<T>> FJacobi;
+    std::vector<Eigen::Matrix<T, 3, 18>> FJacobi;
 
     if(!contactState[legID::LF])
     {
