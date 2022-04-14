@@ -724,16 +724,17 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     desiredDataWBC_.aFoot_des[legID::LB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][2];
     desiredDataWBC_.aFoot_des[legID::RB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][3];
 
-    std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
+    std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
 
-    desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
-    desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
+    // desiredDataWBC_.pBody_RPY_des[0] = 0.1;
+    desiredDataWBC_.pBody_RPY_des[1] = 0.1;
+    
 
 
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
-    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
+    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
     // std::cerr << "11" << "\n";
     for (int i(0); i < 3; i++) {
@@ -817,7 +818,8 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
                         0, 1/coff_b, b/coff_b,
                         -a/coff_c, -b/coff_c, 1/coff_c;
     
-    Eigen::Quaternion<float> quat_terr(terrFramToWorld);
+    Eigen::Quaternion<float> quat_terr(currentStatesWBC_.bodyStateEst.frame_c_quat_in_world.toRotationMatrix() 
+                                            * terrFramToWorld);
     Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
 
     
