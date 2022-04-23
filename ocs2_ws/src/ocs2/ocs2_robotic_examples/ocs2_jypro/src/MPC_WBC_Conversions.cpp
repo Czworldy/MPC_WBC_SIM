@@ -116,11 +116,20 @@ int main(int argc, char **argv)
     KinematicDynamicSetup(urdf::parseURDF(urdfString));
     std::cerr << "____________________________dqwang______________________________________" << std::endl;
     
+    std::queue<ocs2_msgs::mpc_wbc_conversion> wbcMsgQueue;
     // spin
     while (ros::ok() && ros::master::check()) {
         ros::spinOnce();
         if(wbcMsgisdone){
-            mpc_wbcPublisher.publish(wbcMsg);
+            wbcMsgQueue.push(wbcMsg);
+            if (wbcMsgQueue.size() > 2) {
+                mpc_wbcPublisher.publish(wbcMsgQueue.front());
+                wbcMsgQueue.pop();
+                // std::cerr << "size" << wbcMsgQueue.size() << std::endl;
+            }
+                std::cerr << "size" << wbcMsgQueue.size() << std::endl;
+            
+            // mpc_wbcPublisher.publish(wbcMsg);
             wbcMsgisdone = false;
         }
     }

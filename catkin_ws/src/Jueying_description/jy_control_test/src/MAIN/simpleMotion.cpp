@@ -727,7 +727,7 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
 
     // desiredDataWBC_.pBody_RPY_des[0] = 0.1;
-    desiredDataWBC_.pBody_RPY_des[1] = 0.1;
+    // desiredDataWBC_.pBody_RPY_des[1] = 0.1;
     
 
 
@@ -818,6 +818,7 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
                         0, 1/coff_b, b/coff_b,
                         -a/coff_c, -b/coff_c, 1/coff_c;
     
+    Vec31<float> rpy = terrFramToWorld.eulerAngles(0,1,2);
     Eigen::Quaternion<float> quat_terr(currentStatesWBC_.bodyStateEst.frame_c_quat_in_world.toRotationMatrix() 
                                             * terrFramToWorld);
     Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
@@ -825,9 +826,10 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     
     slope_delta_roll  = std::atan2(terrNormal[1],1);
     slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
+    std::cout << ">>>>>>>>>>>>rpy:" <<  rpy.transpose() << "\n";
 
-    std::cout << "theta_x: " << slope_delta_roll
-                  << "\ttheta_y: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
+    // std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] << std::endl;
+    //               << "\t p: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
 
     // cout << "rpy_real:\n" << rpy_in_world << "\n";
     // terr << terrNormal[0] << "\t" << terrNormal[1] << "\n";  
