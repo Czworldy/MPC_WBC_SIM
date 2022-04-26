@@ -314,7 +314,6 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseLinearVelWorldCur[1] = msg->twist[2].linear.y; 
     baseLinearVelWorldCur[2] = msg->twist[2].linear.z; 
 
-    baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
 
     baseOriWorldCur.w() = msg->pose[2].orientation.w;
     baseOriWorldCur.x() = msg->pose[2].orientation.x;
@@ -325,6 +324,8 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseAngularVelWorldCur[1] = msg->twist[2].angular.y;
     baseAngularVelWorldCur[2] = msg->twist[2].angular.z;
 
+    baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
+    
     baseAngularVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseAngularVelWorldCur; 
 
     isGazeboMsg = true;
