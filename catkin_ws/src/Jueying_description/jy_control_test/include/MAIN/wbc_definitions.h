@@ -86,6 +86,9 @@ struct conversionData{
     vector_array_t baseVelocity;
     vector_array_t baseAcceleration;
     Eigen::VectorXf stateTime;
+
+    vector_array_t actJointPos;
+    vector_array_t actJointVel;
 };
 
 #endif

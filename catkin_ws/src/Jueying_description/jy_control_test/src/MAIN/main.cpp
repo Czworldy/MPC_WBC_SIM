@@ -144,10 +144,10 @@ int main(int argc, char**argv) {
         Eigen::Vector3d baseRpyWorldCur = quaternionTOrpy(baseOriWorldCur);
         // estStatesOutput.frame_c_rpy_in_world << 0, 0, baseRpyWorldCur[2];
         // estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(0., 0., baseRpyWorldCur[2]);
-        estStatesOutput.frame_c_rpy_in_world = baseRpyWorldCur;
-        estStatesOutput.frame_c_quat_in_world = baseOriWorldCur; //yjy：先试试都转
+        // estStatesOutput.frame_c_xyz_in_world = basePosWorldCur;
 
-
+        estStatesOutput.frame_c_rpy_in_world << baseRpyWorldCur[0], baseRpyWorldCur[1], baseRpyWorldCur[2];
+        estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(baseRpyWorldCur[0], baseRpyWorldCur[1], baseRpyWorldCur[2]);
         estStatesOutput.frame_c_xyz_in_world = basePosWorldCur;
 
 
@@ -314,8 +314,6 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseLinearVelWorldCur[1] = msg->twist[2].linear.y; 
     baseLinearVelWorldCur[2] = msg->twist[2].linear.z; 
 
-    baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
-
     baseOriWorldCur.w() = msg->pose[2].orientation.w;
     baseOriWorldCur.x() = msg->pose[2].orientation.x;
     baseOriWorldCur.y() = msg->pose[2].orientation.y;
@@ -325,6 +323,8 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseAngularVelWorldCur[1] = msg->twist[2].angular.y;
     baseAngularVelWorldCur[2] = msg->twist[2].angular.z;
 
+    baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
+
     baseAngularVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseAngularVelWorldCur; 
 
     isGazeboMsg = true;
@@ -332,7 +332,7 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
 
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     const int N_times = msg->stateTime.size();
-    // std::cerr << "N_times: " << N_times << "\n";
+    std::cerr << "N_times: " << N_times << "\n";
 
     mpcData.stateTime.resize(N_times);
     mpcData.baseAcceleration.clear();
@@ -348,6 +348,11 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     mpcData.swingFeetVelocity.clear();
     mpcData.swingFeetVelocity.resize(N_times);
     mpcData.switchTime.Zero();
+
+    mpcData.actJointPos.clear();
+    mpcData.actJointPos.resize(N_times);
+    mpcData.actJointVel.clear();
+    mpcData.actJointVel.resize(N_times);
 
     for (int i = 0; i < N_times; i++) {
         // State Times
@@ -402,11 +407,20 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
             mpcData.basePosition[i].resize(6);
             mpcData.baseVelocity[i].resize(6);
             mpcData.baseAcceleration[i].resize(6);
+            mpcData.actJointPos[i].resize(12);
+            mpcData.actJointVel[i].resize(12);
+
+
             for (uint8_t j = 0; j < 6; j++){
                 // x y z r p y
                 mpcData.basePosition[i][j]     = msg->wbcTraj[i].basePos[j];
                 mpcData.baseVelocity[i][j]     = msg->wbcTraj[i].baseVel[j];
                 mpcData.baseAcceleration[i][j] = msg->wbcTraj[i].baseAcc[j];
+            }
+
+            for (uint8_t j = 0; j < 12; j++) {
+                mpcData.actJointPos[i][j] = msg->wbcTraj[i].actJointPos[j];
+                mpcData.actJointVel[i][j] = msg->wbcTraj[i].actJointVel[j];
             }
         }
     }

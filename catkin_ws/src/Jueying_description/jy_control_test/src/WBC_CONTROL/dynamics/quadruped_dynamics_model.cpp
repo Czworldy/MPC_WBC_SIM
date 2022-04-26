@@ -103,7 +103,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
 
     // QDot.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3); 
     QDot.head(3) = state.bodyVelocity.head(3);//yjy :按照论文 线速度先不旋转
-    QDot.segment(3,3) = rotMat_world_to_c * state.bodyVelocity.segment(3,3); 
+    QDot.segment(3,3) = state.bodyVelocity.segment(3,3); 
     QDot.tail(JYPro::num_act_joint) = state.qd_leg; 
 
     Q_c_frame.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world);
@@ -119,7 +119,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     Q_c_frame.segment(6, JYPro::num_act_joint) = state.q_leg;
 
     QDot_c_frame.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3);
-    QDot_c_frame.segment(3,3) = rotMat_world_to_c * state.bodyVelocity.segment(3,3); 
+    QDot_c_frame.segment(3,3) = state.bodyVelocity.segment(3,3); 
     QDot_c_frame.tail(JYPro::num_act_joint) = state.qd_leg; 
 
     contact_state = state.contact_state_;

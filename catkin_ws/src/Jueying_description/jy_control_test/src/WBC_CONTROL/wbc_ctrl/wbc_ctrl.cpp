@@ -61,7 +61,7 @@ void WBC_Ctrl<T>::_UpdateModel(const BodyStateEstData<T> & bodyEst,
     for(size_t i(0); i<3; i++){
         state_.bodyPosition[i] = bodyEst.base_pos_world[i];
         state_.bodyVelocity[i] = bodyEst.base_linear_vel_world[i];
-        state_.bodyVelocity[i+3] = bodyEst.base_angular_vel_world[i];
+        state_.bodyVelocity[i+3] = bodyEst.base_angular_vel_body[i];
 
         for(size_t leg(0); leg<4; ++leg){
             state_.q_leg[3*leg+i] = legEst[leg].q[i];

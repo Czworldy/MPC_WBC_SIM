@@ -402,17 +402,7 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = 0;
 
-    static int wbc_count = 0;
-    static double totalTimes = 0;
-    wbc_count++;
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
-    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    double used_time = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
-    std::cerr << "wbc run time: "<< used_time << "us\n";
-    totalTimes +=  used_time;
-    std::cerr << "wbc run avg time: "<< totalTimes/wbc_count << "us\n";
-
 
     for (int i(0); i < 3; i++) {
         command.lf_tau.value[i] = tauWBC_[i];
@@ -451,19 +441,14 @@ void SimpleMotion::WBCSetUpSwingFootInitialStates(){
     initialBaseStates_.pitch[0] = currentStatesWBC_.bodyStateEst.base_rpy_world[1];
     initialBaseStates_.yaw[0]   = currentStatesWBC_.bodyStateEst.base_rpy_world[2];
 
-    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
-    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
-    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
+    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
     // Q_.head(3) << 0, 0, 0;
     // Q_.segment(3, 3)  << 0, 0, 0;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
-    Q_[18] = quat.w();
-
 
     QDot_.head(3) << currentStatesWBC_.bodyStateEst.base_linear_vel_world;
     QDot_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_angular_vel_world;
@@ -544,18 +529,12 @@ void SimpleMotion::RecordData() {
     in_pitch_vel << desiredDataWBC_.vBody_RPY_des[1] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[1] << "\n";
     in_yaw_vel   << desiredDataWBC_.vBody_RPY_des[2] << "\t" << currentStatesWBC_.bodyStateEst.base_angular_vel_world[2] << "\n";
 
-    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
-    
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
-    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
-    // Q_.head(3) << 0, 0, 0;
-    // Q_.segment(3, 3)  << 0, 0, 0;
+    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
     Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
-    Q_[18] = quat.w();
 
     Vec31<float> foot_position = jueying_.swingFootPosition(legID::LF, Q_.cast<double>()).cast<float>();
     in_foot_lf_x << desiredDataWBC_.pFoot_des[legID::LF][0] << "\t" << foot_position[0] << "\n";
@@ -581,7 +560,7 @@ void SimpleMotion::RecordData() {
 void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
 
     const int N_times = mpcMsg.stateTime.size();
-    // std::cerr << "1 " << N_times <<"\n";
+    std::cerr << "1 " << N_times <<"\n";
 
     mpcMsg_.swingFeetPosition.clear();
     mpcMsg_.swingFeetPosition.resize(N_times);
@@ -596,14 +575,19 @@ void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
     mpcMsg_.baseAcceleration.clear();
     mpcMsg_.baseAcceleration.resize(N_times);
     mpcMsg_.stateTime.resize(N_times);
-    // std::cerr << "2" << "\n";
+
+    mpcMsg_.actJointPos.clear();
+    mpcMsg_.actJointPos.resize(N_times);
+    mpcMsg_.actJointVel.clear();
+    mpcMsg_.actJointVel.resize(N_times);
+    std::cerr << "2" << "\n";
 
     // Gait
     mpcMsg_.firstGait  = mpcMsg.firstGait;
     mpcMsg_.secondGait = mpcMsg.secondGait;
     mpcMsg_.thirdGait  = mpcMsg.thirdGait;
     mpcMsg_.switchTime = mpcMsg.switchTime;
-    // std::cerr << "3" << "\n";
+    std::cerr << "3" << "\n";
 
     for (int i = 0; i < N_times; i++) { 
         // State Times
@@ -622,15 +606,18 @@ void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
         mpcMsg_.basePosition[i]     = mpcMsg.basePosition[i];
         mpcMsg_.baseVelocity[i]     = mpcMsg.baseVelocity[i];
         mpcMsg_.baseAcceleration[i] = mpcMsg.baseAcceleration[i];
+        
+        mpcMsg_.actJointPos[i] = mpcMsg.actJointPos[i];
+        mpcMsg_.actJointVel[i] = mpcMsg.actJointVel[i];
     }
 
-    // std::cerr << "4" << "\n";
+    std::cerr << "4" << "\n";
 
     indexMPCStateTime_ = 0;
     indexMPCSwitchTime_ = 0;
     timeUpdateMPC_ = time_stamp;
 
-    // std::cerr << "5" << "\n";
+    std::cerr << "5" << "\n";
 }
 
 void SimpleMotion::UpdateControlFrame(const EstimatorOutput& input) {
@@ -724,25 +711,32 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     desiredDataWBC_.aFoot_des[legID::LB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][2];
     desiredDataWBC_.aFoot_des[legID::RB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][3];
 
-    std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
+    std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
 
-    // desiredDataWBC_.pBody_RPY_des[0] = 0.1;
-    // desiredDataWBC_.pBody_RPY_des[1] = 0.1;
-    
+    // desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
+    // desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
 
 
-    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
-    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
-    // std::cerr << "11" << "\n";
-    for (int i(0); i < 3; i++) {
-        command.lf_tau.value[i] = tauWBC_[i];
-        command.lh_tau.value[i] = tauWBC_[i+3];
-        command.rf_tau.value[i] = tauWBC_[i+6];
-        command.rh_tau.value[i] = tauWBC_[i+9];
-    }
+    command.lf_tau.value[0] = tauWBC_[0] + paramf.Kp_joint_lf[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].q[0]) + paramf.Kd_joint_lf[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].qd[0]);
+    command.lf_tau.value[1] = tauWBC_[1] + paramf.Kp_joint_lf[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].q[1]) + paramf.Kd_joint_lf[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].qd[1]);
+    command.lf_tau.value[2] = tauWBC_[2] + paramf.Kp_joint_lf[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].q[2]) + paramf.Kd_joint_lf[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].qd[2]);
+
+    command.lh_tau.value[0] = tauWBC_[3] + paramf.Kp_joint_lh[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].q[0]) + paramf.Kd_joint_lh[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].qd[0]);
+    command.lh_tau.value[1] = tauWBC_[4] + paramf.Kp_joint_lh[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].q[1]) + paramf.Kd_joint_lh[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].qd[1]);
+    command.lh_tau.value[2] = tauWBC_[5] + paramf.Kp_joint_lh[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].q[2]) + paramf.Kd_joint_lh[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].qd[2]);
+
+    command.rf_tau.value[0] = tauWBC_[6] + paramf.Kp_joint_rf[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].q[0]) + paramf.Kd_joint_rf[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].qd[0]);
+    command.rf_tau.value[1] = tauWBC_[7] + paramf.Kp_joint_rf[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].q[1]) + paramf.Kd_joint_rf[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].qd[1]);
+    command.rf_tau.value[2] = tauWBC_[8] + paramf.Kp_joint_rf[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].q[2]) + paramf.Kd_joint_rf[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].qd[2]);
+
+    command.rh_tau.value[0] = tauWBC_[9]  + paramf.Kp_joint_rh[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].q[0]) + paramf.Kd_joint_rh[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].qd[0]);
+    command.rh_tau.value[1] = tauWBC_[10] + paramf.Kp_joint_rh[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].q[1]) + paramf.Kd_joint_rh[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].qd[1]);
+    command.rh_tau.value[2] = tauWBC_[11] + paramf.Kp_joint_rh[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].q[2]) + paramf.Kd_joint_rh[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].qd[2]);
     
     if(abs(currentStatesWBC_.bodyStateEst.base_pos_world[0] - desiredDataWBC_.pBody_des[0]) > paramf.x_delta ||
        abs(currentStatesWBC_.bodyStateEst.base_pos_world[1] - desiredDataWBC_.pBody_des[1]) > paramf.y_delta ||
@@ -807,29 +801,12 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
 
     Vec31<float> terrNormal = terrEst.run(foot_lf,foot_lh,foot_rf,foot_rh,contact_flag);
     cout << "terrEst:\n" << terrNormal << "\n";
-
-    Mat3<float> terrFramToWorld;
-    float a = terrNormal[0], b = terrNormal[1];
-    float coff_a = std::sqrt(1+a*a),
-          coff_b = std::sqrt(1+b*b),
-          coff_c = std::sqrt(1+a*a+b*b);
-
-    terrFramToWorld << 1/coff_a, 0, a/coff_a,
-                        0, 1/coff_b, b/coff_b,
-                        -a/coff_c, -b/coff_c, 1/coff_c;
-    
-    Vec31<float> rpy = terrFramToWorld.eulerAngles(0,1,2);
-    Eigen::Quaternion<float> quat_terr(currentStatesWBC_.bodyStateEst.frame_c_quat_in_world.toRotationMatrix() 
-                                            * terrFramToWorld);
-    Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
-
     
     slope_delta_roll  = std::atan2(terrNormal[1],1);
     slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
-    std::cout << ">>>>>>>>>>>>rpy:" <<  rpy.transpose() << "\n";
 
-    // std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] << std::endl;
-    //               << "\t p: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
+    std::cout << "theta_x: " << slope_delta_roll
+                  << "\ttheta_y: " << slope_delta_pitch << "\n";  
 
     // cout << "rpy_real:\n" << rpy_in_world << "\n";
     // terr << terrNormal[0] << "\t" << terrNormal[1] << "\n";  

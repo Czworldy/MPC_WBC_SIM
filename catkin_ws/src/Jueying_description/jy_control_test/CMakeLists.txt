@@ -33,8 +33,6 @@ find_package(Threads)
 
 find_package(OsqpEigen)
 
-find_package(raisim CONFIG REQUIRED)
-
 
 catkin_package(
   INCLUDE_DIRS include
@@ -133,22 +131,13 @@ add_library(${PROJECT_NAME}
 
 
 add_executable(wbc_pd_trot_mpc src/MAIN/main.cpp)
+
 target_link_libraries(wbc_pd_trot_mpc
  ${catkin_LIBRARIES}
  ${PROJECT_NAME}
  ${RBDL_LIBRARY}
  #${RBDL_URDFReader_LIBRARY}
  ${EIGEN3_LIBRARY}
-OsqpEigen::OsqpEigen
-/usr/local/lib/libquadprog.a
-)
-
-add_executable(raisim_test src/MAIN/raisim_test.cpp)
-target_link_libraries(raisim_test
-PUBLIC raisim::raisim pthread
-${PROJECT_NAME}
-${RBDL_LIBRARY}
-${catkin_LIBRARIES}
 OsqpEigen::OsqpEigen
 /usr/local/lib/libquadprog.a
 )

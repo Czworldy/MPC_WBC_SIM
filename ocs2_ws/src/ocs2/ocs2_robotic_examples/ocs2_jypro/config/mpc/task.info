@@ -21,7 +21,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.2     ;-0.2
-  swingHeight                   0.1
+  swingHeight                   0.05
   touchdownAfterHorizon         0.2
   swingTimeScale                0.05
 }
@@ -126,7 +126,7 @@ mpc
 
   solutionTimeWindow              -1  ; [s]
 
-  mpcDesiredFrequency             50  ; [Hz]
+  mpcDesiredFrequency             -1  ; [Hz]
   mrtDesiredFrequency             400 ; [Hz]
 }
 
