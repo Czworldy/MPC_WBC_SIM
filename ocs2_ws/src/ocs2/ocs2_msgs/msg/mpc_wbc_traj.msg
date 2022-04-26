@@ -6,6 +6,9 @@ float64[] swingPos
 float64[] swingVel
 float64[] swingAcc
 
+float64[] actJointPos
+float64[] actJointVel
+
 
 
 

@@ -15,8 +15,7 @@
 #include "geometry_msgs/TwistWithCovarianceStamped.h"
 #include "geometry_msgs/WrenchStamped.h"
 #include "pronto_msgs/QuadrupedStance.h"
-// #include "gazebo_msgs/LinkStates.h"
-#include "gazebo_msgs/ModelStates.h"
+#include "gazebo_msgs/LinkStates.h"
 
 #include <ocs2_msgs/mpc_flattened_controller.h>
 #include <ocs2_msgs/mode_schedule.h>
@@ -70,7 +69,7 @@ int  prontoData_count = 0;
 
 // Functions
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
-void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
+void gazebo_link_states_callback(const gazebo_msgs::LinkStates::ConstPtr& msg);
 void contactStateCallback(const pronto_msgs::QuadrupedStance::ConstPtr& msg);
 void grf_LF_callback(const geometry_msgs::WrenchStamped::ConstPtr& msg);
 void grf_RF_callback(const geometry_msgs::WrenchStamped::ConstPtr& msg);
@@ -100,7 +99,7 @@ int main(int argc, char **argv)
 
     jointState = nh.subscribe("/JYPro/joint_states", 1, &jointStateCallback);
     contactState = nh.subscribe("/state_estimator_pronto/stance", 1, &contactStateCallback);
-    gazebo_linkStates = nh.subscribe("/gazebo/model_states", 1,&gazebo_link_states_callback);
+    gazebo_linkStates = nh.subscribe("/gazebo/link_states", 1,&gazebo_link_states_callback);
     mpc_input = nh.advertise<ocs2_msgs::mpc_observation>("/legged_robot_mpc_observation", 1);
     grf_LF = nh.subscribe("/state_estimator_pronto/lf_grf", 1, &grf_LF_callback);
     grf_RF = nh.subscribe("/state_estimator_pronto/rf_grf", 1, &grf_RF_callback);
@@ -277,9 +276,9 @@ void contactStateCallback(const pronto_msgs::QuadrupedStance::ConstPtr& msg){
 
 quaternionToRad yawTotalCounter;
 
-void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
+void gazebo_link_states_callback(const gazebo_msgs::LinkStates::ConstPtr& msg){
     // pose --- orientation
-    // double ros_time = ros::Time::now().toSec();
+    double ros_time = ros::Time::now().toSec();
     Eigen::Quaternion<double> orientation_gazebo, orientation_tpl, orientation_final;
     Eigen::Matrix<double,3,1> rpy;
     orientation_gazebo.w() = msg->pose[2].orientation.w;
@@ -308,10 +307,10 @@ void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
     twist_angular[0] = msg->twist[2].angular.x;
     twist_angular[1] = msg->twist[2].angular.y;
     twist_angular[2] = msg->twist[2].angular.z;
-    twist_angular_tpl =   twist_angular;
-    mpcInputData.v_[3] = twist_angular_tpl[2];
+    twist_angular_tpl = rpyDotTOtwist(rpy[2], rpy[1], rpy[0]).inverse() * twist_angular;
+    mpcInputData.v_[3] = twist_angular_tpl[0];
     mpcInputData.v_[4] = twist_angular_tpl[1];
-    mpcInputData.v_[5] = twist_angular_tpl[0];
+    mpcInputData.v_[5] = twist_angular_tpl[2];
     
     // twist --- linear
     Eigen::Matrix<double,3,1> twist_linear;
@@ -402,12 +401,12 @@ Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw
     return RotateMatrix;
 }
 
-Eigen::Matrix<double, 3, 3> rpyDotTOtwist(double yaw, double pitch, double roll){
+Eigen::Matrix<double, 3, 3> rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
     Eigen::Matrix<double, 3, 3> translation_Matrix;
 
-    translation_Matrix << 0, -sin(yaw), cos(pitch) * cos(yaw),
-                          0, cos(yaw), cos(pitch) * sin(yaw),
-                          1, 0 , -sin(pitch);
+    translation_Matrix << 0, -sin(theta_z), cos(theta_y) * cos(theta_z),
+                          0, cos(theta_z), cos(theta_y) * sin(theta_z),
+                          1, 0 , -sin(theta_y);
                           
     return translation_Matrix;
 }

@@ -116,20 +116,11 @@ int main(int argc, char **argv)
     KinematicDynamicSetup(urdf::parseURDF(urdfString));
     std::cerr << "____________________________dqwang______________________________________" << std::endl;
     
-    std::queue<ocs2_msgs::mpc_wbc_conversion> wbcMsgQueue;
     // spin
     while (ros::ok() && ros::master::check()) {
         ros::spinOnce();
         if(wbcMsgisdone){
-            wbcMsgQueue.push(wbcMsg);
-            if (wbcMsgQueue.size() > 2) {
-                mpc_wbcPublisher.publish(wbcMsgQueue.front());
-                wbcMsgQueue.pop();
-                // std::cerr << "size" << wbcMsgQueue.size() << std::endl;
-            }
-                std::cerr << "size" << wbcMsgQueue.size() << std::endl;
-            
-            // mpc_wbcPublisher.publish(wbcMsg);
+            mpc_wbcPublisher.publish(wbcMsg);
             wbcMsgisdone = false;
         }
     }
@@ -275,6 +266,13 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
             wbcMsg.wbcTraj[i].swingAcc.push_back(wbcInterfaceData.swingFeetAcceleration[i][k][2]);
         }
         wbcMsg.stateTime[i] = mpcData.timeTrajectory_[i];
+
+        wbcMsg.wbcTraj[i].actJointPos.resize(12);
+        wbcMsg.wbcTraj[i].actJointVel.resize(12);
+        for (int j(0); j < 12; j++) {
+          wbcMsg.wbcTraj[i].actJointPos[j] = q[i][6 + j];
+          wbcMsg.wbcTraj[i].actJointVel[j] = v[i][6 + j];
+        }
         
     }
     for (uint8_t i = 0; i < 4; i++){ // LF RF LH RH

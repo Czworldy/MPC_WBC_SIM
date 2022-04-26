@@ -12,7 +12,6 @@ list
   [9] lindyhop
   [10] skipping
   [11] pawup
-  [12] run
 }
 
 stance
@@ -254,5 +253,3 @@ pawup
      [1]     2.0
    }
 }
-
-
