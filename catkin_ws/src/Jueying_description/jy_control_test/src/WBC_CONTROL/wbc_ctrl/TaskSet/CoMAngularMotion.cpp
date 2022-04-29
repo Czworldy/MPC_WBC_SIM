@@ -17,12 +17,12 @@ bool CoMAngularMotion<T>::UpdateTask(const DVec<T>& pos_des,
                                      const Vec41<T>& contact_state){
     des_quat_in_frame_c_ = _robot_sys->quat_world_to_c.cast<T>() * rpyTOquaternion(pos_des[0], pos_des[1], pos_des[2]);
     // des_quat_in_frame_c_ = rpyTOquaternion(pos_des[0], pos_des[1], pos_des[2]);
-    std::cerr << "des RPY in control frame: \n" << quaternionTOrpy(des_quat_in_frame_c_) << "\n";
-    std::cerr << "_robot_sys->quat_world_to_c: \n" << _robot_sys->quat_world_to_c.w() << 
-     _robot_sys->quat_world_to_c.x()  << _robot_sys->quat_world_to_c.y()  << _robot_sys->quat_world_to_c.z() << std::endl;
-    // std::cerr << "rpyTOquaternion: \n" << rpyTOquaternion(pos_des[0], pos_des[1], pos_des[2])<< std::endl;
-    std::cerr << "des_quat_in_frame_c_: \n"  << des_quat_in_frame_c_.w() << 
-      des_quat_in_frame_c_.x()  << des_quat_in_frame_c_.y()  << des_quat_in_frame_c_.z() << "\n";
+    // std::cerr << "des RPY in control frame: \n" << quaternionTOrpy(des_quat_in_frame_c_) << "\n";
+    // std::cerr << "_robot_sys->quat_world_to_c: \n" << _robot_sys->quat_world_to_c.w() << 
+    //  _robot_sys->quat_world_to_c.x()  << _robot_sys->quat_world_to_c.y()  << _robot_sys->quat_world_to_c.z() << std::endl;
+    // // std::cerr << "rpyTOquaternion: \n" << rpyTOquaternion(pos_des[0], pos_des[1], pos_des[2])<< std::endl;
+    // std::cerr << "des_quat_in_frame_c_: \n"  << des_quat_in_frame_c_.w() << 
+    //   des_quat_in_frame_c_.x()  << des_quat_in_frame_c_.y()  << des_quat_in_frame_c_.z() << "\n";
     omega_d_ = _robot_sys->rotMat_world_to_c.cast<T>() * vel_des;
     acc_d_   = _robot_sys->rotMat_world_to_c.cast<T>() * acc_des;
     contactState = contact_state;

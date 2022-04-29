@@ -57,6 +57,8 @@ class SwingTrajectoryPlanner {
 
   scalar_t getZpositionConstraint(size_t leg, scalar_t time) const;
 
+  scalar_t getSwingTimeLeft(size_t leg, scalar_t time) const;
+
  private:
   /**
    * Extracts for each leg the contact sequence over the motion phase sequence.

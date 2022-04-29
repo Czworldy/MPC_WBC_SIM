@@ -57,6 +57,8 @@ class LeggedRobotPreComputation : public PreComputation {
 
   const std::vector<EndEffectorLinearConstraint::Config>& getEeNormalVelocityConstraintConfigs() const { return eeNormalVelConConfigs_; }
 
+  const std::vector<scalar_t>& getSwingTimeLeft() const { return swingTimeLeft_; }
+
   PinocchioInterface& getPinocchioInterface() { return pinocchioInterface_; }
   const PinocchioInterface& getPinocchioInterface() const { return pinocchioInterface_; }
 
@@ -69,6 +71,7 @@ class LeggedRobotPreComputation : public PreComputation {
   const ModelSettings settings_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
+  std::vector<scalar_t> swingTimeLeft_;
 };
 
 }  // namespace legged_robot

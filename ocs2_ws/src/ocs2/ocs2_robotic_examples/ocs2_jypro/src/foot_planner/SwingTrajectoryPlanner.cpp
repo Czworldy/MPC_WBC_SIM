@@ -46,6 +46,8 @@ SwingTrajectoryPlanner::SwingTrajectoryPlanner(Config config, size_t numFeet) : 
 /******************************************************************************************************/
 scalar_t SwingTrajectoryPlanner::getZvelocityConstraint(size_t leg, scalar_t time) const {
   const auto index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[leg], time);
+
+  std::cout << "SwingTimeLeft:" << getSwingTimeLeft(leg, time) << std::endl;
   return feetHeightTrajectories_[leg][index].velocity(time);
 }
 
@@ -55,6 +57,14 @@ scalar_t SwingTrajectoryPlanner::getZvelocityConstraint(size_t leg, scalar_t tim
 scalar_t SwingTrajectoryPlanner::getZpositionConstraint(size_t leg, scalar_t time) const {
   const auto index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[leg], time);
   return feetHeightTrajectories_[leg][index].position(time);
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+scalar_t SwingTrajectoryPlanner::getSwingTimeLeft(size_t leg, scalar_t time) const {
+  const auto index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[leg], time);
+  return feetHeightTrajectoriesEvents_[leg][index] - time;
 }
 
 /******************************************************************************************************/

@@ -79,9 +79,15 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return config;
   };
 
+    // lambda to get left swing time for foot placement constraints
+  auto swingTimeLeftLambda = [&](size_t footIndex) {
+    return swingTrajectoryPlannerPtr_->getSwingTimeLeft(footIndex, t);
+  };
+
   if (request.contains(Request::Constraint)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
+      swingTimeLeft_[i] = swingTimeLeftLambda(i);
     }
   }
 }

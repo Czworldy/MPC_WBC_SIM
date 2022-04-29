@@ -71,8 +71,8 @@ int main(int argc, char** argv) {
   // MPC
   ocs2::MPC_DDP mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
                     interface.getInitializer());
-  mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);
-  mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);
+  mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
+  mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
 
   // Launch MPC ROS node
   ocs2::MPC_ROS_Interface mpcNode(mpc, robotName);

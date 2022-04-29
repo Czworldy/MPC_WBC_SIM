@@ -805,8 +805,13 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     foot_rf = jueying_.swingFootPosition(legID::RF, q.cast<double>()).cast<float>();
     foot_rh = jueying_.swingFootPosition(legID::RB, q.cast<double>()).cast<float>();
 
+    cout << "foot_lf: " << foot_lf.transpose() << endl;
+    cout << "foot_lh: " << foot_lh.transpose() << endl;
+    cout << "foot_rf: " << foot_rf.transpose() << endl;
+    cout << "foot_rh: " << foot_rh.transpose() << endl;
+    
     Vec31<float> terrNormal = terrEst.run(foot_lf,foot_lh,foot_rf,foot_rh,contact_flag);
-    cout << "terrEst:\n" << terrNormal << "\n";
+    // cout << "terrEst:\n" << terrNormal << "\n";
 
     Mat3<float> terrFramToWorld;
     float a = terrNormal[0], b = terrNormal[1];
@@ -826,7 +831,7 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     
     slope_delta_roll  = std::atan2(terrNormal[1],1);
     slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
-    std::cout << ">>>>>>>>>>>>rpy:" <<  rpy.transpose() << "\n";
+    // std::cout << ">>>>>>>>>>>>rpy:" <<  rpy.transpose() << "\n";
 
     // std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] << std::endl;
     //               << "\t p: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
