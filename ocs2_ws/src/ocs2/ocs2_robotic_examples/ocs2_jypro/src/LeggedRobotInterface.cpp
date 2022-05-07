@@ -184,7 +184,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
     problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-                                             getStateOnlyFootPlacementConstraint(*dynamic_cast<eeKinematicsPtr>, footName + "_placementConstraint",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
                                               i, barrierPenaltyConfig)
                                              );
     problemPtr_->equalityConstraintPtr->add(footName + "_zeroForce", getZeroForceConstraint(i));
@@ -296,13 +296,13 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getFrictionConeConstraint(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::unique_ptr<StateCost> LeggedRobotInterface::getStateOnlyFootPlacementConstraint(const PinocchioEndEffectorKinematicsCppAd& eeKinematics,
+std::unique_ptr<StateCost> LeggedRobotInterface::getStateOnlyFootPlacementConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                   const std::string& modelName, size_t contactPointIndex,
                                                                   const RelaxedBarrierPenalty::Config& barrierPenaltyConfig) {
   StateOnlyFootPlacementConstraint::Config footplacementConstraintConfig;
   std::unique_ptr<StateOnlyFootPlacementConstraint> footplacementConstraintPtr(
       new StateOnlyFootPlacementConstraint(*referenceManagerPtr_, eeKinematics, modelName,
-                            std::move(footplacementConstraintConfig), contactPointIndex, centroidalModelInfo_));
+                            std::move(footplacementConstraintConfig), contactPointIndex, centroidalModelInfo_.stateDim));
 
   std::unique_ptr<PenaltyBase> penalty(new RelaxedBarrierPenalty(barrierPenaltyConfig));
 

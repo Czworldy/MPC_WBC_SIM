@@ -107,8 +107,7 @@ class PinocchioEndEffectorKinematicsCppAd final : public EndEffectorKinematics<s
                                                                                 const vector_t& input) const override;
   std::vector<VectorFunctionLinearApproximation> getOrientationErrorLinearApproximation(
       const vector_t& state, const std::vector<quaternion_t>& referenceOrientations) const override;
-
-  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc; 
+ 
 
  private:
   PinocchioEndEffectorKinematicsCppAd(const PinocchioEndEffectorKinematicsCppAd& rhs);

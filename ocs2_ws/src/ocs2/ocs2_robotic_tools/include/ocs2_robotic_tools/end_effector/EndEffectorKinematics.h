@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 
 #include <ocs2_core/Types.h>
+#include <ocs2_core/automatic_differentiation/Types.h>
+
 
 namespace ocs2 {
 
@@ -112,6 +114,8 @@ class EndEffectorKinematics {
    */
   virtual std::vector<VectorFunctionLinearApproximation> getOrientationErrorLinearApproximation(
       const vector_t& state, const std::vector<quaternion_t>& referenceOrientations) const = 0;
+
+  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc;
 
  protected:
   EndEffectorKinematics(const EndEffectorKinematics&) = default;

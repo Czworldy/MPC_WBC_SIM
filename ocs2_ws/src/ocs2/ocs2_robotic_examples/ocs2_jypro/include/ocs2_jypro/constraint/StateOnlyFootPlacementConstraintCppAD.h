@@ -17,7 +17,7 @@
 namespace ocs2 {
 namespace legged_robot {
 
-class StateOnlyFootPlacementConstraint final : public StateConstraintCppAd {
+class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -30,10 +30,11 @@ class StateOnlyFootPlacementConstraint final : public StateConstraintCppAd {
         scalar_t hessianDiagonalShift;
     };
     StateOnlyFootPlacementConstraint(const SwitchedModelReferenceManager& referenceManager, 
-                                    const PinocchioEndEffectorKinematicsCppAd& endEffectorKinematics,
+                                    const EndEffectorKinematics<scalar_t>& endEffectorKinematics,
                                     const std::string& modelName,
                                     Config config, size_t contactPointIndex,
-                                    const CentroidalModelInfo& info);
+                                    const size_t& stateDim);
+
 
     ~StateOnlyFootPlacementConstraint() override = default;
     StateOnlyFootPlacementConstraint* clone() const override { return new StateOnlyFootPlacementConstraint(*this); }
@@ -50,23 +51,19 @@ class StateOnlyFootPlacementConstraint final : public StateConstraintCppAd {
 
     
     private:
-        StateOnlyFootPlacementConstraint(const StateOnlyFootPlacementConstraint& other) 
-            : StateConstraintCppAd(other),
-            referenceManagerPtr_(other.referenceManagerPtr_),
-            endEffectorKinematicsPtr_(other.endEffectorKinematicsPtr_->clone()),
-            config_(other.config_),
-            contactPointIndex_(other.contactPointIndex_){std::cout << "StateOnlyFootPlacementConstraint copy constructor" << std::endl;}
+        StateOnlyFootPlacementConstraint(const StateOnlyFootPlacementConstraint& other);
 
         const SwitchedModelReferenceManager* referenceManagerPtr_;
         // std::unique_ptr<EndEffectorLinearConstraint> eeLinearConstraintPtr_;
-        std::unique_ptr<PinocchioEndEffectorKinematicsCppAd> endEffectorKinematicsPtr_;
+        std::unique_ptr<EndEffectorKinematics<scalar_t>> endEffectorKinematicsPtr_;
 
 
         const Config config_;
         const size_t contactPointIndex_;
-        const CentroidalModelInfo info_;
 
         Eigen::Matrix<size_t, 6, 4> B;
+
+        Eigen::Matrix<size_t, 6, 3> Ax;
 
 };
 
