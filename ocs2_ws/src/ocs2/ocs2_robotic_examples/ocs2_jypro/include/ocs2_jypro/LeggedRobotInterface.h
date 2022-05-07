@@ -80,6 +80,10 @@ class LeggedRobotInterface final : public RobotInterface {
   const LeggedRobotInitializer& getInitializer() const override { return *initializerPtr_; }
   std::shared_ptr<ReferenceManagerInterface> getReferenceManagerPtr() const override { return referenceManagerPtr_; }
 
+  // ad_vector_t getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+  //                                                                 const PinocchioStateInputMapping<ad_scalar_t>& mapping,
+  //                                                                 const ad_vector_t& state);
+
  private:
   std::shared_ptr<GaitSchedule> loadGaitSchedule(const std::string& taskFile);
   void setupOptimalConrolProblem(const std::string& taskFile, const std::string& targetCommandFile,

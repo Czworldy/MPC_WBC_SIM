@@ -175,6 +175,16 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
         const ad_vector_t q = centroidal_model::getGeneralizedCoordinates(state, infoCppAd);
         updateCentroidalDynamics(pinocchioInterfaceAd, infoCppAd, q);
       };
+
+      // auto pinocchioInterfaceCppAd = pinocchioInterfacePtr_->toCppAd();
+      // std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr(pinocchioMappingCppAd.clone());
+      // mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
+
+      // auto positionFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
+      //   velocityUpdateCallback(x, pinocchioInterfaceCppAd);
+      //   y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
+      // };
+
       eeKinematicsPtr.reset(new PinocchioEndEffectorKinematicsCppAd(*pinocchioInterfacePtr_, pinocchioMappingCppAd, {footName},
                                                                     centroidalModelInfo_.stateDim, centroidalModelInfo_.inputDim,
                                                                     velocityUpdateCallback, footName, modelSettings_.modelFolderCppAd,

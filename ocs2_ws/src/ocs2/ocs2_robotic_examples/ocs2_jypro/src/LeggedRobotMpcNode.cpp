@@ -39,6 +39,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char** argv) {
   std::vector<std::string> programArgs{};
+  for(int i=0;i<argc; i++){
+    std::cout<< argv[i] << "\n";
+    std::cout << i << "\n";
+  }
   ::ros::removeROSArgs(argc, argv, programArgs);
   if (programArgs.size() < 5) {
     throw std::runtime_error("No robot name, config folder, target command file, or description name specified. Aborting.");

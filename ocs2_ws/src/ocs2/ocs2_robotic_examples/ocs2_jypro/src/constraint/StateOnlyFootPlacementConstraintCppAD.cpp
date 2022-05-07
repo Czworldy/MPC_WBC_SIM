@@ -1,3 +1,6 @@
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+
 #include "ocs2_jypro/constraint/StateOnlyFootPlacementConstraintCppAD.h"
 
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
@@ -17,22 +20,44 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                                                                    const size_t& stateDim)
     : StateConstraintCppAd(ConstraintOrder::Quadratic),
     referenceManagerPtr_(&referenceManager),
-    endEffectorKinematicsPtr_(endEffectorKinematics.clone()),
+    // endEffectorKinematics(static_cast<std::shared_ptr<PinocchioEndEffectorKinematicsCppAd>>(endEffectorKinematics.clone())),
     // eeLinearConstraintPtr_(new EndEffectorLinearConstraint(endEffectorKinematics, 6)),
+    endEffectorKinematics_(static_cast<const PinocchioEndEffectorKinematicsCppAd&>(endEffectorKinematics)),
     config_(std::move(config)),
     contactPointIndex_(contactPointIndex),
     stateDim_(stateDim) {
+      // endEffectorKinematics_ = static_cast<PinocchioEndEffectorKinematicsCppAd&>(endEffectorKinematics)
 
+      ad_vector_t x=ad_vector_t::Zero(24),y=ad_vector_t::Zero(3);
       std::cout << "StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint" << std::endl;
+      
+      std::cout << "state:rows" <<x.rows() << "\n";
+      // endEffectorKinematics_->positionFunc(x, y);
 
-        // eeLinearConstraintPtr_.reset(new EndEffectorLinearConstraint(endEffectorKinematics, 6, conf));
-        size_t tor = 0.03;
+        // // initialize CppAD interface
+        auto pinocchioInterfaceCppAd = endEffectorKinematics_.pinocchioInterface_.toCppAd();
+
+        for(const auto& i:endEffectorKinematics_.getendEffectorFrameIds()){
+          std::cout << "id:" << i << "\n";
+        }
+
+        // // set pinocchioInterface to mapping
+        // std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr(endEffectorKinematics_.mapping_.clone());//段错误
+        // mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
+
+        // position function
+        positionFunc_ = [&, this](const ad_vector_t& x, ad_vector_t& y) {
+          endEffectorKinematics_.updateCallback_(x, pinocchioInterfaceCppAd);
+          y = getPositionCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x);
+        };
+
+        scalar_t tor = 0.01;
         vector_t B_veclf = vector_t::Zero(6);
         vector_t B_vecrf = vector_t::Zero(6);
         vector_t B_veclh = vector_t::Zero(6);
         vector_t B_vecrh = vector_t::Zero(6);
         vector_t bias = tor * vector_t::Ones(6);
-        B_veclf << 0.2, -0.2, -0.32, 0.32, 0.0, 0.0;
+        B_veclf << 0.27, -0.27, -0.32, 0.32, 0.0, 0.0;
         B_vecrf << -0.15, 0.15, -0.36, 0.36, 0.0, 0.0;
         B_veclh << 0.15, -0.15, 0.31, -0.31, 0.0, 0.0;
         B_vecrh << -0.2, 0.2, 0.3, -0.3, 0.0, 0.0;
@@ -51,8 +76,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, 0, 1,
                 0, 0, -1;
       std::cout << "StateOnlyFootPlacementConstraint::initialize" << std::endl;
-      if(endEffectorKinematicsPtr_->positionFunc == nullptr)
-        std::cout << "fuck!";
+
         initialize(stateDim_, 0, modelName, "/tmp/ocs2",true,true);
         
     }
@@ -68,9 +92,9 @@ bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
 ad_vector_t StateOnlyFootPlacementConstraint::constraintFunction(ad_scalar_t time, const ad_vector_t& state, 
                                             const ad_vector_t& parameters) const{
   ad_vector_t y = ad_vector_t::Zero(3);
-  endEffectorKinematicsPtr_->positionFunc(state, y);
-  // return Ax.cast<ad_scalar_t>() * y;
-  return y;
+  positionFunc_(state, y);
+  return Ax.cast<ad_scalar_t>() * y;
+  // return y;
 }
 
 vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_t& state,
@@ -143,6 +167,24 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   }
 
   return constraint;
+}
+
+ad_vector_t StateOnlyFootPlacementConstraint::getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+                                                                  const PinocchioStateInputMapping<ad_scalar_t>& mapping,
+                                                                  const ad_vector_t& state) {
+  const auto& model = pinocchioInterfaceCppAd.getModel();
+  auto& data = pinocchioInterfaceCppAd.getData();
+  const ad_vector_t q = mapping.getPinocchioJointPosition(state);
+
+  pinocchio::forwardKinematics(model, data, q);
+  pinocchio::updateFramePlacements(model, data);
+
+  ad_vector_t positions(3 * endEffectorKinematics_.getendEffectorFrameIds().size());
+  for (int i = 0; i < endEffectorKinematics_.getendEffectorFrameIds().size(); i++) {
+    const size_t frameId = endEffectorKinematics_.getendEffectorFrameIds()[i];
+    positions.segment<3>(3 * i) = data.oMf[frameId].translation();
+  }
+  return positions;
 }
 //重写三个get
 

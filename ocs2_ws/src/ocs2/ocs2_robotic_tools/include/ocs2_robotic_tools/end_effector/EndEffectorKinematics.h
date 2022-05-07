@@ -115,8 +115,6 @@ class EndEffectorKinematics {
   virtual std::vector<VectorFunctionLinearApproximation> getOrientationErrorLinearApproximation(
       const vector_t& state, const std::vector<quaternion_t>& referenceOrientations) const = 0;
 
-  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc = nullptr;
-
  protected:
   EndEffectorKinematics(const EndEffectorKinematics&) = default;
 };

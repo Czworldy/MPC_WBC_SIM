@@ -53,9 +53,13 @@ class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
     private:
         StateOnlyFootPlacementConstraint(const StateOnlyFootPlacementConstraint& other) = default;
 
+        ad_vector_t getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd, 
+                               const PinocchioStateInputMapping<ad_scalar_t>& mapping,
+                               const ad_vector_t& state);
+
         const SwitchedModelReferenceManager* referenceManagerPtr_;
         // std::unique_ptr<EndEffectorLinearConstraint> eeLinearConstraintPtr_;
-        std::shared_ptr<EndEffectorKinematics<scalar_t>> endEffectorKinematicsPtr_;
+        const PinocchioEndEffectorKinematicsCppAd& endEffectorKinematics_;
 
 
         const Config config_;
@@ -65,6 +69,8 @@ class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
         Eigen::Matrix<scalar_t, 6, 4> B;
 
         Eigen::Matrix<scalar_t, 6, 3> Ax;
+
+        std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_;
 
 };
 
