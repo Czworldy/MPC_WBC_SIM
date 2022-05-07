@@ -183,6 +183,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
+                                        std::cout << "add_placement: " << footName << std::endl;
     problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
                                               i, barrierPenaltyConfig)
@@ -299,10 +300,12 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getFrictionConeConstraint(
 std::unique_ptr<StateCost> LeggedRobotInterface::getStateOnlyFootPlacementConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                   const std::string& modelName, size_t contactPointIndex,
                                                                   const RelaxedBarrierPenalty::Config& barrierPenaltyConfig) {
+                                                                    std::cout << "contactPointIndex: " << contactPointIndex << std::endl;
   StateOnlyFootPlacementConstraint::Config footplacementConstraintConfig;
   std::unique_ptr<StateOnlyFootPlacementConstraint> footplacementConstraintPtr(
       new StateOnlyFootPlacementConstraint(*referenceManagerPtr_, eeKinematics, modelName,
                             std::move(footplacementConstraintConfig), contactPointIndex, centroidalModelInfo_.stateDim));
+                                                                    std::cout << "contactPointIndex:finish " << contactPointIndex << std::endl;
 
   std::unique_ptr<PenaltyBase> penalty(new RelaxedBarrierPenalty(barrierPenaltyConfig));
 

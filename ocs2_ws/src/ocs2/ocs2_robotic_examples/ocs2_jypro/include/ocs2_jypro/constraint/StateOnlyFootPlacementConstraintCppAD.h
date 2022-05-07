@@ -49,21 +49,22 @@ class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
     VectorFunctionQuadraticApproximation getQuadraticApproximation(scalar_t time, const vector_t& state,
                                                                  const PreComputation& preComp) const override;
 
-    
+
     private:
-        StateOnlyFootPlacementConstraint(const StateOnlyFootPlacementConstraint& other);
+        StateOnlyFootPlacementConstraint(const StateOnlyFootPlacementConstraint& other) = default;
 
         const SwitchedModelReferenceManager* referenceManagerPtr_;
         // std::unique_ptr<EndEffectorLinearConstraint> eeLinearConstraintPtr_;
-        std::unique_ptr<EndEffectorKinematics<scalar_t>> endEffectorKinematicsPtr_;
+        std::shared_ptr<EndEffectorKinematics<scalar_t>> endEffectorKinematicsPtr_;
 
 
         const Config config_;
         const size_t contactPointIndex_;
+        const size_t stateDim_;
 
-        Eigen::Matrix<size_t, 6, 4> B;
+        Eigen::Matrix<scalar_t, 6, 4> B;
 
-        Eigen::Matrix<size_t, 6, 3> Ax;
+        Eigen::Matrix<scalar_t, 6, 3> Ax;
 
 };
 

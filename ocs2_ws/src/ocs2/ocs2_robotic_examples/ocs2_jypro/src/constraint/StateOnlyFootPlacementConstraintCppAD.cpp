@@ -20,8 +20,10 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
     endEffectorKinematicsPtr_(endEffectorKinematics.clone()),
     // eeLinearConstraintPtr_(new EndEffectorLinearConstraint(endEffectorKinematics, 6)),
     config_(std::move(config)),
-    contactPointIndex_(contactPointIndex)
-   {
+    contactPointIndex_(contactPointIndex),
+    stateDim_(stateDim) {
+
+      std::cout << "StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint" << std::endl;
 
         // eeLinearConstraintPtr_.reset(new EndEffectorLinearConstraint(endEffectorKinematics, 6, conf));
         size_t tor = 0.03;
@@ -48,8 +50,10 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, -1, 0,
                 0, 0, 1,
                 0, 0, -1;
-
-        initialize(stateDim, 0, modelName);
+      std::cout << "StateOnlyFootPlacementConstraint::initialize" << std::endl;
+      if(endEffectorKinematicsPtr_->positionFunc == nullptr)
+        std::cout << "fuck!";
+        initialize(stateDim_, 0, modelName, "/tmp/ocs2",true,true);
         
     }
 
@@ -63,9 +67,9 @@ bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
 
 ad_vector_t StateOnlyFootPlacementConstraint::constraintFunction(ad_scalar_t time, const ad_vector_t& state, 
                                             const ad_vector_t& parameters) const{
-                                              // double timer =time;
-  ad_vector_t y;
+  ad_vector_t y = ad_vector_t::Zero(3);
   endEffectorKinematicsPtr_->positionFunc(state, y);
+  // return Ax.cast<ad_scalar_t>() * y;
   return y;
 }
 
@@ -76,7 +80,7 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   tapedTimeState << time, state;
 
   vector_t b = B.col(contactPointIndex_);
-  vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
+  vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
   scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
                           
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
@@ -95,13 +99,13 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   tapedTimeState << time, state;
 
   vector_t b = B.col(contactPointIndex_);
-  constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+  constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
   scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
   const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeState, params);
-  constraint.dfdx = Ax * J.rightCols(stateDim);
+  constraint.dfdx =  J.rightCols(stateDim);
 
   return constraint;
                                                         
@@ -121,13 +125,13 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   tapedTimeState << time, state;
 
   vector_t b = B.col(contactPointIndex_);
-  constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+  constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
   scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
   const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeState, params);
-  constraint.dfdx = Ax * J.rightCols(stateDim);
+  constraint.dfdx =  J.rightCols(stateDim);
 
   const size_t numConstraints = constraint.f.rows();
   constraint.dfdxx.resize(numConstraints);
