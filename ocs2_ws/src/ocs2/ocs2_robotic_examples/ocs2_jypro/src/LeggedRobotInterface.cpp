@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_centroidal_model/ModelHelperFunctions.h>
 #include <ocs2_core/misc/Display.h>
 #include <ocs2_core/soft_constraint/StateInputSoftConstraint.h>
+#include <ocs2_core/soft_constraint/StateSoftConstraint.h>
 #include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematicsCppAd.h>
 
@@ -51,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/constraint/NormalVelocityConstraintCppAd.h"
 #include "ocs2_jypro/constraint/ZeroForceConstraint.h"
 #include "ocs2_jypro/constraint/ZeroVelocityConstraintCppAd.h"
+#include "ocs2_jypro/constraint/StateOnlyFootPlacementConstraintCppAD.h"
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
 
@@ -181,6 +183,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*dynamic_cast<eeKinematicsPtr>, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig)
+                                             );
     problemPtr_->equalityConstraintPtr->add(footName + "_zeroForce", getZeroForceConstraint(i));
     problemPtr_->equalityConstraintPtr->add(footName + "_zeroVelocity",
                                             getZeroVelocityConstraint(*eeKinematicsPtr, i, useAnalyticalGradientsConstraints));
@@ -285,6 +291,22 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getFrictionConeConstraint(
   std::unique_ptr<PenaltyBase> penalty(new RelaxedBarrierPenalty(barrierPenaltyConfig));
 
   return std::unique_ptr<StateInputCost>(new StateInputSoftConstraint(std::move(frictionConeConstraintPtr), std::move(penalty)));
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::unique_ptr<StateCost> LeggedRobotInterface::getStateOnlyFootPlacementConstraint(const PinocchioEndEffectorKinematicsCppAd& eeKinematics,
+                                                                  const std::string& modelName, size_t contactPointIndex,
+                                                                  const RelaxedBarrierPenalty::Config& barrierPenaltyConfig) {
+  StateOnlyFootPlacementConstraint::Config footplacementConstraintConfig;
+  std::unique_ptr<StateOnlyFootPlacementConstraint> footplacementConstraintPtr(
+      new StateOnlyFootPlacementConstraint(*referenceManagerPtr_, eeKinematics, modelName,
+                            std::move(footplacementConstraintConfig), contactPointIndex, centroidalModelInfo_));
+
+  std::unique_ptr<PenaltyBase> penalty(new RelaxedBarrierPenalty(barrierPenaltyConfig));
+
+  return std::unique_ptr<StateCost>(new StateSoftConstraint(std::move(footplacementConstraintPtr), std::move(penalty)));
 }
 
 /******************************************************************************************************/

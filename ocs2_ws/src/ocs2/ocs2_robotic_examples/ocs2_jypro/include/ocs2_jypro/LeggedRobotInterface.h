@@ -91,6 +91,8 @@ class LeggedRobotInterface final : public RobotInterface {
   std::pair<scalar_t, RelaxedBarrierPenalty::Config> loadFrictionConeSettings(const std::string& taskFile) const;
   std::unique_ptr<StateInputCost> getFrictionConeConstraint(size_t contactPointIndex, scalar_t frictionCoefficient,
                                                             const RelaxedBarrierPenalty::Config& barrierPenaltyConfig);
+  std::unique_ptr<StateCost> getStateOnlyFootPlacementConstraint(const PinocchioEndEffectorKinematicsCppAd& eeKinematics, const std::string& modelName,
+                                                       size_t contactPointIndex, const RelaxedBarrierPenalty::Config& barrierPenaltyConfig);
   std::unique_ptr<StateInputConstraint> getZeroForceConstraint(size_t contactPointIndex);
   std::unique_ptr<StateInputConstraint> getZeroVelocityConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                   size_t contactPointIndex, bool useAnalyticalGradients);

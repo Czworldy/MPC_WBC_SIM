@@ -50,6 +50,7 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
+  swingTimeLeft_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -89,6 +90,8 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
       swingTimeLeft_[i] = swingTimeLeftLambda(i);
     }
+    // Eigen::Map<Eigen::Matrix<scalar_t, 4, 1>> times(swingTimeLeft_.data());
+    // std::cout << "preCompute times: " << times.transpose() << std::endl;
   }
 }
 

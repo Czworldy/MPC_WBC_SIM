@@ -52,7 +52,7 @@ class SwitchedModelReferenceManager : public ReferenceManager {
 
   const std::shared_ptr<GaitSchedule>& getGaitSchedule() { return gaitSchedulePtr_; }
 
-  const std::shared_ptr<SwingTrajectoryPlanner>& getSwingTrajectoryPlanner() { return swingTrajectoryPtr_; }
+  const std::shared_ptr<SwingTrajectoryPlanner>& getSwingTrajectoryPlanner() const { return swingTrajectoryPtr_; }
 
  private:
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,

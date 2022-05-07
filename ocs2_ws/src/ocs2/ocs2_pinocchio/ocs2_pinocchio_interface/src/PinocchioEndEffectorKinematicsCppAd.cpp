@@ -76,7 +76,7 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
   mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
 
   // position function
-  auto positionFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
+  positionFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
     updateCallback(x, pinocchioInterfaceCppAd);
     y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
   };
