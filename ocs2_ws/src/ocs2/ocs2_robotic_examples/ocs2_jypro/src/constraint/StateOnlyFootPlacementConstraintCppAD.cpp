@@ -51,13 +51,13 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
           y = getPositionCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x);
         };
 
-        scalar_t tor = 0.01;
+        scalar_t tor = 0.03;
         vector_t B_veclf = vector_t::Zero(6);
         vector_t B_vecrf = vector_t::Zero(6);
         vector_t B_veclh = vector_t::Zero(6);
         vector_t B_vecrh = vector_t::Zero(6);
         vector_t bias = tor * vector_t::Ones(6);
-        B_veclf << 0.27, -0.27, -0.32, 0.32, 0.0, 0.0;
+        B_veclf << 0.2, -0.2, -0.32, 0.32, 0.0, 0.0;
         B_vecrf << -0.15, 0.15, -0.36, 0.36, 0.0, 0.0;
         B_veclh << 0.15, -0.15, 0.31, -0.31, 0.0, 0.0;
         B_vecrh << -0.2, 0.2, 0.3, -0.3, 0.0, 0.0;
@@ -85,7 +85,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  return true;
 }
 
 
@@ -101,7 +102,12 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
                                                     const PreComputation& preComp) const {
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   vector_t tapedTimeState(1 + state.rows());
-  tapedTimeState << time, state;
+
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
@@ -120,7 +126,11 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   const size_t stateDim = state.rows();
   const vector_t params = getParameters(time);
   vector_t tapedTimeState(1 + stateDim);
-  tapedTimeState << time, state;
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
   constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
@@ -146,7 +156,11 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   const size_t stateDim = state.rows();
   const vector_t params = getParameters(time);
   vector_t tapedTimeState(1 + stateDim);
-  tapedTimeState << time, state;
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
   constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
@@ -164,6 +178,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   for (int i = 0; i < numConstraints; i++) {
     const matrix_t H = getCppAdInterface()->getHessian(i, tapedTimeState, params);
     constraint.dfdxx[i] = H.bottomRightCorner(stateDim, stateDim);
+    constraint.dfdxx[i].diagonal().array() -= config_.hessianDiagonalShift;
   }
 
   return constraint;
