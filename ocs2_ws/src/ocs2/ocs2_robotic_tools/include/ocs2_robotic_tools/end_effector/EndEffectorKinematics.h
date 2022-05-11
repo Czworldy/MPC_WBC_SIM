@@ -119,4 +119,12 @@ class EndEffectorKinematics {
   EndEffectorKinematics(const EndEffectorKinematics&) = default;
 };
 
+/** Helper to cast to const reference of derived class. */
+template <typename Derived, typename SCALAR_T>
+const Derived& cast(const EndEffectorKinematics<SCALAR_T>& eeKinematics) {
+  static_assert(std::is_base_of<EndEffectorKinematics<SCALAR_T>, Derived>::value, "Template argument must derive from PreComputation");
+  assert(dynamic_cast<const Derived*>(&eeKinematics) != nullptr);
+  return static_cast<const Derived&>(eeKinematics);
+}
+
 }  // namespace ocs2

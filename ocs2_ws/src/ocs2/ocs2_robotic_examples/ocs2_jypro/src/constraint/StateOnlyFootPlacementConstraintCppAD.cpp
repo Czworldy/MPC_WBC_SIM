@@ -22,7 +22,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
     referenceManagerPtr_(&referenceManager),
     // endEffectorKinematics(static_cast<std::shared_ptr<PinocchioEndEffectorKinematicsCppAd>>(endEffectorKinematics.clone())),
     // eeLinearConstraintPtr_(new EndEffectorLinearConstraint(endEffectorKinematics, 6)),
-    endEffectorKinematics_(static_cast<const PinocchioEndEffectorKinematicsCppAd&>(endEffectorKinematics)),
+    endEffectorKinematics_(cast<PinocchioEndEffectorKinematicsCppAd>(endEffectorKinematics)),
     config_(std::move(config)),
     contactPointIndex_(contactPointIndex),
     stateDim_(stateDim) {
@@ -95,7 +95,6 @@ ad_vector_t StateOnlyFootPlacementConstraint::constraintFunction(ad_scalar_t tim
   ad_vector_t y = ad_vector_t::Zero(3);
   positionFunc_(state, y);
   return Ax.cast<ad_scalar_t>() * y;
-  // return y;
 }
 
 vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_t& state,
@@ -111,14 +110,19 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
 
   vector_t b = B.col(contactPointIndex_);
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
-  scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
+
+  scalar_t s_t(0.);
+
+  if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
+    s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
                           
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
   return f;
 }
 
-VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApproximation(scalar_t time, const vector_t& state, 
+VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApproximation(
+                                                        scalar_t time, const vector_t& state, 
                                                         const PreComputation& preComp) const{
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   VectorFunctionLinearApproximation constraint;
@@ -134,7 +138,10 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
 
   vector_t b = B.col(contactPointIndex_);
   constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
-  scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
+  scalar_t s_t(0.);
+  
+  if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
+    s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -144,7 +151,8 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   return constraint;
                                                         
   }
-VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadraticApproximation(scalar_t time, const vector_t& state,
+VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadraticApproximation(
+                                                                      scalar_t time, const vector_t& state,
                                                                       const PreComputation&preComp) const {
   if (getOrder() != ConstraintOrder::Quadratic) {
     throw std::runtime_error("[StateOnlyFootPlacementConstraint] Quadratic approximation not supported!");
@@ -164,7 +172,10 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
 
   vector_t b = B.col(contactPointIndex_);
   constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
-  scalar_t s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
+  scalar_t s_t(0.);
+  
+  if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
+    s_t = preCompLegged.getSwingTimeLeft()[contactPointIndex_];
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 

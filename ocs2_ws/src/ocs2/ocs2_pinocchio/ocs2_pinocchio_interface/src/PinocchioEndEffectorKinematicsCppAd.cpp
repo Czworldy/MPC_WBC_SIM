@@ -125,7 +125,9 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(const P
       orientationErrorCppAdInterfacePtr_(new CppAdInterface(*rhs.orientationErrorCppAdInterfacePtr_)),
       endEffectorIds_(rhs.endEffectorIds_), 
       pinocchioInterface_(rhs.pinocchioInterface_), mapping_(rhs.mapping_),updateCallback_(rhs.updateCallback_),
-      endEffectorFrameIds_(rhs.endEffectorFrameIds_) {positionFunc = rhs.positionFunc; std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";}
+      endEffectorFrameIds_(rhs.endEffectorFrameIds_) {
+        positionFunc = rhs.positionFunc; 
+        std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
