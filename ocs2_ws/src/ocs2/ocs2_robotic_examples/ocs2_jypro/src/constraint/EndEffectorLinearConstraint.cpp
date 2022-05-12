@@ -110,32 +110,5 @@ VectorFunctionLinearApproximation EndEffectorLinearConstraint::getLinearApproxim
   return linearApproximation;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-// VectorFunctionQuadraticApproximation EndEffectorLinearConstraint::getQuadraticApproximation(scalar_t time, const vector_t& state,
-//                                                                                       const vector_t& input,
-//                                                                                       const PreComputation& preComp) const {
-//   VectorFunctionQuadraticApproximation quadraticApproximation =
-//       VectorFunctionQuadraticApproximation::Zero(getNumConstraints(time), state.size(), input.size());
-
-//     quadraticApproximation.f = config_.b;
-
-//   if (config_.Ax.size() > 0) {
-//     const auto positionApprox = endEffectorKinematicsPtr_->getPositionLinearApproximation(state).front();
-//     quadraticApproximation.f.noalias() += config_.Ax * positionApprox.f;
-//     quadraticApproximation.dfdx.noalias() += config_.Ax * positionApprox.dfdx;
-//   }
-
-//   if (config_.Av.size() > 0) {
-//     const auto velocityApprox = endEffectorKinematicsPtr_->getVelocityLinearApproximation(state, input).front();
-//     quadraticApproximation.f.noalias() += config_.Av * velocityApprox.f;
-//     quadraticApproximation.dfdx.noalias() += config_.Av * velocityApprox.dfdx;
-//     quadraticApproximation.dfdu.noalias() += config_.Av * velocityApprox.dfdu;
-//   }
-
-//   return quadraticApproximation;
-// }
-
 }  // namespace legged_robot
 }  // namespace ocs2
