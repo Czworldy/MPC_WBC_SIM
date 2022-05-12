@@ -83,6 +83,7 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
                 0, -1, 0,
                 0, 0, 1,
                 0, 0, -1;
+        gamma(1) = 0.5;
         initialize(info.stateDim, info.inputDim, 0, modelName, "/tmp/ocs2", true, true);
         
     }
@@ -98,13 +99,14 @@ bool CBFFootPlacementConstraint::isActive(scalar_t time) const {
 
 ad_vector_t CBFFootPlacementConstraint::constraintFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
                                             const ad_vector_t& parameters) const{
-  ad_vector_t y = ad_vector_t::Zero(3), xdot;
+  ad_vector_t y = ad_vector_t::Zero(3), xdot, f = ad_vector_t::Zero(6);
   ad_matrix_t J;
   positionFunc_(state, y);
   JacobiFunc_(state, J);
   ad_vector_t stateinput = (ad_vector_t(info_.stateDim + info_.inputDim) << state, input).finished();
   systemFlowMapFunc_(stateinput, xdot);
-  return Ax.cast<ad_scalar_t>() * y;
+  f.noalias() = Ax.cast<ad_scalar_t>() * J * xdot +  gamma.cast<ad_scalar_t>()(1)* Ax.cast<ad_scalar_t>() * y;
+  return f;
 }
 
 vector_t CBFFootPlacementConstraint::getValue(scalar_t time, const vector_t& state, const vector_t& input,

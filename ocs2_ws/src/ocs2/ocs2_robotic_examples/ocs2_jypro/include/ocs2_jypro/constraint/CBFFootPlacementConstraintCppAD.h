@@ -76,6 +76,8 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
 
         Eigen::Matrix<scalar_t, 6, 3> Ax;
 
+        Eigen::Matrix<scalar_t, 1, 1> gamma;
+
         std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_;
         std::function<void(const ad_vector_t&, ad_matrix_t&)> JacobiFunc_;
         std::function<void(const ad_vector_t&, ad_vector_t&)> systemFlowMapFunc_;
