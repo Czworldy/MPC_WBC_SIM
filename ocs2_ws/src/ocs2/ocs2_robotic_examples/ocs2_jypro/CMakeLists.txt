@@ -80,6 +80,7 @@ add_library(ocs2_jypro
   src/constraint/NormalVelocityConstraintCppAd.cpp
   src/constraint/ZeroVelocityConstraintCppAd.cpp
   src/constraint/StateOnlyFootPlacementConstraintCppAD.cpp
+  src/constraint/CBFFootPlacementConstraintCppAD.cpp
   src/cost/LeggedRobotStateInputQuadraticCost.cpp
   src/initialization/LeggedRobotInitializer.cpp
   src/synchronized_module/SwitchedModelReferenceManager.cpp

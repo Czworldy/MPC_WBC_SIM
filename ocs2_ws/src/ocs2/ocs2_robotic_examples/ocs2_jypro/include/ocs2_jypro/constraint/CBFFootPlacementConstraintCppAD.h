@@ -53,7 +53,7 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
 
 
     private:
-        CBFFootPlacementConstraint(const CBFFootPlacementConstraint& other);
+        CBFFootPlacementConstraint(const CBFFootPlacementConstraint& other) = default;
 
         ad_vector_t getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd, 
                                const PinocchioStateInputMapping<ad_scalar_t>& mapping,
@@ -76,7 +76,7 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
 
         Eigen::Matrix<scalar_t, 6, 3> Ax;
 
-        Eigen::Matrix<scalar_t, 1, 1> gamma;
+        scalar_t gamma;
 
         std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_;
         std::function<void(const ad_vector_t&, ad_matrix_t&)> JacobiFunc_;
