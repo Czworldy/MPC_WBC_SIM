@@ -26,7 +26,7 @@ public:
             circle_counter++;
         }
         preYaw = rpy[2];
-        rpy[2] = rpy[2] + 2*circle_counter*M_PI;
+        rpy[2] = rpy[2] + 2*circle_counter*M_PI; 
 
         return rpy;
     }

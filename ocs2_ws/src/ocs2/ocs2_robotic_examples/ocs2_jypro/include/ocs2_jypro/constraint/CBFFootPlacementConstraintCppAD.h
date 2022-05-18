@@ -42,7 +42,7 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
     CBFFootPlacementConstraint* clone() const override { return new CBFFootPlacementConstraint(*this); }
 
     bool isActive(scalar_t time) const override;
-    size_t getNumConstraints(scalar_t time) const override { return 6; };
+    size_t getNumConstraints(scalar_t time) const override { return 4; };
     ad_vector_t constraintFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
                                        const ad_vector_t& parameters) const override;
     vector_t getValue(scalar_t time, const vector_t& state, const vector_t& input, const PreComputation& preComp) const override;
@@ -58,7 +58,7 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
         ad_vector_t getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd, 
                                const PinocchioStateInputMapping<ad_scalar_t>& mapping,
                                const ad_vector_t& state);
-        std::vector<ad_matrix_t> getJacobiCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+        ad_matrix_t getJacobiCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
                                           const PinocchioStateInputMapping<ad_scalar_t>& mapping,
                                           const ad_vector_t& state);
         ad_vector_t getValueCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
@@ -72,9 +72,9 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
         const Config config_;
         const size_t contactPointIndex_;
 
-        Eigen::Matrix<scalar_t, 6, 4> B;
+        Eigen::Matrix<scalar_t, 4, 4> B;
 
-        Eigen::Matrix<scalar_t, 6, 3> Ax;
+        Eigen::Matrix<scalar_t, 4, 3> Ax;
 
         scalar_t gamma;
 

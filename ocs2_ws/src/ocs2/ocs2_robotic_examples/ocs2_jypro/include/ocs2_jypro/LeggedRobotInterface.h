@@ -102,6 +102,9 @@ class LeggedRobotInterface final : public RobotInterface {
                                                                   size_t contactPointIndex, bool useAnalyticalGradients);
   std::unique_ptr<StateInputConstraint> getNormalVelocityConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                     size_t contactPointIndex, bool useAnalyticalGradients);
+  std::unique_ptr<StateInputCost> getCBFFootPlacementConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
+                                                                  const std::string& modelName, size_t contactPointIndex,
+                                                                  const RelaxedBarrierPenalty::Config& barrierPenaltyConfig);
 
   bool display_;
   ModelSettings modelSettings_;

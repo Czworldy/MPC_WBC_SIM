@@ -45,7 +45,7 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
 
         JacobiFunc_ = [&, this](const ad_vector_t& x, ad_matrix_t& J) {
           endEffectorKinematics_.updateCallback_(x, pinocchioInterfaceCppAd);
-          J = getJacobiCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x).front();
+          J = getJacobiCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x);
         };
 
         systemFlowMapFunc_ = [&](const ad_vector_t& x, ad_vector_t& y) {
@@ -59,16 +59,16 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
           y = getValueCppAd(pinocchioInterfaceCppAd, mappingCppAd, state, input);
         };
 
-        scalar_t tor = 0.02;
-        vector_t B_veclf = vector_t::Zero(6);
-        vector_t B_vecrf = vector_t::Zero(6);
-        vector_t B_veclh = vector_t::Zero(6);
-        vector_t B_vecrh = vector_t::Zero(6);
-        vector_t bias = tor * vector_t::Ones(6);
-        B_veclf << 0.247, -0.247, -0.338, 0.338, 0.1, 0.1;
-        B_vecrf << -0.177, 0.77, -0.338, 0.338, 0.1, 0.1;
-        B_veclh << 0.177, -0.177, 0.322, -0.322, 0.1, 0.1;
-        B_vecrh << -0.177, 0.177, 0.322, -0.322, 0.1, 0.1;
+        scalar_t tor = 0.1;
+        vector_t B_veclf = vector_t::Zero(4);
+        vector_t B_vecrf = vector_t::Zero(4);
+        vector_t B_veclh = vector_t::Zero(4);
+        vector_t B_vecrh = vector_t::Zero(4);
+        vector_t bias = tor * vector_t::Ones(4);
+        B_veclf << 0.247, -0.247, -0.338, 0.338;
+        B_vecrf << -0.177, 0.77, -0.338, 0.338;
+        B_veclh << 0.177, -0.177, 0.322, -0.322;
+        B_vecrh << -0.177, 0.177, 0.322, -0.322;
 
         B_veclf = (B_veclf + bias).eval(); 
         B_vecrf = (B_vecrf + bias).eval(); 
@@ -80,11 +80,13 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
         Ax <<    1, 0, 0,
                 -1, 0, 0,
                 0, 1, 0,
-                0, -1, 0,
-                0, 0, 1,
-                0, 0, -1;
-        gamma = 0.5;
+                0, -1, 0;
+              
+        gamma = 500.;
+        // std::cout << "initialize CBFFootPlacementConstraint\n";
         initialize(info.stateDim, info.inputDim, 0, modelName, "/tmp/ocs2", true, true);
+        // std::cout << "initialize CBFFootPlacementConstraint asdasdasd\n";
+
         
     }
 
@@ -99,7 +101,7 @@ bool CBFFootPlacementConstraint::isActive(scalar_t time) const {
 
 ad_vector_t CBFFootPlacementConstraint::constraintFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
                                             const ad_vector_t& parameters) const{
-  ad_vector_t y(3), xdot(info_.stateDim), f(6);
+  ad_vector_t y(3), xdot(info_.stateDim), f(4);
   ad_matrix_t J(3, info_.stateDim);
   positionFunc_(state, y);
   JacobiFunc_(state, J);
@@ -122,6 +124,7 @@ vector_t CBFFootPlacementConstraint::getValue(scalar_t time, const vector_t& sta
 
   vector_t b = B.col(contactPointIndex_);
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeStateInput, getParameters(time));
+  // std::cout << "cppad:" << f.transpose() << "\n";
 
   scalar_t s_t(0.);
 
@@ -130,7 +133,7 @@ vector_t CBFFootPlacementConstraint::getValue(scalar_t time, const vector_t& sta
   // assert(s_t >= 0);
                           
   f.noalias() += gamma*(s_t * vector_t::Ones(getNumConstraints(time)) + b) - 0.5*vector_t::Ones(getNumConstraints(time));
-
+  std::cout << "f:" << f.transpose() << "\n";
   return f;
 }
 
@@ -235,7 +238,7 @@ ad_vector_t CBFFootPlacementConstraint::getPositionCppAd(PinocchioInterfaceCppAd
   return positions;
 }
 
-std::vector<ad_matrix_t> CBFFootPlacementConstraint::getJacobiCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+ad_matrix_t CBFFootPlacementConstraint::getJacobiCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
                                                                   const PinocchioStateInputMapping<ad_scalar_t>& mapping,
                                                                   const ad_vector_t& state) {
   const auto& model = pinocchioInterfaceCppAd.getModel();
@@ -253,12 +256,14 @@ std::vector<ad_matrix_t> CBFFootPlacementConstraint::getJacobiCppAd(PinocchioInt
     ad_matrix_t J = ad_matrix_t::Zero(6, model.nq);
     pinocchio::getFrameJacobian(model, data, frameId, rf, J);
 
-    ad_matrix_t dfdx;
-    std::tie(dfdx, std::ignore) = endEffectorKinematics_.mappingPtr->getOcs2Jacobian(state, J.topRows<3>(), ad_matrix_t::Zero(0, model.nv));
+    ad_matrix_t dfdx(3,info_.stateDim);
+    dfdx.leftCols(6) = ad_matrix_t::Zero(3,6);
+    dfdx.rightCols(model.nq) = J;
+    // std::tie(dfdx, std::ignore) = endEffectorKinematics_.mappingPtr->getOcs2Jacobian(state, J.topRows<3>(), ad_matrix_t::Zero(0, model.nv));
     Js.emplace_back(std::move(dfdx));
   }
 
-  return Js;
+  return Js.front();
 }
 
 ad_vector_t CBFFootPlacementConstraint::getValueCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
