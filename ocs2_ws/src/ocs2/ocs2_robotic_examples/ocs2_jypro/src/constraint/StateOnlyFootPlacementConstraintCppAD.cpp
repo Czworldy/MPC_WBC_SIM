@@ -50,7 +50,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
         vector_t B_vecrh = vector_t::Zero(6);
         vector_t bias = tor * vector_t::Ones(6);
         B_veclf << 0.247, -0.247, -0.338, 0.338, 0.1, 0.1;
-        B_vecrf << -0.177, 0.77, -0.338, 0.338, 0.1, 0.1;
+        B_vecrf << -0.177, 0.177, -0.338, 0.338, 0.1, 0.1;
         B_veclh << 0.177, -0.177, 0.322, -0.322, 0.1, 0.1;
         B_vecrh << -0.177, 0.177, 0.322, -0.322, 0.1, 0.1;
 

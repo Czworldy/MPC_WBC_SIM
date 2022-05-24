@@ -411,6 +411,3 @@ Eigen::Matrix<double, 3, 3> rpyDotTOtwist(double yaw, double pitch, double roll)
                           
     return translation_Matrix;
 }
-
-
-

@@ -59,14 +59,14 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
           y = getValueCppAd(pinocchioInterfaceCppAd, mappingCppAd, state, input);
         };
 
-        scalar_t tor = 0.1;
+        scalar_t tor = 0.05;
         vector_t B_veclf = vector_t::Zero(4);
         vector_t B_vecrf = vector_t::Zero(4);
         vector_t B_veclh = vector_t::Zero(4);
         vector_t B_vecrh = vector_t::Zero(4);
         vector_t bias = tor * vector_t::Ones(4);
-        B_veclf << 0.247, -0.247, -0.338, 0.338;
-        B_vecrf << -0.177, 0.77, -0.338, 0.338;
+        B_veclf << 0.177, -0.177, -0.338, 0.338;
+        B_vecrf << -0.177, 0.177, -0.338, 0.338;
         B_veclh << 0.177, -0.177, 0.322, -0.322;
         B_vecrh << -0.177, 0.177, 0.322, -0.322;
 
@@ -82,7 +82,8 @@ CBFFootPlacementConstraint::CBFFootPlacementConstraint(const SwitchedModelRefere
                 0, 1, 0,
                 0, -1, 0;
               
-        gamma = 500.;
+        gamma = 20.;
+        dsdt = 1.2;
         // std::cout << "initialize CBFFootPlacementConstraint\n";
         initialize(info.stateDim, info.inputDim, 0, modelName, "/tmp/ocs2", true, true);
         // std::cout << "initialize CBFFootPlacementConstraint asdasdasd\n";
@@ -115,24 +116,25 @@ vector_t CBFFootPlacementConstraint::getValue(scalar_t time, const vector_t& sta
                                                     const PreComputation& preComp) const {
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   vector_t tapedTimeStateInput(1 + state.rows() + input.rows());
-  // vector_t state_ = state;
-  // vector_t y = vector_t::Zero(6);
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
 
-  // y(2) = state(8);
-  // state_.segment<6>(6) = y;
-  tapedTimeStateInput << time, state, input;
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeStateInput << time, state_, input;
 
   vector_t b = B.col(contactPointIndex_);
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeStateInput, getParameters(time));
   // std::cout << "cppad:" << f.transpose() << "\n";
 
   scalar_t s_t(0.);
+  const scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
 
   // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
+  s_t = dsdt * std::pow(swingTimeLeft, 2);
   // assert(s_t >= 0);
                           
-  f.noalias() += gamma*(s_t * vector_t::Ones(getNumConstraints(time)) + b) - 0.5*vector_t::Ones(getNumConstraints(time));
+  f.noalias() += gamma*(s_t * vector_t::Ones(getNumConstraints(time)) + b) - 2*dsdt*swingTimeLeft*vector_t::Ones(getNumConstraints(time));
   std::cout << "f:" << f.transpose() << "\n";
   return f;
 }
@@ -147,22 +149,14 @@ VectorFunctionLinearApproximation CBFFootPlacementConstraint::getLinearApproxima
   const size_t inputDim = input.rows();
   const vector_t params = getParameters(time);
   vector_t tapedTimeStateInput(1 + stateDim + inputDim);
-  tapedTimeStateInput << time, state, input;
-  // vector_t state_ = state;
-  // vector_t y = vector_t::Zero(6);
-  // y(2) = state(8);
-  // state_.segment<6>(6) = y;
-  // tapedTimeState << time, state_;
 
-  // vector_t b = B.col(contactPointIndex_);
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeStateInput << time, state_, input;
+
   constraint.f = getValue(time, state, input, preComp);
-  scalar_t s_t(0.);
-  
-  // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    // s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
-  // assert(s_t >= 0);
-
-  // constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
   const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeStateInput, params);
   constraint.dfdx = J.middleCols(1, stateDim);
@@ -185,22 +179,14 @@ VectorFunctionQuadraticApproximation CBFFootPlacementConstraint::getQuadraticApp
   const size_t inputDim = input.rows();
   const vector_t params = getParameters(time);
   vector_t tapedTimeStateInput(1 + stateDim + inputDim);
-  tapedTimeStateInput << time, state, input;
-  // vector_t state_ = state;
-  // vector_t y = vector_t::Zero(6);
-  // y(2) = state(8);
-  // state_.segment<6>(6) = y;
-  // tapedTimeState << time, state_;
-
-  // vector_t b = B.col(contactPointIndex_);
-  constraint.f = getValue(time, state, input, preComp);
-  // scalar_t s_t(0.);
   
-  // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    // s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
-  // assert(s_t >= 0);
+  vector_t state_ = state;
+  vector_t y = vector_t::Zero(6);
+  y(2) = state(8);
+  state_.segment<6>(6) = y;
+  tapedTimeStateInput << time, state_, input;
 
-  // constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
+  constraint.f = getValue(time, state, input, preComp);
 
   const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeStateInput, params);
   constraint.dfdx = J.middleCols(1, stateDim);
@@ -258,7 +244,7 @@ ad_matrix_t CBFFootPlacementConstraint::getJacobiCppAd(PinocchioInterfaceCppAd& 
 
     ad_matrix_t dfdx(3,info_.stateDim);
     dfdx.leftCols(6) = ad_matrix_t::Zero(3,6);
-    dfdx.rightCols(model.nq) = J;
+    dfdx.rightCols(model.nq) = J.topRows<3>();
     // std::tie(dfdx, std::ignore) = endEffectorKinematics_.mappingPtr->getOcs2Jacobian(state, J.topRows<3>(), ad_matrix_t::Zero(0, model.nv));
     Js.emplace_back(std::move(dfdx));
   }
