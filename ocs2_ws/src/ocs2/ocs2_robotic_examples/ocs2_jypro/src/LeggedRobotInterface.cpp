@@ -177,14 +177,6 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
         updateCentroidalDynamics(pinocchioInterfaceAd, infoCppAd, q);
       };
 
-      // auto pinocchioInterfaceCppAd = pinocchioInterfacePtr_->toCppAd();
-      // std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr(pinocchioMappingCppAd.clone());
-      // mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
-
-      // auto positionFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
-      //   velocityUpdateCallback(x, pinocchioInterfaceCppAd);
-      //   y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
-      // };
 
       eeKinematicsPtr.reset(new PinocchioEndEffectorKinematicsCppAd(*pinocchioInterfacePtr_, pinocchioMappingCppAd, {footName},
                                                                     centroidalModelInfo_.stateDim, centroidalModelInfo_.inputDim,
@@ -195,13 +187,13 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
                                         std::cout << "add_placement: " << footName << std::endl;
-    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-    //                                           i, barrierPenaltyConfig)
-    //                                          );
-    problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
-                                                getCBFFootPlacementConstraint(*eeKinematicsPtr, 
-                                                footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig)
+                                             );
+    // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
+    //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
+    //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));
 
     problemPtr_->equalityConstraintPtr->add(footName + "_zeroForce", getZeroForceConstraint(i));
     problemPtr_->equalityConstraintPtr->add(footName + "_zeroVelocity",

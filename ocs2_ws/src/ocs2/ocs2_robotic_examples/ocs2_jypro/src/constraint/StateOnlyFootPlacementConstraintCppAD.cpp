@@ -43,13 +43,13 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
           y = getPositionCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x);
         };
 
-        scalar_t tor = 0.02;
+        scalar_t tor = 0.1;
         vector_t B_veclf = vector_t::Zero(6);
         vector_t B_vecrf = vector_t::Zero(6);
         vector_t B_veclh = vector_t::Zero(6);
         vector_t B_vecrh = vector_t::Zero(6);
         vector_t bias = tor * vector_t::Ones(6);
-        B_veclf << 0.247, -0.247, -0.338, 0.338, 0.1, 0.1;
+        B_veclf << 0.177, -0.177, -0.338, 0.338, 0.1, 0.1;
         B_vecrf << -0.177, 0.177, -0.338, 0.338, 0.1, 0.1;
         B_veclh << 0.177, -0.177, 0.322, -0.322, 0.1, 0.1;
         B_vecrh << -0.177, 0.177, 0.322, -0.322, 0.1, 0.1;
@@ -75,8 +75,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  return true;
+  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  // return true;
 }
 
 
@@ -84,7 +84,7 @@ ad_vector_t StateOnlyFootPlacementConstraint::constraintFunction(ad_scalar_t tim
                                             const ad_vector_t& parameters) const{
   ad_vector_t y = ad_vector_t::Zero(3);
   positionFunc_(state, y);
-  return Ax.cast<ad_scalar_t>() * y;
+  return y;
 }
 
 vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_t& state,
@@ -99,13 +99,13 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
-  vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
+  vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
 
   scalar_t s_t(0.);
+  scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
 
-  // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
-  assert(s_t >= 0);
+    s_t = 2 * std::pow(swingTimeLeft, 2);
+
                           
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -128,16 +128,15 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
-  constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+  constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
   scalar_t s_t(0.);
   
-  // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
-  assert(s_t >= 0);
+  scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
+  s_t = 2 * std::pow(swingTimeLeft, 2);
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
-  const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeState, params);
+  const matrix_t J = Ax * getCppAdInterface()->getJacobian(tapedTimeState, params);
   constraint.dfdx =  J.rightCols(stateDim);
 
   return constraint;
@@ -163,27 +162,52 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   tapedTimeState << time, state_;
 
   vector_t b = B.col(contactPointIndex_);
-  constraint.f = getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+  constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
   scalar_t s_t(0.);
   
-  // if(!referenceManagerPtr_->getContactFlags(time)[contactPointIndex_])
-    s_t = 0.5 * preCompLegged.getSwingTimeLeft()[contactPointIndex_];
-  assert(s_t >= 0);
+  scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
+  s_t = 2 * std::pow(swingTimeLeft, 2);
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
-  const matrix_t J = getCppAdInterface()->getJacobian(tapedTimeState, params);
+  // std::cout << "y: " << state(7) << "\n";
+
+
+  const matrix_t J = Ax * getCppAdInterface()->getJacobian(tapedTimeState, params);
   constraint.dfdx =  J.rightCols(stateDim);
+
+  // const size_t numConstraints = constraint.f.rows();
+  // constraint.dfdxx.resize(numConstraints);
+  // constraint.dfdux.resize(numConstraints);
+  // constraint.dfduu.resize(numConstraints);
+  // for (int i = 0; i < numConstraints; i++) {
+  //   const matrix_t H = getCppAdInterface()->getHessian(i, tapedTimeState, params);
+  //   constraint.dfdxx[i] = H.bottomRightCorner(stateDim, stateDim);
+  //   constraint.dfdxx[i].diagonal().array() -= config_.hessianDiagonalShift;
+  // }
+
+  // std::cout << "Constraints time: " << time << "\n";
+
+  const size_t numCppadOut = 3;
+
+  matrix_array_t H;
+  H.resize(numCppadOut);
+
+  for (int i = 0; i < numCppadOut; i++) {
+    const matrix_t H_i = getCppAdInterface()->getHessian(i, tapedTimeState, params);
+    H[i] = H_i.bottomRightCorner(stateDim, stateDim);
+  }
 
   const size_t numConstraints = constraint.f.rows();
   constraint.dfdxx.resize(numConstraints);
   constraint.dfdux.resize(numConstraints);
   constraint.dfduu.resize(numConstraints);
-  for (int i = 0; i < numConstraints; i++) {
-    const matrix_t H = getCppAdInterface()->getHessian(i, tapedTimeState, params);
-    constraint.dfdxx[i] = H.bottomRightCorner(stateDim, stateDim);
+  for (int i = 0; i < numConstraints; i++){
+    constraint.dfdxx[i].noalias() = Ax.row(i)[0] * H[0] + Ax.row(i)[1] * H[1] + Ax.row(i)[2] * H[2];
     constraint.dfdxx[i].diagonal().array() -= config_.hessianDiagonalShift;
+
   }
+  
 
   return constraint;
 }

@@ -68,6 +68,7 @@ void MPC_DDP::calculateController(scalar_t initTime, const vector_t& initState, 
   // calculate controller
   if (this->settings().coldStart_) {
     ddpPtr_->reset();
+    std::cout << "cold start" << std::endl;
     ddpPtr_->run(initTime, initState, finalTime, MPC_BASE::partitionTimes_);
 
   } else {

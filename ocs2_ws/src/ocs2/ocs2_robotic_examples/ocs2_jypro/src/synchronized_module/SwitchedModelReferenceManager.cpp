@@ -55,6 +55,9 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule) {
   const auto timeHorizon = finalTime - initTime;
   modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
+  
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  std::cout << modeSchedule << std::endl;
 
   const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
   swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
