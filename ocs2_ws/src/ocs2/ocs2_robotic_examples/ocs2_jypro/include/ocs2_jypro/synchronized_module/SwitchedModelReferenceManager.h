@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_oc/synchronized_module/ReferenceManager.h>
 
 #include "ocs2_jypro/foot_planner/SwingTrajectoryPlanner.h"
+#include "ocs2_jypro/foot_planner/FootPlacementPlanner.h"
 #include "ocs2_jypro/gait/GaitSchedule.h"
 #include "ocs2_jypro/gait/MotionPhaseDefinition.h"
 
@@ -44,7 +45,8 @@ namespace legged_robot {
  */
 class SwitchedModelReferenceManager : public ReferenceManager {
  public:
-  SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr);
+  SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
+                                std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr);
 
   ~SwitchedModelReferenceManager() override = default;
 
@@ -60,6 +62,7 @@ class SwitchedModelReferenceManager : public ReferenceManager {
 
   std::shared_ptr<GaitSchedule> gaitSchedulePtr_;
   std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr_;
+  std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr_;
 };
 
 }  // namespace legged_robot

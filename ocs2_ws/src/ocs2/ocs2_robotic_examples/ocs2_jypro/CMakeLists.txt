@@ -87,6 +87,7 @@ add_library(ocs2_jypro
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
+  src/foot_planner/FootPlacementPlanner.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitSchedule.cpp

@@ -36,10 +36,12 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
-                                                             std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr)
+                                                             std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
+                                                             std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr)
     : ReferenceManager(TargetTrajectories(), ModeSchedule()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
-      swingTrajectoryPtr_(std::move(swingTrajectoryPtr)) {}
+      swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
+      footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -55,12 +57,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule) {
   const auto timeHorizon = finalTime - initTime;
   modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
-  
+
   std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   std::cout << modeSchedule << std::endl;
 
   const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
   swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
+  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime);
 }
 
 }  // namespace legged_robot

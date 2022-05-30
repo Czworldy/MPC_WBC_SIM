@@ -18,56 +18,120 @@ namespace ocs2 {
 namespace legged_robot {
 
 
-FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface pinocchioInterface, 
+FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterface, 
                                            const PinocchioEndEffectorKinematics& endEffectorKinematics,
                                            const CentroidalModelInfo& centroidalModelInfo,
                                            size_t numFeet)
-    : pinocchioInterface_(std::move(pinocchioInterface)),
-      endEffectorKinematicsPtr_(endEffectorKinematics.clone()),
-      centroidalModelInfo_(centroidalModelInfo),
-      numFeet_(numFeet) {}
+  : pinocchioInterface_(pinocchioInterface),
+    endEffectorKinematicsPtr_(endEffectorKinematics.clone()),
+    centroidalModelInfo_(centroidalModelInfo),
+    numFeet_(numFeet) {
+      endEffectorKinematicsPtr_->setPinocchioInterface(pinocchioInterface_);
+
+      for(size_t i = 0; i < 10; ++i) {
+        Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.0};
+        Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.0};
+        if(i < 3){
+          leftpoint[1] = 0.25*i - 0.388;
+          rightpoint[1] = 0.25*i - 0.388;
+        }
+        else{
+          leftpoint[1] = 0.25*(i - 3) + 0.388;
+          rightpoint[1] = 0.25*(i - 3) + 0.388;
+        }
+        leftPoints.emplace_back(leftpoint);
+        rightPoints.emplace_back(rightpoint);
+      }
+    }
 
 void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t & initTime){
-    const auto& modeSequence_ = modeSchedule.modeSequence;
-    const auto& eventTimes_ = modeSchedule.eventTimes;
+  const auto& modeSequence_ = modeSchedule.modeSequence;
+  const auto& eventTimes_ = modeSchedule.eventTimes;
 
-    size_t initIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
+  size_t initIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
 
-    // cut those past sequence
-    std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
-    std::vector<scalar_t> eventTimes(eventTimes_.begin() + initIndex, eventTimes_.end());  
- 
-    const auto eesContactFlagStocks = extractContactFlags(modeSequence);
+  // cut those past sequence
+  std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
+  std::vector<scalar_t> eventTimes(eventTimes_.begin() + initIndex, eventTimes_.end());  
 
-    feet_array_t<std::vector<int>> startTimesIndices;
-    feet_array_t<std::vector<int>> finalTimesIndices;
-    for (size_t leg = 0; leg < numFeet_; leg++) {
-        std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
-    }
-    for (size_t j = 0; j < numFeet_; j++) {
-        if (eesContactFlagStocks[j][0]) { // currently stance leg
-            for (int p = 1; p < modeSequence.size(); ++p) {
-                if (!eesContactFlagStocks[j][p]) { // for next sqing phases 
-                    const int swingStartIndex = startTimesIndices[j][p];
-                    const int swingFinalIndex = finalTimesIndices[j][p];
-                    checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
+  const auto eesContactFlagStocks = extractContactFlags(modeSequence);
 
-                    const scalar_t swingStartTime = eventTimes[swingStartIndex];
-                    const scalar_t swingFinalTime = eventTimes[swingFinalIndex];
+  feet_array_t<std::vector<int>> startTimesIndices;
+  feet_array_t<std::vector<int>> finalTimesIndices;
+  for (size_t leg = 0; leg < numFeet_; leg++) {
+    std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
+  }
 
-                    const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
+  for (size_t j = 0; j < numFeet_; j++) {
+    if (eesContactFlagStocks[j][0]) { // currently stance leg
+      feetPlacement_[j].clear();
+      feetPlacement_[j].reserve(modeSequence.size());
+      feetPlacementEvents_[j] = eventTimes;
+      for (int p = 1; p < modeSequence.size(); ++p) {
+        if (!eesContactFlagStocks[j][p]) { // for next sqing phases 
+          const int swingStartIndex = startTimesIndices[j][p];
+          const int swingFinalIndex = finalTimesIndices[j][p];
+          checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
 
-                    const auto& model = pinocchioInterface_.getModel();
-                    auto& data = pinocchioInterface_.getData();
-                    pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
-                    pinocchio::updateFramePlacements(model, data);
+          const scalar_t swingStartTime = eventTimes[swingStartIndex];
+          const scalar_t swingFinalTime = eventTimes[swingFinalIndex];
 
-                    const auto feetPositions = endEffectorKinematicsPtr_->getPosition(desiredstate);
-                }
-            }
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
+
+          // std::cout << "swingFinalTime: " << swingFinalTime << std::endl;
+
+          const auto& model = pinocchioInterface_.getModel();
+          auto& data = pinocchioInterface_.getData();
+          pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
+          pinocchio::updateFramePlacements(model, data);
+
+          const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
+
+          // std::cout << "footpos: " << feetPosition.transpose() << std::endl;
+
+          vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          feetPlacement_[j].emplace_back(footplacement);          
         }
-        
+        else{// for a stance leg
+          feetPlacement_[j].emplace_back(0,0,0);
+        }
+      }
     }
+  }
+  int i = 0;
+  for(auto leg:feetPlacement_){
+    std::cout << "leg:" << i << "===================" << std::endl;
+    for(auto foot:leg){
+      std::cout << "point" <<foot.transpose() << std::endl;
+    }
+    i++;
+  }
+} 
+
+vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){
+  scalar_t minDistance = 100;
+  vector3_t minPoint;
+
+  if(footNum == 0||footNum == 2){// for left feet
+    for(const auto& leftpoint:leftPoints){
+      scalar_t distance = (leftpoint - position).norm();
+      if(distance < minDistance){
+        minDistance = distance;
+        minPoint = leftpoint;
+      }
+    }
+  }
+  else{// for right feet
+    for(const auto& rightpoint:rightPoints){
+      scalar_t distance = (rightpoint - position).norm();
+      if(distance < minDistance){
+        minDistance = distance;
+        minPoint = rightpoint;
+      }
+    }
+  }
+
+  return minPoint;
 }
 
 void FootPlacementPlanner::checkThatIndicesAreValid(int leg, int index, int startIndex, int finalIndex,

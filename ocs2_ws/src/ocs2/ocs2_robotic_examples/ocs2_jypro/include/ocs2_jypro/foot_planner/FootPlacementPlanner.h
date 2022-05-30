@@ -15,11 +15,13 @@ namespace legged_robot {
 
 class FootPlacementPlanner{
  public:
-    FootPlacementPlanner(PinocchioInterface pinocchioInterface, 
+ using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
+
+    FootPlacementPlanner(PinocchioInterface& pinocchioInterface, 
                          const PinocchioEndEffectorKinematics& endEffectorKinematics,
                          const CentroidalModelInfo& centroidalModelInfo,
                          size_t numFeet);
-    ~FootPlacementPlanner();
+    // ~FootPlacementPlanner();
 
     void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t& initTime);
  private:
@@ -54,13 +56,19 @@ class FootPlacementPlanner{
     static std::pair<std::vector<int>, std::vector<int>> updateFootSchedule(const std::vector<bool>& contactFlagStock);
     void checkThatIndicesAreValid(int leg, int index, int startIndex, 
                                         int finalIndex, const std::vector<size_t>& phaseIDsStock);
+
+   vector3_t choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position); 
     
-    PinocchioInterface pinocchioInterface_;
-    std::unique_ptr<PinocchioEndEffectorKinematics> endEffectorKinematicsPtr_;
-    const CentroidalModelInfo& centroidalModelInfo_;
+   PinocchioInterface& pinocchioInterface_;
+   std::unique_ptr<PinocchioEndEffectorKinematics> endEffectorKinematicsPtr_;
+   const CentroidalModelInfo& centroidalModelInfo_;
 
-    const size_t numFeet_;
+   const size_t numFeet_; 
+   std::vector<vector3_t> leftPoints;
+   std::vector<vector3_t> rightPoints;
 
+   feet_array_t<std::vector<vector3_t>> feetPlacement_;
+   feet_array_t<std::vector<scalar_t>> feetPlacementEvents_;
 
 };
 

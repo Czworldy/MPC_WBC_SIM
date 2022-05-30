@@ -43,7 +43,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
           y = getPositionCppAd(pinocchioInterfaceCppAd, *endEffectorKinematics_.mappingPtr, x);
         };
 
-        scalar_t tor = 0.1;
+        scalar_t tor = 0.05;
         vector_t B_veclf = vector_t::Zero(6);
         vector_t B_vecrf = vector_t::Zero(6);
         vector_t B_veclh = vector_t::Zero(6);
