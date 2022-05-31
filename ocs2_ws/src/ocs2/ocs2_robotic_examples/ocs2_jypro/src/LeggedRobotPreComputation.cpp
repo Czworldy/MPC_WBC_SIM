@@ -44,10 +44,13 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
-                                                     const SwingTrajectoryPlanner& swingTrajectoryPlanner, ModelSettings settings)
+                                                     const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
+                                                     const FootPlacementPlanner& footPlacementPlanner,
+                                                     ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
+      footPlacnementPlannerPtr_(&footPlacementPlanner),
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
@@ -80,9 +83,14 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return config;
   };
 
-    // lambda to get left swing time for foot placement constraints
+  // lambda to get left swing time for foot placement constraints
   auto swingTimeLeftLambda = [&](size_t footIndex) {
     return swingTrajectoryPlannerPtr_->getSwingTimeLeft(footIndex, t);
+  };
+
+  auto footPlacementPoint = [&](size_t footIndex) {
+    vector3_t point(footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t));
+    Eigen::Matrix<scalar_t, 6, 1> b = (Eigen::Matrix<scalar_t, 6, 1>)
   };
 
   if (request.contains(Request::Constraint)) {

@@ -17,13 +17,14 @@ class FootPlacementPlanner{
  public:
  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
 
-    FootPlacementPlanner(PinocchioInterface& pinocchioInterface, 
+   FootPlacementPlanner(PinocchioInterface& pinocchioInterface, 
                          const PinocchioEndEffectorKinematics& endEffectorKinematics,
                          const CentroidalModelInfo& centroidalModelInfo,
                          size_t numFeet);
-    // ~FootPlacementPlanner();
 
-    void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t& initTime);
+   void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t& initTime);
+
+   vector3_t getFootPlacementConstraint(size_t leg,  scalar_t time) const;
  private:
       /**
    * Extracts for each leg the contact sequence over the motion phase sequence.

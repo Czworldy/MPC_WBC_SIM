@@ -44,6 +44,11 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
       }
     }
 
+vector3_t FootPlacementPlanner::getFootPlacementConstraint(size_t leg,  scalar_t time) const {
+  const auto index = lookup::findIndexInTimeArray(feetPlacementEvents_[leg], time);
+  return feetPlacement_[leg][index];
+}
+
 void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t & initTime){
   const auto& modeSequence_ = modeSchedule.modeSequence;
   const auto& eventTimes_ = modeSchedule.eventTimes;
@@ -98,14 +103,16 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       }
     }
   }
-  int i = 0;
-  for(auto leg:feetPlacement_){
-    std::cout << "leg:" << i << "===================" << std::endl;
-    for(auto foot:leg){
-      std::cout << "point" <<foot.transpose() << std::endl;
-    }
-    i++;
-  }
+
+
+  // int i = 0;
+  // for(auto leg:feetPlacement_){
+  //   std::cout << "leg:" << i << "===================" << std::endl;
+  //   for(auto foot:leg){
+  //     std::cout << "point" <<foot.transpose() << std::endl;
+  //   }
+  //   i++;
+  // }
 } 
 
 vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){

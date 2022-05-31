@@ -212,7 +212,9 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
   // Pre-computation
   problemPtr_->preComputationPtr.reset(new LeggedRobotPreComputation(*pinocchioInterfacePtr_, centroidalModelInfo_,
-                                                                     *referenceManagerPtr_->getSwingTrajectoryPlanner(), modelSettings_));
+                                                                     *referenceManagerPtr_->getSwingTrajectoryPlanner(), 
+                                                                     *referenceManagerPtr_->getFootPlacementPlanner(),
+                                                                     modelSettings_));
 
   // Rollout
   rolloutPtr_.reset(new TimeTriggeredRollout(*problemPtr_->dynamicsPtr, rolloutSettings_));

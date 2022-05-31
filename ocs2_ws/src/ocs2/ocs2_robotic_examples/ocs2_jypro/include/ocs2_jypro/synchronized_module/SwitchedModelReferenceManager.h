@@ -56,6 +56,8 @@ class SwitchedModelReferenceManager : public ReferenceManager {
 
   const std::shared_ptr<SwingTrajectoryPlanner>& getSwingTrajectoryPlanner() const { return swingTrajectoryPtr_; }
 
+  const std::shared_ptr<FootPlacementPlanner>& getFootPlacementPlanner() const { return footPlacementPlannerPtr_; }
+
  private:
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
                         ModeSchedule& modeSchedule) override;
