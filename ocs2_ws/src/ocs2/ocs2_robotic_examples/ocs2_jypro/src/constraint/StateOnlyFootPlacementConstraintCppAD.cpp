@@ -96,7 +96,7 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   vector_t y = vector_t::Zero(6);
   y(2) = state(8);
   state_.segment<6>(6) = y;
-  tapedTimeState << time, state_;
+  tapedTimeState << time, state;
 
   vector_t b = B.col(contactPointIndex_);
   vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
@@ -104,9 +104,8 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   scalar_t s_t(0.);
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
 
-    s_t = 2 * std::pow(swingTimeLeft, 2);
+  s_t = 2 * std::pow(swingTimeLeft, 2);
 
-                          
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
   return f;
@@ -125,7 +124,7 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   vector_t y = vector_t::Zero(6);
   y(2) = state(8);
   state_.segment<6>(6) = y;
-  tapedTimeState << time, state_;
+  tapedTimeState << time, state;
 
   vector_t b = B.col(contactPointIndex_);
   constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
@@ -159,9 +158,10 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   vector_t y = vector_t::Zero(6);
   y(2) = state(8);
   state_.segment<6>(6) = y;
-  tapedTimeState << time, state_;
+  tapedTimeState << time, state;
 
-  vector_t b = B.col(contactPointIndex_);
+  
+  vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
   constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
   scalar_t s_t(0.);
   

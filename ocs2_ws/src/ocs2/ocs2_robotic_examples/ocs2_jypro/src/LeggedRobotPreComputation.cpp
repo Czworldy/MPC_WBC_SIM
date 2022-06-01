@@ -54,6 +54,7 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
+  footPlacementConstraints_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -90,16 +91,21 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
 
   auto footPlacementPoint = [&](size_t footIndex) {
     vector3_t point(footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t));
-    Eigen::Matrix<scalar_t, 6, 1> b = (Eigen::Matrix<scalar_t, 6, 1>)
+    Eigen::Matrix<scalar_t, 6, 1> b = 
+                        (Eigen::Matrix<scalar_t, 6, 1>() << -point[0], point[0], -point[1], point[1], 0.0, 0.0).finished();
+    return b;
   };
 
   if (request.contains(Request::Constraint)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
       swingTimeLeft_[i] = swingTimeLeftLambda(i);
+      footPlacementConstraints_[i] = footPlacementPoint(i);
+      // std::cout << "preCompute times: " << footPlacementConstraints_[i].transpose() << std::endl;
+
     }
     // Eigen::Map<Eigen::Matrix<scalar_t, 4, 1>> times(swingTimeLeft_.data());
-    // std::cout << "preCompute times: " << times.transpose() << std::endl;
+    // std::cout << "preCompute times: " << footPlacementConstraints_.transpose() << std::endl;
   }
 }
 

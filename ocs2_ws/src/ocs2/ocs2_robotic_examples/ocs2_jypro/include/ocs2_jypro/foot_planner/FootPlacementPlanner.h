@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ocs2_core/reference/ModeSchedule.h>
 
 #include "ocs2_jypro/common/Types.h"
@@ -5,9 +7,6 @@
 #include <ocs2_pinocchio_interface/PinocchioInterface.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelInfo.h>
-
-
-
 
 
 namespace ocs2 {
