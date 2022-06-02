@@ -10,6 +10,8 @@
 
 #include <ocs2_core/misc/Lookup.h>
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
+#include <ocs2_core/misc/Display.h>
+
 // #include <ocs2_centroidal_model/CentroidalModelInfo.h>
 
 
@@ -31,13 +33,13 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
       for(size_t i = 0; i < 10; ++i) {
         Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.0};
         Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.0};
-        if(i < 3){
-          leftpoint[1] = 0.25*i - 0.388;
-          rightpoint[1] = 0.25*i - 0.388;
+        if(i < 6){
+          leftpoint[1] = 0.12*i - 0.338;
+          rightpoint[1] = 0.12*i - 0.338;
         }
         else{
-          leftpoint[1] = 0.25*(i - 3) + 0.388;
-          rightpoint[1] = 0.25*(i - 3) + 0.388;
+          leftpoint[1] = 0.12*(i - 6) + 0.338;
+          rightpoint[1] = 0.12*(i - 6) + 0.338;
         }
         leftPoints.emplace_back(leftpoint);
         rightPoints.emplace_back(rightpoint);
@@ -59,6 +61,13 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
   std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
   std::vector<scalar_t> eventTimes(eventTimes_.begin() + initIndex, eventTimes_.end());  
 
+  // std::vector<size_t> modeSequence(modeSequence_.begin() , modeSequence_.end());
+  // std::vector<scalar_t> eventTimes(eventTimes_.begin() , eventTimes_.end());  
+
+
+  // std::cout << "after cut event times:   {" << toDelimitedString(eventTimes) << "}\n";
+  // std::cout << "after cut modeSequence:   {" << toDelimitedString(modeSequence) << "}\n";
+
   const auto eesContactFlagStocks = extractContactFlags(modeSequence);
 
   feet_array_t<std::vector<int>> startTimesIndices;
@@ -72,7 +81,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       feetPlacement_[j].clear();
       feetPlacement_[j].reserve(modeSequence.size());
       feetPlacementEvents_[j] = eventTimes;
-      for (int p = 1; p < modeSequence.size(); ++p) {
+      for (int p = 0; p < modeSequence.size(); ++p) {
         if (!eesContactFlagStocks[j][p]) { // for next sqing phases 
           const int swingStartIndex = startTimesIndices[j][p];
           const int swingFinalIndex = finalTimesIndices[j][p];
@@ -81,7 +90,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           const scalar_t swingStartTime = eventTimes[swingStartIndex];
           const scalar_t swingFinalTime = eventTimes[swingFinalIndex];
 
-          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingStartTime);
 
           // std::cout << "swingFinalTime: " << swingFinalTime << std::endl;
 
@@ -105,14 +114,14 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
   }
 
 
-  // int i = 0;
-  // for(auto leg:feetPlacement_){
-  //   std::cout << "leg:" << i << "===================" << std::endl;
-  //   for(auto foot:leg){
-  //     std::cout << "point" <<foot.transpose() << std::endl;
-  //   }
-  //   i++;
-  // }
+  int i = 0;
+  for(auto leg:feetPlacement_){
+    std::cout << "leg:" << i << "===================" << std::endl;
+    for(auto foot:leg){
+      std::cout << "point" <<foot.transpose() << std::endl;
+    }
+    i++;
+  }
 } 
 
 vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){
