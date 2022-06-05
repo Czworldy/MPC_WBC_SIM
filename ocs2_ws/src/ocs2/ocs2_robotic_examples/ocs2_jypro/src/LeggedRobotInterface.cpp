@@ -165,8 +165,9 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   // Constraint terms
   // friction cone settings
   scalar_t frictionCoefficient = 0.7;
-  RelaxedBarrierPenalty::Config barrierPenaltyConfig;
+  RelaxedBarrierPenalty::Config barrierPenaltyConfig, barrierPenaltyConfig_;
   std::tie(frictionCoefficient, barrierPenaltyConfig) = loadFrictionConeSettings(taskFile);
+  barrierPenaltyConfig_ = loadFootPlacementSettings(taskFile);
 
   bool useAnalyticalGradientsConstraints = false;
   loadData::loadCppDataType(taskFile, "legged_robot_interface.useAnalyticalGradientsConstraints", useAnalyticalGradientsConstraints);
@@ -197,7 +198,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                         std::cout << "add_placement: " << footName << std::endl;
     problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-                                              i, barrierPenaltyConfig)
+                                              i, barrierPenaltyConfig_)
                                              );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
@@ -295,6 +296,29 @@ std::pair<scalar_t, RelaxedBarrierPenalty::Config> LeggedRobotInterface::loadFri
   }
 
   return {frictionCoefficient, std::move(barrierPenaltyConfig)};
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+RelaxedBarrierPenalty::Config LeggedRobotInterface::loadFootPlacementSettings(const std::string& taskFile) const {
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_info(taskFile, pt);
+  const std::string prefix = "footPlancementSoftConstraint.";
+
+  RelaxedBarrierPenalty::Config barrierPenaltyConfig;
+  bool display = true;
+  if (display) {
+    std::cerr << "\n #### Foot Placement Cone Settings: ";
+    std::cerr << "\n #### =============================================================================\n";
+  }
+  loadData::loadPtreeValue(pt, barrierPenaltyConfig.mu, prefix + "mu", display);
+  loadData::loadPtreeValue(pt, barrierPenaltyConfig.delta, prefix + "delta", display);
+  if (display) {
+    std::cerr << " #### =============================================================================\n";
+  }
+
+  return std::move(barrierPenaltyConfig);
 }
 
 /******************************************************************************************************/

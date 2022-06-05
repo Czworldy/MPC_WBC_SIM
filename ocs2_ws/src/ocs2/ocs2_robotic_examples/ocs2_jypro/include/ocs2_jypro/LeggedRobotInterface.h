@@ -93,6 +93,7 @@ class LeggedRobotInterface final : public RobotInterface {
   void initializeInputCostWeight(const std::string& taskFile, const CentroidalModelInfo& info, matrix_t& R);
 
   std::pair<scalar_t, RelaxedBarrierPenalty::Config> loadFrictionConeSettings(const std::string& taskFile) const;
+  RelaxedBarrierPenalty::Config loadFootPlacementSettings(const std::string& taskFile) const;
   std::unique_ptr<StateInputCost> getFrictionConeConstraint(size_t contactPointIndex, scalar_t frictionCoefficient,
                                                             const RelaxedBarrierPenalty::Config& barrierPenaltyConfig);
   std::unique_ptr<StateCost> getStateOnlyFootPlacementConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics, const std::string& modelName,

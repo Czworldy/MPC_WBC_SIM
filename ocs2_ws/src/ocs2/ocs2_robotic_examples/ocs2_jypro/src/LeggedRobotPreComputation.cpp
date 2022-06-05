@@ -96,7 +96,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     if (point.norm() < 1e-3) {
       tol = 1000;
     } else {
-      tol = 0.1;
+      tol = 0.05;
     }
     Eigen::Matrix<scalar_t, 6, 1> tols(Eigen::Matrix<scalar_t, 6, 1>::Ones()*tol), constraint, b;
      b  << -point[0], point[0], -point[1], point[1], 0.0, 0.0;

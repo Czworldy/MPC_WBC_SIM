@@ -33,13 +33,13 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
       for(size_t i = 0; i < 10; ++i) {
         Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.0};
         Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.0};
-        if(i < 6){
-          leftpoint[1] = 0.12*i - 0.338;
-          rightpoint[1] = 0.12*i - 0.338;
+        if(i < 3){
+          leftpoint[1] = 0.25*i - 0.338;
+          rightpoint[1] = 0.25*i - 0.338;
         }
         else{
-          leftpoint[1] = 0.12*(i - 6) + 0.338;
-          rightpoint[1] = 0.12*(i - 6) + 0.338;
+          leftpoint[1] = 0.25*(i - 4) + 0.338;
+          rightpoint[1] = 0.25*(i - 4) + 0.338;
         }
         leftPoints.emplace_back(leftpoint);
         rightPoints.emplace_back(rightpoint);
@@ -52,14 +52,16 @@ vector3_t FootPlacementPlanner::getFootPlacementConstraint(size_t leg,  scalar_t
 }
 
 void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t & initTime){
-  const auto& modeSequence_ = modeSchedule.modeSequence;
-  const auto& eventTimes_ = modeSchedule.eventTimes;
+  const auto& modeSequence = modeSchedule.modeSequence;
+  const auto& eventTimes = modeSchedule.eventTimes;
 
   size_t initIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
 
+  std::cout << "initIndex: " << initIndex << std::endl;
+
   // cut those past sequence
-  std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
-  std::vector<scalar_t> eventTimes(eventTimes_.begin() + initIndex, eventTimes_.end());  
+  // std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
+  // std::vector<scalar_t> eventTimes(eventTimes_.begin() + initIndex, eventTimes_.end());  
 
   // std::vector<size_t> modeSequence(modeSequence_.begin() , modeSequence_.end());
   // std::vector<scalar_t> eventTimes(eventTimes_.begin() , eventTimes_.end());  
@@ -76,8 +78,11 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
   }
 
+  std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
+  std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
+
   for (size_t j = 0; j < numFeet_; j++) {
-    if (eesContactFlagStocks[j][0]) { // currently stance leg
+    if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
       feetPlacement_[j].clear();
       feetPlacement_[j].reserve(modeSequence.size());
       feetPlacementEvents_[j] = eventTimes;

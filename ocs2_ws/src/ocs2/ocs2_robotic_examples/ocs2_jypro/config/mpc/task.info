@@ -242,3 +242,10 @@ frictionConeSoftConstraint
   mu                     1e-2
   delta                  1e-3
 }
+
+footPlancementSoftConstraint
+{
+  ; relaxed log barrier parameters
+  mu                     1e-2
+  delta                  0.003
+}

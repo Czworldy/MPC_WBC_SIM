@@ -104,7 +104,7 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   scalar_t s_t(0.);
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
 
-  s_t = 2 * std::pow(swingTimeLeft, 2);
+  s_t = 3 * std::pow(swingTimeLeft, 2);
 
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -131,7 +131,7 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
-  s_t = 2 * std::pow(swingTimeLeft, 2);
+  s_t = 3 * std::pow(swingTimeLeft, 2);
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -168,7 +168,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
-  s_t = 2 * std::pow(swingTimeLeft, 2);
+  s_t = 3 * std::pow(swingTimeLeft, 2);
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
   std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
