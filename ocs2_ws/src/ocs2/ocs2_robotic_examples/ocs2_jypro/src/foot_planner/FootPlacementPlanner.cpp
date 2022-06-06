@@ -95,7 +95,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           const scalar_t swingStartTime = eventTimes[swingStartIndex];
           const scalar_t swingFinalTime = eventTimes[swingFinalIndex];
 
-          const vector_t desiredstate = targetTrajectories.getDesiredState(swingStartTime);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
 
           // std::cout << "swingFinalTime: " << swingFinalTime << std::endl;
 
