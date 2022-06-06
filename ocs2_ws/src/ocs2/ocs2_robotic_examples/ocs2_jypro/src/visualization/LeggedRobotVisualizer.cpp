@@ -81,6 +81,7 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
   costDesiredFeetPositionPublishers_[3] = nodeHandle.advertise<visualization_msgs::Marker>("/legged_robot/desiredFeetTrajectory/RH", 1);
   stateOptimizedPublisher_ = nodeHandle.advertise<visualization_msgs::MarkerArray>("/legged_robot/optimizedStateTrajectory", 1);
   currentStatePublisher_ = nodeHandle.advertise<visualization_msgs::MarkerArray>("/legged_robot/currentState", 1);
+  desiredFeetPlacmentPointPublisher_ = nodeHandle.advertise<visualization_msgs::Marker>("/legged_robot/desiredFeetPlacementPoint", 1);
 
   // Load URDF model
   urdf::Model urdfModel;
@@ -316,7 +317,7 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
   // Convert feet msgs to Array message
   visualization_msgs::MarkerArray markerArray;
   markerArray.markers.reserve(centroidalModelInfo_.numThreeDofContacts +
-                              2);  // 1 trajectory per foot + 1 for the future footholds + 1 for the com trajectory
+                              3);  // 1 trajectory per foot + 1 for the future footholds + 1 for the com trajectory
   for (size_t i = 0; i < centroidalModelInfo_.numThreeDofContacts; i++) {
     markerArray.markers.emplace_back(getLineMsg(std::move(feetMsgs[i]), feetColorMap_[i], trajectoryLineWidth_));
     markerArray.markers.back().ns = "EE Trajectories";
@@ -357,6 +358,35 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
     }
   }
   markerArray.markers.push_back(std::move(sphereList));
+
+  visualization_msgs::Marker feetPlacement;
+  feetPlacement.type = visualization_msgs::Marker::SPHERE_LIST;
+  feetPlacement.scale.x = footMarkerDiameter_;
+  feetPlacement.scale.y = footMarkerDiameter_;
+  feetPlacement.scale.z = footMarkerDiameter_;
+  feetPlacement.ns = "desired feet placement";
+  feetPlacement.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
+  for(size_t i = 0; i < 10; ++i) {
+    Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.0};
+    Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.0};
+    if(i < 3){
+      leftpoint[1] = 0.25*i - 0.338;
+      rightpoint[1] = 0.25*i - 0.338;
+    }
+    else{
+      leftpoint[1] = 0.25*(i - 4) + 0.338;
+      rightpoint[1] = 0.25*(i - 4) + 0.338;
+    }
+    feetPlacement.points.emplace_back(getPointMsg(leftpoint));
+    feetPlacement.points.emplace_back(getPointMsg(rightpoint));
+    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
+    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
+
+        // leftPoints.emplace_back(leftpoint);
+        // rightPoints.emplace_back(rightpoint);
+  }
+  markerArray.markers.push_back(std::move(feetPlacement));
+
 
   // Add headers and Id
   assignHeader(markerArray.markers.begin(), markerArray.markers.end(), getHeaderMsg(frameId_, timeStamp));

@@ -97,6 +97,7 @@ class LeggedRobotVisualizer : public DummyObserver {
   std::unique_ptr<robot_state_publisher::RobotStatePublisher> robotStatePublisherPtr_;
 
   ros::Publisher costDesiredBasePositionPublisher_;
+  ros::Publisher desiredFeetPlacmentPointPublisher_;
   std::vector<ros::Publisher> costDesiredFeetPositionPublishers_;
 
   ros::Publisher stateOptimizedPublisher_;

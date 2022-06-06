@@ -31,8 +31,8 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
       endEffectorKinematicsPtr_->setPinocchioInterface(pinocchioInterface_);
 
       for(size_t i = 0; i < 10; ++i) {
-        Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.0};
-        Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.0};
+        Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
+        Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
         if(i < 3){
           leftpoint[1] = 0.25*i - 0.338;
           rightpoint[1] = 0.25*i - 0.338;
@@ -131,6 +131,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
 
 vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){
   scalar_t minDistance = 100;
+  const scalar_t distanceThreshold = 0.12;
   vector3_t minPoint;
 
   if(footNum == 0||footNum == 2){// for left feet
