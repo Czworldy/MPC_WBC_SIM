@@ -359,23 +359,35 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
   }
   markerArray.markers.push_back(std::move(sphereList));
 
-  visualization_msgs::Marker feetPlacement;
+  static bool firstTime = true;
+  static visualization_msgs::Marker feetPlacement;
+  if(firstTime){
+  
   feetPlacement.type = visualization_msgs::Marker::SPHERE_LIST;
   feetPlacement.scale.x = footMarkerDiameter_;
   feetPlacement.scale.y = footMarkerDiameter_;
   feetPlacement.scale.z = footMarkerDiameter_;
   feetPlacement.ns = "desired feet placement";
   feetPlacement.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
+
+  static std::default_random_engine e(1);
+
+  static std::normal_distribution<scalar_t> n(0,0.05);
+
   for(size_t i = 0; i < 10; ++i) {
     Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
     Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
     if(i < 3){
       leftpoint[1] = 0.25*i - 0.338;
       rightpoint[1] = 0.25*i - 0.338;
+      leftpoint[0] += n(e);
+      rightpoint[0] += n(e);
     }
     else{
       leftpoint[1] = 0.25*(i - 4) + 0.338;
       rightpoint[1] = 0.25*(i - 4) + 0.338;
+      leftpoint[0] += n(e);
+      rightpoint[0] += n(e);
     }
     feetPlacement.points.emplace_back(getPointMsg(leftpoint));
     feetPlacement.points.emplace_back(getPointMsg(rightpoint));
@@ -385,6 +397,9 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
         // leftPoints.emplace_back(leftpoint);
         // rightPoints.emplace_back(rightpoint);
   }
+  firstTime = false;
+  }
+
   markerArray.markers.push_back(std::move(feetPlacement));
 
 

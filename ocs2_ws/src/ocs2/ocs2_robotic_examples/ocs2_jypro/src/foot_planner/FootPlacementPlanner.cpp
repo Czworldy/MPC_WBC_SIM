@@ -12,6 +12,8 @@
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_core/misc/Display.h>
 
+#include <random>
+
 // #include <ocs2_centroidal_model/CentroidalModelInfo.h>
 
 
@@ -30,16 +32,24 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
     numFeet_(numFeet) {
       endEffectorKinematicsPtr_->setPinocchioInterface(pinocchioInterface_);
 
+      std::default_random_engine e(1);
+
+      std::normal_distribution<scalar_t> n(0,0.05);
+
       for(size_t i = 0; i < 10; ++i) {
         Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
         Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
         if(i < 3){
           leftpoint[1] = 0.25*i - 0.338;
           rightpoint[1] = 0.25*i - 0.338;
+          leftpoint[0] += n(e);
+          rightpoint[0] += n(e);
         }
         else{
           leftpoint[1] = 0.25*(i - 4) + 0.338;
           rightpoint[1] = 0.25*(i - 4) + 0.338;
+          leftpoint[0] += n(e);
+          rightpoint[0] += n(e);
         }
         leftPoints.emplace_back(leftpoint);
         rightPoints.emplace_back(rightpoint);
