@@ -57,7 +57,7 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        4
+  nThreads                        1
   threadPriority                  50
 
   maxNumIterations                10
@@ -127,7 +127,7 @@ mpc
   solutionTimeWindow              -1  ; [s]
 
   mpcDesiredFrequency             -1  ; [Hz]
-  mrtDesiredFrequency             400 ; [Hz]
+  mrtDesiredFrequency             1000 ; [Hz]
 }
 
 initialState
@@ -247,5 +247,5 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.015
-  delta                  0.0015
+  delta                  0.002
 }

@@ -75,8 +75,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  // return true;
+  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  return true;
 }
 
 
@@ -100,6 +100,10 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
 
   vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
   vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
+
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    f.array() += stance_tol;
+  }
 
   scalar_t s_t(0.);
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
@@ -128,6 +132,11 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
 
   vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
   constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    constraint.f.array() += stance_tol;
+  }
+
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
@@ -165,6 +174,11 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   // std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" << contactPointIndex_ << std::endl;
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, params);
   constraint.f = Ax * f + b;
+
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    constraint.f.array() += stance_tol;
+  }
+
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);

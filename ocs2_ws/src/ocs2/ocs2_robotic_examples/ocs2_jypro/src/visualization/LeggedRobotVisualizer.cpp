@@ -370,7 +370,7 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
   feetPlacement.ns = "desired feet placement";
   feetPlacement.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
 
-  static std::default_random_engine e(1);
+  static std::default_random_engine e(2);
 
   static std::normal_distribution<scalar_t> n(0,0.05);
 
@@ -388,6 +388,12 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
       rightpoint[1] = 0.25*(i - 4) + 0.338;
       leftpoint[0] += n(e);
       rightpoint[0] += n(e);
+    }
+
+    if (i == 0 || i == 4)
+    {
+      leftpoint[0] = -0.177;
+      rightpoint[0] = 0.177;
     }
     feetPlacement.points.emplace_back(getPointMsg(leftpoint));
     feetPlacement.points.emplace_back(getPointMsg(rightpoint));

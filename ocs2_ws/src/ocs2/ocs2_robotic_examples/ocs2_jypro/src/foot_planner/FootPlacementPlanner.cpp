@@ -32,7 +32,7 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
     numFeet_(numFeet) {
       endEffectorKinematicsPtr_->setPinocchioInterface(pinocchioInterface_);
 
-      std::default_random_engine e(1);
+      std::default_random_engine e(2);
 
       std::normal_distribution<scalar_t> n(0,0.05);
 
@@ -51,6 +51,13 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
           leftpoint[0] += n(e);
           rightpoint[0] += n(e);
         }
+
+        if (i == 0 || i == 4)
+        {
+          leftpoint[0] = -0.177;
+          rightpoint[0] = 0.177;
+        }
+        
         leftPoints.emplace_back(leftpoint);
         rightPoints.emplace_back(rightpoint);
       }
@@ -65,7 +72,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
   const auto& modeSequence = modeSchedule.modeSequence;
   const auto& eventTimes = modeSchedule.eventTimes;
 
-  size_t initIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
+  const size_t initIndex = lookup::findIndexInTimeArray(eventTimes, initTime);
 
   std::cout << "initIndex: " << initIndex << std::endl;
 
@@ -97,7 +104,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       feetPlacement_[j].reserve(modeSequence.size());
       feetPlacementEvents_[j] = eventTimes;
       for (int p = 0; p < modeSequence.size(); ++p) {
-        if (!eesContactFlagStocks[j][p]) { // for next sqing phases 
+        if (!eesContactFlagStocks[j][p]) { // for all sqing phases 
           const int swingStartIndex = startTimesIndices[j][p];
           const int swingFinalIndex = finalTimesIndices[j][p];
           checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
@@ -122,7 +129,27 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           feetPlacement_[j].emplace_back(footplacement);          
         }
         else{// for a stance leg
-          feetPlacement_[j].emplace_back(0,0,0);
+
+          // feetPlacement_[j].emplace_back(0,0,0);
+          size_t index; 
+          for(index = p; index >= initIndex; index--){ // search for lastest swing phase
+              if(finalTimesIndices[j][index] != 0){
+                break;
+              }
+          }
+          // according to the lastest swing phase final time decide the desired state 
+          const vector_t desiredstate = targetTrajectories.getDesiredState(eventTimes[index]); 
+
+          const auto& model = pinocchioInterface_.getModel();
+          auto& data = pinocchioInterface_.getData();
+          pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
+          pinocchio::updateFramePlacements(model, data);
+
+          const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
+
+          vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          feetPlacement_[j].emplace_back(footplacement);  
+
         }
       }
     }

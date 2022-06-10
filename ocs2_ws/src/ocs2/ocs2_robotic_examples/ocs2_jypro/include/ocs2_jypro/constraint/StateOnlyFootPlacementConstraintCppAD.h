@@ -66,10 +66,12 @@ class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
         const size_t contactPointIndex_;
         const size_t stateDim_;
 
+
+
         Eigen::Matrix<scalar_t, 6, 4> B;
 
         Eigen::Matrix<scalar_t, 6, 3> Ax;
-        scalar_t tor = 0.05;
+        scalar_t tor = 0.05, stance_tol = 0.03;
 
 
         std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_;
