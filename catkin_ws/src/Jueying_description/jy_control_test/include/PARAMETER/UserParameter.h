@@ -8,8 +8,8 @@ template<typename T>
 struct HierNWeig
 {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-        Eigen::Matrix<int, 2, 1> hierarchy;
-        Eigen::Matrix<T, 7, 1>  weight;
+        Eigen::Matrix<int, 3, 1> hierarchy;
+        Eigen::Matrix<T, 8, 1>  weight;
 };
 
 

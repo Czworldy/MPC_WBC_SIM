@@ -232,7 +232,7 @@ int main(int argc, char**argv) {
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}
-                simpleMotion->TerrainEst(contact_flag_real);
+                // simpleMotion->TerrainEst(contact_flag_real);
 		    	simpleMotion->MPCWBCRun(estStatesOutput.time_stamp, command, isSafe);
 		    	if(!isSafe) {
 		    		// robotState = kSafeState;
