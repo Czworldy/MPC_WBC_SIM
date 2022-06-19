@@ -70,6 +70,9 @@ class FootPlacementPlanner{
    feet_array_t<std::vector<vector3_t>> feetPlacement_;
    feet_array_t<std::vector<scalar_t>> feetPlacementEvents_;
 
+   feet_array_t<scalar_array_t> liftOffHeightSequence_;
+   feet_array_t<scalar_array_t> touchDownHeightSequence_;
+
 };
 
 }

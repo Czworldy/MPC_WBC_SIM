@@ -251,7 +251,7 @@ void MRT_ROS_Interface::launchNodes(ros::NodeHandle& nodeHandle) {
   ROS_INFO_STREAM("MRT node is setting up ...");
 
   // observation publisher
-  mpcObservationPublisher_ = nodeHandle.advertise<ocs2_msgs::mpc_observation>(topicPrefix_ + "_mpc_observation_dqwang", 1); //dqwang_obervation
+  mpcObservationPublisher_ = nodeHandle.advertise<ocs2_msgs::mpc_observation>(topicPrefix_ + "_mpc_observation", 1); //dqwang_obervation
 
   // policy subscriber
   auto ops = ros::SubscribeOptions::create<ocs2_msgs::mpc_flattened_controller>(

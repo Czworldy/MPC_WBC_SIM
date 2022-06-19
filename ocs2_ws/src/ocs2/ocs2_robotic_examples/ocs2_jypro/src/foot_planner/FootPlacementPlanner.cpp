@@ -102,6 +102,13 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
       feetPlacement_[j].clear();
       feetPlacement_[j].reserve(modeSequence.size());
+
+      // save the Z position of the target feet placement
+      liftOffHeightSequence_[j].clear();
+      // liftOffHeightSequence_[j].reserve(modeSequence.size());
+      touchDownHeightSequence_[j].clear();
+      touchDownHeightSequence_[j].reserve(modeSequence.size());
+
       feetPlacementEvents_[j] = eventTimes;
       for (int p = 0; p < modeSequence.size(); ++p) {
         if (!eesContactFlagStocks[j][p]) { // for all sqing phases 
@@ -126,7 +133,9 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           // std::cout << "footpos: " << feetPosition.transpose() << std::endl;
 
           vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          scalar_t footplacementZ = footplacement[2];
           feetPlacement_[j].emplace_back(footplacement);          
+          touchDownHeightSequence_[j].emplace_back(footplacementZ);    
         }
         else{// for a stance leg
 
@@ -148,9 +157,13 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
 
           vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          scalar_t footplacementZ = footplacement[2];
           feetPlacement_[j].emplace_back(footplacement);  
+          touchDownHeightSequence_[j].emplace_back(footplacementZ);    
 
         }
+        liftOffHeightSequence_[j] = touchDownHeightSequence_[j];
+        liftOffHeightSequence_[j].insert(liftOffHeightSequence_[j].begin(), touchDownHeightSequence_[j][0]);
       }
     }
   }
@@ -161,6 +174,24 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     std::cout << "leg:" << i << "===================" << std::endl;
     for(auto foot:leg){
       std::cout << "point" <<foot.transpose() << std::endl;
+    }
+    i++;
+  }
+
+  i = 0;
+  for(auto leg:liftOffHeightSequence_){
+    std::cout << "leg:" << i << "===================liftOffHeightSequence_" << std::endl;
+    for(auto foot:leg){
+      std::cout << "point" <<foot << std::endl;
+    }
+    i++;
+  }
+
+  i = 0;
+  for(auto leg:touchDownHeightSequence_){
+    std::cout << "leg:" << i << "===================touchDownHeightSequence_" << std::endl;
+    for(auto foot:leg){
+      std::cout << "point" <<foot << std::endl;
     }
     i++;
   }

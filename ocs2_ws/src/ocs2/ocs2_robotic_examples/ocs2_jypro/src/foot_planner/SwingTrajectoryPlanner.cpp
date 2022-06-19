@@ -70,6 +70,7 @@ scalar_t SwingTrajectoryPlanner::getSwingTimeLeft(size_t leg, scalar_t time) con
 /******************************************************************************************************/
 void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, scalar_t terrainHeight) {
   const scalar_array_t terrainHeightSequence(modeSchedule.modeSequence.size(), terrainHeight);
+  // const scalar_array_t terrainHeightSequence_(modeSchedule.modeSequence.size(), terrainHeight+0.1);
   feet_array_t<scalar_array_t> liftOffHeightSequence;
   liftOffHeightSequence.fill(terrainHeightSequence);
   feet_array_t<scalar_array_t> touchDownHeightSequence;

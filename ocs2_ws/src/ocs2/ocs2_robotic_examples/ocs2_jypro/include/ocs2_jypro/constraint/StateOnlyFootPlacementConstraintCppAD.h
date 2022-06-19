@@ -12,6 +12,8 @@
 #include "ocs2_jypro/common/ModelSettings.h"
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematicsCppAd.h>
 
+#include "ocs2_jypro/foot_planner/CubicSpline.h"
+
 
 
 namespace ocs2 {
@@ -71,10 +73,12 @@ class StateOnlyFootPlacementConstraint  : public StateConstraintCppAd {
         Eigen::Matrix<scalar_t, 6, 4> B;
 
         Eigen::Matrix<scalar_t, 6, 3> Ax;
-        scalar_t tor = 0.05, stance_tol = 0.03;
+        scalar_t tor = 0.05, stance_tol = 0.05;
 
 
         std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_;
+        const CubicSpline transitionSpline_;
+
 
 };
 

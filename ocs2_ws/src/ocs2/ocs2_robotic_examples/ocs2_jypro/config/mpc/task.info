@@ -57,7 +57,7 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        4
+  nThreads                        1
   threadPriority                  50
 
   maxNumIterations                10
@@ -178,9 +178,9 @@ Q
   (5,5)   10.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;
-  (6,6)   500.0    ; p_base_x                         reduce is for foot placement constraints.
-  (7,7)   500.0    ; p_base_y                         reduce is for foot placement constraints.
-  (8,8)   500.0    ; p_base_z                         reduce is for foot placement constraints.
+  (6,6)   250.0    ; p_base_x                         reduce is for foot placement constraints.
+  (7,7)   250.0    ; p_base_y                         reduce is for foot placement constraints.
+  (8,8)   250.0    ; p_base_z                         reduce is for foot placement constraints.
   (9,9)   100.0    ; theta_base_z
   (10,10) 200.0    ; theta_base_y
   (11,11) 200.0    ; theta_base_x
@@ -246,6 +246,6 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.015
-  delta                  0.002
+  mu                     0.01
+  delta                  0.0015
 }

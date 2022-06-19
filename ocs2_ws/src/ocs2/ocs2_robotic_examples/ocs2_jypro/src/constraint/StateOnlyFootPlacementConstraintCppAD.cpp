@@ -25,7 +25,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
     endEffectorKinematics_(cast<PinocchioEndEffectorKinematicsCppAd>(endEffectorKinematics)),
     config_(std::move(config)),
     contactPointIndex_(contactPointIndex),
-    stateDim_(stateDim) {
+    stateDim_(stateDim),
+    transitionSpline_({0.0, 5.*0.35/3., -5.}, {0.35, 0.0, 0.0}) {
 
         // initialize CppAD interface
         auto pinocchioInterfaceCppAd = endEffectorKinematics_.pinocchioInterface_.toCppAd();
@@ -68,6 +69,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, 0, 1,
                 0, 0, -1;
         initialize(stateDim_, 0, modelName, "/tmp/ocs2",true, true);
+
+        
         
     }
 
@@ -75,8 +78,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  return true;
+  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  // return true;
 }
 
 
@@ -101,14 +104,18 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
   vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
 
-  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
-    f.array() += stance_tol;
-  }
+
 
   scalar_t s_t(0.);
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
 
-  s_t = 3 * std::pow(swingTimeLeft, 2);
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    f.array() += stance_tol;
+    s_t = 0;
+  }
+  else{
+    s_t = transitionSpline_.position(0.35 - swingTimeLeft);
+  }
 
   f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -140,7 +147,17 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
-  s_t = 3 * std::pow(swingTimeLeft, 2);
+  
+
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    constraint.f.array() += stance_tol;
+    s_t = 0;
+  }
+  else{
+    // s_t = 3 * std::pow(swingTimeLeft, 2);
+    s_t = transitionSpline_.position(0.35 - swingTimeLeft);
+
+  }
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
@@ -175,14 +192,19 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, params);
   constraint.f = Ax * f + b;
 
-  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
-    constraint.f.array() += stance_tol;
-  }
 
   scalar_t s_t(0.);
   
   scalar_t swingTimeLeft(preCompLegged.getSwingTimeLeft()[contactPointIndex_]);
-  s_t = 3 * std::pow(swingTimeLeft, 2);
+
+  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
+    constraint.f.array() += stance_tol;
+    s_t = 0;
+  }
+  else{
+    // s_t = 3 * std::pow(swingTimeLeft, 2);
+    s_t = transitionSpline_.position(0.35 - swingTimeLeft);
+  }
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
   std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
