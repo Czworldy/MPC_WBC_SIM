@@ -67,7 +67,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, 1, 0,
                 0, -1, 0,
                 0, 0, 1,
-                0, 0, -1;
+                0, 0, 0;
         initialize(stateDim_, 0, modelName, "/tmp/ocs2",true, true);
 
         
@@ -207,10 +207,10 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   }
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
-  std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
-    << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
+  // std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
+  //   << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
 
-  std::cout << "cppad:" << f.transpose() << "\n";
+  // std::cout << "cppad:" << f.transpose() << "\n";
 
 
   // std::cout << "y: " << state(7) << "\n";

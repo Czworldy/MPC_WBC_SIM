@@ -122,6 +122,64 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
   }
 }
 
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
+                                    const feet_array_t<scalar_array_t>& touchDownHeightSequence, 
+                                    const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
+                                    scalar_t initTime) {
+  const auto& modeSequence = modeSchedule.modeSequence;
+  const auto& eventTimes = modeSchedule.eventTimes;
+
+  const size_t initIndex = lookup::findIndexInTimeArray(eventTimes, initTime);
+
+  const auto eesContactFlagStocks = extractContactFlags(modeSequence);
+
+  //this events times is copy from foot placement constraints to make sure 
+  //that the events times are the same as the foot placement constraints
+  //because when a foot is in stance, the events times deesn't change
+  feetHeightTrajectoriesEvents_ = feetHeightTrajectoriesEvents;
+
+  feet_array_t<std::vector<int>> startTimesIndices;
+  feet_array_t<std::vector<int>> finalTimesIndices;
+  for (size_t leg = 0; leg < numFeet_; leg++) {
+    std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
+  }
+
+  for (size_t j = 0; j < numFeet_; j++) {
+    if (eesContactFlagStocks[j][initIndex]){
+    
+    
+    feetHeightTrajectories_[j].clear();
+    feetHeightTrajectories_[j].reserve(feetHeightTrajectoriesEvents_[j].size());
+    for (int p = 0; p < feetHeightTrajectoriesEvents_[j].size(); ++p) { // use the events times to update the foot trajectories
+      if (!eesContactFlagStocks[j][p]) {  // for a swing leg
+        const int swingStartIndex = startTimesIndices[j][p];
+        const int swingFinalIndex = finalTimesIndices[j][p];
+        checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
+
+        const scalar_t swingStartTime = feetHeightTrajectoriesEvents_[j][swingStartIndex];
+        const scalar_t swingFinalTime = feetHeightTrajectoriesEvents_[j][swingFinalIndex];
+
+        const scalar_t scaling = swingTrajectoryScaling(swingStartTime, swingFinalTime, config_.swingTimeScale);
+
+        const CubicSpline::Node liftOff{swingStartTime, liftOffHeightSequence[j][p], scaling * config_.liftOffVelocity};
+        const CubicSpline::Node touchDown{swingFinalTime, touchDownHeightSequence[j][p], scaling * config_.touchDownVelocity};
+        const scalar_t midHeight = std::min(liftOffHeightSequence[j][p], touchDownHeightSequence[j][p]) + scaling * config_.swingHeight;
+        feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
+      } else {  // for a stance leg
+        const CubicSpline::Node liftOff{0.0, liftOffHeightSequence[j][p], 0.0};
+        const CubicSpline::Node touchDown{1.0, liftOffHeightSequence[j][p], 0.0};
+        feetHeightTrajectories_[j].emplace_back(liftOff, liftOffHeightSequence[j][p], touchDown);
+      }
+    }
+    // feetHeightTrajectoriesEvents_[j] = eventTimes;
+  }
+  }
+}
+
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/

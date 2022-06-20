@@ -53,6 +53,11 @@ class SwingTrajectoryPlanner {
   void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
               const feet_array_t<scalar_array_t>& touchDownHeightSequence);
 
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
+              const feet_array_t<scalar_array_t>& touchDownHeightSequence, 
+              const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
+              scalar_t initTime);
+
   scalar_t getZvelocityConstraint(size_t leg, scalar_t time) const;
 
   scalar_t getZpositionConstraint(size_t leg, scalar_t time) const;

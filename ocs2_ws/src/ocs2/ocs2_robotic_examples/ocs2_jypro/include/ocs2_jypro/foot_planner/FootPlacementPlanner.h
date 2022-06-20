@@ -21,9 +21,15 @@ class FootPlacementPlanner{
                          const CentroidalModelInfo& centroidalModelInfo,
                          size_t numFeet);
 
-   void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, const scalar_t& initTime);
+   void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, 
+                    scalar_t initTime, const vector_t& initState);
 
    vector3_t getFootPlacementConstraint(size_t leg,  scalar_t time) const;
+
+   const feet_array_t<scalar_array_t>& getliftOffHeightSequence() const{ return liftOffHeightSequence_; }
+   const feet_array_t<scalar_array_t>& gettouchDownHeightSequence() const{ return touchDownHeightSequence_; }
+   const feet_array_t<scalar_array_t>& getfeetPlacementEvents() const{ return feetPlacementEvents_; }
+
  private:
       /**
    * Extracts for each leg the contact sequence over the motion phase sequence.

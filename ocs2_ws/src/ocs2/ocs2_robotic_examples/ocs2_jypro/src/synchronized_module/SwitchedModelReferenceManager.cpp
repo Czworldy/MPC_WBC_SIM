@@ -62,8 +62,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   std::cout << modeSchedule << std::endl;
 
   const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
-  swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
-  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime);
+
+  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getliftOffHeightSequence(), 
+                                footPlacementPlannerPtr_->gettouchDownHeightSequence(),
+                                footPlacementPlannerPtr_->getfeetPlacementEvents(),initTime);
+  
 }
 
 }  // namespace legged_robot

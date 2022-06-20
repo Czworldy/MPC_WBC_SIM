@@ -380,17 +380,21 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
     if(i < 3){
       leftpoint[1] = 0.25*i - 0.338;
       rightpoint[1] = 0.25*i - 0.338;
+      // leftpoint[2] = 0.03+0.02*i;
+      // rightpoint[2] = 0.03+0.02*i;
       leftpoint[0] += n(e);
       rightpoint[0] += n(e);
     }
     else{
-      leftpoint[1] = 0.25*(i - 4) + 0.338;
-      rightpoint[1] = 0.25*(i - 4) + 0.338;
+      leftpoint[1] = 0.25*(i - 3) + 0.338;
+      rightpoint[1] = 0.25*(i - 3) + 0.338;
+      leftpoint[2] = 0.03+0.06*(i-3);
+      rightpoint[2] = 0.03+0.06*(i-3);
       leftpoint[0] += n(e);
       rightpoint[0] += n(e);
     }
 
-    if (i == 0 || i == 4)
+    if (i == 0 || i == 3)
     {
       leftpoint[0] = -0.177;
       rightpoint[0] = 0.177;
