@@ -57,15 +57,15 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        1
+  nThreads                        4
   threadPriority                  50
 
   maxNumIterations                10
   minRelCost                      1e-1
   constraintTolerance             5e-3
 
-  displayInfo                     false
-  displayShortSummary             false
+  displayInfo                     true
+  displayShortSummary             true
   checkNumericalStability         false
   debugPrintRollout               false
   debugCaching                    false

@@ -12,6 +12,7 @@
 #include "gazebo_msgs/ModelStates.h"
 #include "ocs2_msgs/mpc_wbc_conversion.h"
 #include <gazebo_msgs/ContactsState.h>
+#include <geometry_msgs/PointStamped.h>
 
 // Global Variables
 conversionData mpcData;
@@ -79,6 +80,8 @@ int dofOfRobot = 18;
 Vec41<int> contact_flag_real;
 // Functions
 void mpcComunicacion();
+void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos, 
+                        std::vector<Vec31<float>>& feet_point_pos);
 void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg);
 void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg);
@@ -98,6 +101,21 @@ int main(int argc, char**argv) {
     ros::Publisher lh_haa_pub, lh_hfe_pub, lh_kfe_pub;
     ros::Publisher rf_haa_pub, rf_hfe_pub, rf_kfe_pub;
     ros::Publisher rh_haa_pub, rh_hfe_pub, rh_kfe_pub;
+
+    ros::Publisher lf_foot_pub, lh_foot_pub, rf_foot_pub, rh_foot_pub;
+
+    
+    lf_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/lf_foot_pos", 1);
+    lh_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
+    rf_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
+    rh_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
+
+    std::vector<Vec31<float>> feet_point_pos;
+
+    // geometry_msgs::PointStamped lf_foot_pos, lh_foot_pos, rf_foot_pos, rh_foot_pos;
+    std::vector<geometry_msgs::PointStamped> feet_pos;
+    feet_pos.resize(4);
+
     
 
     std_msgs::Float64 lf_haa_tau, lf_hfe_tau, lf_kfe_tau;
@@ -217,6 +235,8 @@ int main(int argc, char**argv) {
 		    		isSetUp_WBCBaseMotion = true;
 		    	}
 		    	simpleMotion->WBCMotionRun(command, isSafe);
+                feet_point_pos = simpleMotion->RecordData();
+                sendFeetPointData(feet_pos,feet_point_pos);
 		    	if(simpleMotion->isWBCMotionFinished() && isMPC) {
 		    		robotState = kWBCMPC;
 		    	}
@@ -234,6 +254,8 @@ int main(int argc, char**argv) {
 		    	}
                 // simpleMotion->TerrainEst(contact_flag_real);
 		    	simpleMotion->MPCWBCRun(estStatesOutput.time_stamp, command, isSafe);
+                feet_point_pos = simpleMotion->RecordData();
+                sendFeetPointData(feet_pos,feet_point_pos);
 		    	if(!isSafe) {
 		    		// robotState = kSafeState;
 		    	}
@@ -282,12 +304,35 @@ int main(int argc, char**argv) {
         rh_hfe_pub.publish(rh_hfe_tau);
         rh_kfe_pub.publish(rh_kfe_tau);
 
+        lf_foot_pub.publish(feet_pos[0]);
+        lh_foot_pub.publish(feet_pos[1]);
+        rf_foot_pub.publish(feet_pos[2]);
+        rh_foot_pub.publish(feet_pos[3]);
+
         ros::spinOnce();
 
         bool rate_bool = rate.sleep();
     }
 
     return 0;
+}
+
+void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos, 
+                        std::vector<Vec31<float>>& feet_point_pos){
+    size_t leg = 0;
+    std::cout << feet_point_pos.size() << "\n";
+    for(auto& foot_pos:feet_pos){
+        foot_pos.header.stamp = ros::Time::now();
+        foot_pos.header.seq = (uint32_t)leg;
+        foot_pos.header.frame_id = "odom";
+
+        std::cout << "leg: " << leg << std::endl;
+
+        foot_pos.point.x = feet_point_pos[leg][0];
+        foot_pos.point.y = feet_point_pos[leg][1];
+        foot_pos.point.z = feet_point_pos[leg][2];
+        leg++;
+    }
 }
 
 void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg) {
