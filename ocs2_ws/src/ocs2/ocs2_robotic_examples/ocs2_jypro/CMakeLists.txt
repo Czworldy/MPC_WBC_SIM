@@ -6,6 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CATKIN_PACKAGE_DEPENDENCIES
   roslib
+  pybind11_catkin
   cmake_modules
   ocs2_core
   ocs2_mpc
@@ -14,6 +15,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   ocs2_pinocchio_interface
   ocs2_centroidal_model
   ocs2_ros_interfaces
+  ocs2_python_interface
   tf
   urdf
   kdl_parser
@@ -90,6 +92,7 @@ add_library(ocs2_jypro
   src/foot_planner/FootPlacementPlanner.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
+  src/gait/GaitPythonInterface.cpp
   src/gait/GaitSchedule.cpp
   src/gait/ModeSequenceTemplate.cpp
   src/LeggedRobotInterface.cpp
@@ -198,6 +201,24 @@ target_link_libraries(legged_robot_gait_command
   ${catkin_LIBRARIES}
 )
 target_compile_options(legged_robot_gait_command PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# python bindings
+pybind11_add_module(LeggedRobotPyBindings SHARED
+  src/pyBindModule.cpp
+)
+add_dependencies(LeggedRobotPyBindings
+  ${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(LeggedRobotPyBindings PRIVATE
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+set_target_properties(LeggedRobotPyBindings
+    PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
+
+catkin_python_setup()
 
 #########################
 ###   CLANG TOOLING   ###

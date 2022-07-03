@@ -48,8 +48,8 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
         else{
           leftpoint[1] = 0.25*(i - 3) + 0.338;
           rightpoint[1] = 0.25*(i - 3) + 0.338;
-          leftpoint[2] = 0.03+0.06*(i-3);
-          rightpoint[2] = 0.03+0.06*(i-3);
+          // leftpoint[2] = 0.03+0.06*(i-3);
+          // rightpoint[2] = 0.03+0.06*(i-3);
           leftpoint[0] += n(e);
           rightpoint[0] += n(e);
         }
@@ -134,7 +134,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           //TODO: test whether use swingStartTime or swingFinalTime to calculate the desired states.
           //This maybe affect the max velocity of the base motion, and the horizon of MPC.
           //Currently, we use swingFinalTime, MPC horizen = 0.5s. max velocity = 0.2m/s.
-          const vector_t desiredstate = targetTrajectories.getDesiredState(swingStartTime);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalIndex);
 
           pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
           pinocchio::updateFramePlacements(model, data);
