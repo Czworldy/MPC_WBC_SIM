@@ -50,6 +50,7 @@ GaitPythonInterface::GaitPythonInterface(std::shared_ptr<GaitSchedule> gaitSched
 /******************************************************************************************************/
 void GaitPythonInterface::preSolverRun(scalar_t initTime, scalar_t finalTime, const vector_t& currentState,
                                 const ReferenceManagerInterface& referenceManager) {
+  // std::cout << "GaitPythonInterface::preSolverRun" << std::endl;
   if (gaitUpdated_) {
     std::cerr << "[GaitReceiver]: Setting new gait after time " << finalTime << "\n";
     std::cerr << receivedGait_;

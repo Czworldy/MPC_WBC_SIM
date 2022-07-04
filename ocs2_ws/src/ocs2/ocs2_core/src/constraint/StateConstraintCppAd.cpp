@@ -42,9 +42,7 @@ void StateConstraintCppAd::initialize(size_t stateDim, size_t parameterDim, cons
     const ad_vector_t state = x.tail(stateDim);
     y = this->constraintFunction(time, state, p);
   };
-  std::cout << "in initialize\n";
   adInterfacePtr_.reset(new ocs2::CppAdInterface(constraintAd, 1 + stateDim, parameterDim, modelName, modelFolder));
-  std::cout << "in initialize 2\n";
 
   ocs2::CppAdInterface::ApproximationOrder orderCppAd;
   if (getOrder() == ConstraintOrder::Linear) {
@@ -52,14 +50,13 @@ void StateConstraintCppAd::initialize(size_t stateDim, size_t parameterDim, cons
   } else {
     orderCppAd = ocs2::CppAdInterface::ApproximationOrder::Second;
   }
-  std::cout << "in initialize 3:" <<"\n";
 
   if (recompileLibraries) {
     adInterfacePtr_->createModels(orderCppAd, verbose);
   } else {
     adInterfacePtr_->loadModelsIfAvailable(orderCppAd, verbose);
   }
-  std::cout << "in initialize 4\n";
+
 
 }
 

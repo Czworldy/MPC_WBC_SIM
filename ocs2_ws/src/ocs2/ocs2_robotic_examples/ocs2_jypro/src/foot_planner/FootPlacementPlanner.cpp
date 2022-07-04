@@ -99,11 +99,12 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
 
   std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
   std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
-  
+  std::cout << "initState:" << initState.transpose() << std::endl;
   for (size_t j = 0; j < numFeet_; j++) {
       //using current state to calculate foot placement, where are the liffoff height.
       const auto& model = pinocchioInterface_.getModel();
       auto& data = pinocchioInterface_.getData();
+      // NOTE: centroidalModelInfo_ cannot be empty , otherwise the following line will throw an exception.
       pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(initState, centroidalModelInfo_));
       pinocchio::updateFramePlacements(model, data);
       const auto initFootPosition = endEffectorKinematicsPtr_->getPosition(initState)[j];
@@ -174,34 +175,34 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
   }
 
   //debug print
-  int i = 0;
-  for(auto leg:feetPlacement_){
-    std::cout << "leg:" << i << "===================" << std::endl;
-    for(auto foot:leg){
-      std::cout << "point" <<foot.transpose() << std::endl;
-    }
-    i++;
-  }
+  // int i = 0;
+  // for(auto leg:feetPlacement_){
+  //   std::cout << "leg:" << i << "===================" << std::endl;
+  //   for(auto foot:leg){
+  //     std::cout << "point" <<foot.transpose() << std::endl;
+  //   }
+  //   i++;
+  // }
 
-  i = 0;
-  for(auto leg:liftOffHeightSequence_){
-    std::cout << "leg:" << i << "===================liftOffHeightSequence_" << std::endl;
-    for(auto foot:leg){
-      std::cout << "point" <<foot << " ";
-    }
-    std::cout << std::endl;
-    i++;
-  }
+  // i = 0;
+  // for(auto leg:liftOffHeightSequence_){
+  //   std::cout << "leg:" << i << "===================liftOffHeightSequence_" << std::endl;
+  //   for(auto foot:leg){
+  //     std::cout << "point" <<foot << " ";
+  //   }
+  //   std::cout << std::endl;
+  //   i++;
+  // }
 
-  i = 0;
-  for(auto leg:touchDownHeightSequence_){
-    std::cout << "leg:" << i << "===================touchDownHeightSequence_" << std::endl;
-    for(auto foot:leg){
-      std::cout << "point" <<foot << " ";
-    }
-    std::cout << std::endl;
-    i++;
-  }
+  // i = 0;
+  // for(auto leg:touchDownHeightSequence_){
+  //   std::cout << "leg:" << i << "===================touchDownHeightSequence_" << std::endl;
+  //   for(auto foot:leg){
+  //     std::cout << "point" <<foot << " ";
+  //   }
+  //   std::cout << std::endl;
+  //   i++;
+  // }
 } 
 
 vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){

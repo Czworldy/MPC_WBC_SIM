@@ -127,7 +127,8 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(const P
       pinocchioInterface_(rhs.pinocchioInterface_), mapping_(rhs.mapping_),updateCallback_(rhs.updateCallback_),
       endEffectorFrameIds_(rhs.endEffectorFrameIds_) {
         positionFunc = rhs.positionFunc; 
-        std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";}
+        // std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";
+        }
 
 /******************************************************************************************************/
 /******************************************************************************************************/

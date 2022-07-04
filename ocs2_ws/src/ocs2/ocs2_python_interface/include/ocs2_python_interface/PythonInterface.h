@@ -167,6 +167,22 @@ class PythonInterface {
     throw std::runtime_error("PythonInterface::visualizeTrajectory must be implemented by robot-specific derived class.");
   }
 
+  virtual void setModule(const std::string& module) {
+    throw std::runtime_error("PythonInterface::setModule must be implemented by robot-specific derived class.");
+  }
+
+  virtual vector_t getInitState() {
+    throw std::runtime_error("PythonInterface::getInitState must be implemented by robot-specific derived class.");
+  }
+
+  virtual int getStateDim() {
+    throw std::runtime_error("PythonInterface::getStateDim must be implemented by robot-specific derived class.");
+  }
+
+  virtual int getInputDim() {
+    throw std::runtime_error("PythonInterface::getInputDim must be implemented by robot-specific derived class.");
+  }
+
  protected:
   std::unique_ptr<PenaltyBase> penalty_;
 

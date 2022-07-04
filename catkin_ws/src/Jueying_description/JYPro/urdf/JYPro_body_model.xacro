@@ -4,15 +4,15 @@
   <xacro:property name="motor_damp" value="1.2"/>
   <xacro:property name="motor_fric" value="0.1"/>
 
-  <link name="origin_link">
+  <!-- <link name="origin_link">
     </link>
   <joint name="origin_joint" type="fixed">
     <origin
       xyz="0 0 0.6"
-      rpy="0 0 1.57"/>
+      rpy="0 0 0"/>
     <parent link="origin_link"/>
     <child link="BASE"/>
-  </joint>
+  </joint> -->
 
   <link
     name="BASE">

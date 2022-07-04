@@ -71,28 +71,55 @@ class LeggedRobotPyBindings final : public PythonInterface {
     ss << urdfStringFile.rdbuf();
     const std::string urdfString = ss.str();
 
-    LeggedRobotInterface leggedRobotInterface(taskFile, libraryFolder, urdf::parseURDF(urdfString));
+    leggedRobotInterfacePtr_.reset(new LeggedRobotInterface(taskFile, libraryFolder, urdf::parseURDF(urdfString)));
 
     // System dimensions
     // stateDim_ = leggedRobotInterface.getCentroidalModelInfo().stateDim;
     // inputDim_ = leggedRobotInterface.getCentroidalModelInfo().inputDim;
 
     // MPC
-    std::unique_ptr<MPC_DDP> mpcPtr(new MPC_DDP(leggedRobotInterface.mpcSettings(), leggedRobotInterface.ddpSettings(),
-                                                leggedRobotInterface.getRollout(), leggedRobotInterface.getOptimalControlProblem(),
-                                                leggedRobotInterface.getInitializer()));
+    std::unique_ptr<MPC_DDP> mpcPtr(new MPC_DDP(leggedRobotInterfacePtr_->mpcSettings(), leggedRobotInterfacePtr_->ddpSettings(),
+                                                leggedRobotInterfacePtr_->getRollout(), leggedRobotInterfacePtr_->getOptimalControlProblem(),
+                                                leggedRobotInterfacePtr_->getInitializer()));
     
-    auto gaitReceiverPtr = std::make_shared<ocs2::legged_robot::GaitPythonInterface>(
-            leggedRobotInterface.getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), 
-            "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info", true);
+    gaitReceiverPtr_.reset(new ocs2::legged_robot::GaitPythonInterface(
+            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), 
+            "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info", true));
 
-    mpcPtr->getSolverPtr()->setReferenceManager(leggedRobotInterface.getReferenceManagerPtr());
-    mpcPtr->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       
+    mpcPtr->getSolverPtr()->setReferenceManager(leggedRobotInterfacePtr_->getReferenceManagerPtr());
+    mpcPtr->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr_);       
+
+    auto initState = leggedRobotInterfacePtr_->getInitialState();
+    const ocs2::vector_t zeroInput = ocs2::vector_t::Zero(24);
 
 
     // Python interface
-    PythonInterface::init(leggedRobotInterface, std::move(mpcPtr));
+    PythonInterface::init(*leggedRobotInterfacePtr_, std::move(mpcPtr));
+    setObservation(0.0, initState, zeroInput);
   }
+
+  void setModule(const std::string& moduleName) override {
+    std::cout << "setModule: " << moduleName << std::endl;
+    gaitReceiverPtr_->setMpcModeSequence(moduleName);
+  }
+
+  vector_t getInitState() override {
+    return leggedRobotInterfacePtr_->getInitialState();
+  }
+
+  int getStateDim() override {
+    return leggedRobotInterfacePtr_->getCentroidalModelInfo().stateDim;
+  }
+
+  int getInputDim() override {
+    return leggedRobotInterfacePtr_->getCentroidalModelInfo().inputDim;
+  }
+
+  
+  // hold this interface to keep it alive, beacuse some classes reference its member
+  // for example, FootPlacementPlanner's centroidalModelInfo_
+  std::unique_ptr<LeggedRobotInterface> leggedRobotInterfacePtr_ = nullptr; 
+  std::shared_ptr<ocs2::legged_robot::GaitPythonInterface> gaitReceiverPtr_ = nullptr;
 };
 
 }  // namespace ballbot

@@ -31,9 +31,9 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
         // initialize CppAD interface
         auto pinocchioInterfaceCppAd = endEffectorKinematics_.pinocchioInterface_.toCppAd();
 
-        for(const auto& i:endEffectorKinematics_.getendEffectorFrameIds()){
-          std::cout << "id:" << i << "\n";
-        }
+        // for(const auto& i:endEffectorKinematics_.getendEffectorFrameIds()){
+        //   std::cout << "id:" << i << "\n";
+        // }
         //  set pinocchioInterface to mapping
         // std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr(endEffectorKinematics_.mapping_.clone());//段错误
         // mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
