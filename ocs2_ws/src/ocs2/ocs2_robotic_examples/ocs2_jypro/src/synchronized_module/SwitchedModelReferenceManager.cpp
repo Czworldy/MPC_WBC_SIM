@@ -38,7 +38,7 @@ namespace legged_robot {
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr)
-    : ReferenceManager(TargetTrajectories(), ModeSchedule()),
+    : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)) {}
@@ -64,9 +64,15 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getliftOffHeightSequence(), 
-                                footPlacementPlannerPtr_->gettouchDownHeightSequence(),
-                                footPlacementPlannerPtr_->getfeetPlacementEvents(),initTime);
+  
+  // Normal swing feet trajectory
+  swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
+
+  // For terrain aware swing feet trajectory planning
+  // swingTrajectoryPtr_->update(modeSchedule, 
+  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(), 
+  //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
+  //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
   
 }
 

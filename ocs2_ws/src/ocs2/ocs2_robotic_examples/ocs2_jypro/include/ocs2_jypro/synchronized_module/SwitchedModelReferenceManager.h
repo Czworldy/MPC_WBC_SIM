@@ -30,8 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <ocs2_core/thread_support/Synchronized.h>
-#include <ocs2_oc/synchronized_module/ReferenceManager.h>
 
+#include "ocs2_jypro/synchronized_module/LeggedRobotReferenceManager.h"
 #include "ocs2_jypro/foot_planner/SwingTrajectoryPlanner.h"
 #include "ocs2_jypro/foot_planner/FootPlacementPlanner.h"
 #include "ocs2_jypro/gait/GaitSchedule.h"
@@ -43,7 +43,7 @@ namespace legged_robot {
 /**
  * Manages the ModeSchedule and the TargetTrajectories for switched model.
  */
-class SwitchedModelReferenceManager : public ReferenceManager {
+class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
  public:
   SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                 std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr);

@@ -37,7 +37,7 @@ targetTrajectories = TargetTrajectories(
     desiredTimeTraj, desiredStateTraj, desiredInputTraj
 )
 mpc.reset(targetTrajectories)
-mpc.setModule("trot")
+mpc.setModule("standing_trot")
 
 dt = 0.02
 t = 0
@@ -54,7 +54,7 @@ for item in range(100):
     x = x_result[0] + dx*dt
     t += dt
     mpc.setObservation(t, x, u_result[0])
-    
+    print(len(t_result))
     # print(t_result[0])
     # print(x_result[3])
     # print(u_result[0])

@@ -10,7 +10,7 @@ legged_robot_interface
 model_settings
 {
   positionErrorGain             0.0
-  phaseTransitionStanceTime     0.4
+  phaseTransitionStanceTime     0.0
 
   verboseCppAd                  true
   recompileLibrariesCppAd       false
@@ -127,7 +127,7 @@ mpc
   solutionTimeWindow              -1  ; [s]
 
   mpcDesiredFrequency             50  ; [Hz]
-  mrtDesiredFrequency             1000 ; [Hz]
+  mrtDesiredFrequency             400 ; [Hz]
 }
 
 initialState
