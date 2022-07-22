@@ -32,8 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_mpc/MPC_DDP.h>
 #include <ocs2_ros_interfaces/mpc/MPC_ROS_Interface.h>
-#include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
 
+#include <ocs2_jypro/synchronized_module/LeggedRobotRosReferenceManager.h>
 #include "ocs2_jypro/LeggedRobotInterface.h"
 #include "ocs2_jypro/gait/GaitReceiver.h"
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
       nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robotName);
 
   // ROS ReferenceManager
-  auto rosReferenceManagerPtr = std::make_shared<ocs2::RosReferenceManager>(robotName, interface.getReferenceManagerPtr());
+  auto rosReferenceManagerPtr = std::make_shared<ocs2::LeggedRobotRosReferenceManager>(robotName, interface.getSwitchedModelReferenceManagerPtr());
   rosReferenceManagerPtr->subscribe(nodeHandle);
 
   // MPC

@@ -13,7 +13,7 @@ model_settings
   phaseTransitionStanceTime     0.0
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       false
+  recompileLibrariesCppAd       true
   modelFolderCppAd              /tmp/ocs2
 }
 
@@ -57,7 +57,7 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        4
+  nThreads                        1
   threadPriority                  50
 
   maxNumIterations                10

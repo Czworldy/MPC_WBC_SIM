@@ -71,7 +71,7 @@ public:
                                  size_t foot_id, float foot_x, float foot_y, float foot_z,
                                  float timeGoal);
     void KeepSwingFootStates(); 
-    void UpdateMPCMsg(const conversionData mpcMsg, float time_stamp);
+    void UpdateMPCMsg(conversionData* mpcMsg, float time_stamp);
     void UpdateControlFrame(const EstimatorOutput& input);
     const std::vector<Vec31<float>> RecordData();                 
 
@@ -131,7 +131,7 @@ private:
     ControlFSMData<float> currentStatesWBC_; 
 
     // mpc
-    conversionData mpcMsg_;
+    conversionData* mpcMsgPtr_ = nullptr;
     size_t indexMPCStateTime_;
     size_t indexMPCSwitchTime_;
     float timeUpdateMPC_;

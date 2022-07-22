@@ -117,9 +117,14 @@ int main(int argc, char* argv[]) {
         raisim::VecDyn Qdot = robot->getGeneralizedVelocity();
         robot->getOrientation(robot->getBodyIdx("base"), baseOriWorldCur);
         robot->getAngularVelocity(robot->getBodyIdx("base"), baseAngularVelWorldCur);
+        baseLinearVelWorldCur = Qdot.e().topRows(3);
+
 
         estStatesOutput.base_pos_world = basePosWorldCur.e();
-        estStatesOutput.base_linear_vel_world = baseLinearVelWorldCur.e();
+        // estStatesOutput.base_linear_vel_world = Qdot.e().topRows(3); //No INPUT
+        estStatesOutput.base_linear_vel_world = baseLinearVelWorldCur.e(); // checked
+
+
         estStatesOutput.base_linear_vel_body = baseOriWorldCur.e().transpose() * baseLinearVelWorldCur.e();
         estStatesOutput.base_orientation_world = baseOriWorldCur.e();
         estStatesOutput.base_angular_vel_world = baseAngularVelWorldCur.e();
@@ -149,6 +154,7 @@ int main(int argc, char* argv[]) {
 
         simpleMotion->EstimatedStatesInput(estStatesOutput);
         static int count = 0;
+        std::cout << "robotState: " << robotState << std::endl;
         switch (robotState) {
             case kWaitForMsg: {
             //  std::this_thread::sleep_for(std::chrono::microseconds(1000));
@@ -176,9 +182,9 @@ int main(int argc, char* argv[]) {
 		    		isSetUp_PDStandUpMotion = true;
 		    	}
 		    	if(simpleMotion->isPDMotionFinished()) {
-                    // count++;
-                    // if(count > 3000)
-		    		    // robotState = kWBCBaseMotion;
+                    count++;
+                    if(count > 300)
+		    		    robotState = kWBCBaseMotion;
 		    	}
 		    	simpleMotion->PDMotionRun(command);
 		    	break;
@@ -190,6 +196,7 @@ int main(int argc, char* argv[]) {
 		    		isSetUp_WBCBaseMotion = true;
 		    	}
 		    	simpleMotion->WBCMotionRun(command, isSafe);
+                std::cout << "WBCRun!\n";
 		    	if(simpleMotion->isWBCMotionFinished() && isMPC) {
 		    		robotState = kWBCMPC;
 		    	}
@@ -201,7 +208,7 @@ int main(int argc, char* argv[]) {
 		    case kWBCMPC: {
 		    	if(isMPCMsgUpdate) {
 		    		// ReadMPCMsg
-		    		simpleMotion->UpdateMPCMsg(mpcData, estStatesOutput.time_stamp);
+		    		simpleMotion->UpdateMPCMsg(&mpcData, estStatesOutput.time_stamp);
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}
@@ -242,7 +249,7 @@ int main(int argc, char* argv[]) {
         robot->setGeneralizedForce(command_out);
 
         server.integrateWorldThreadSafe();
-        rate.sleep();
+        // rate.sleep();
 
     }
 

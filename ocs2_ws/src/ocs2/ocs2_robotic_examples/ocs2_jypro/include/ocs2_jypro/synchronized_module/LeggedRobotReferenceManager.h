@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ocs2_core/thread_support/BufferedValue.h"
 #include "ocs2_oc/synchronized_module/ReferenceManagerInterface.h"
-#include "ocs2_jypro/synchronized_module/TargetFeetPlacement.h"
+#include "ocs2_core/reference/TargetFeetPlacement.h"
 
 namespace ocs2 {
 
@@ -63,6 +63,13 @@ class LeggedRobotReferenceManager : public ReferenceManagerInterface {
     return targetTrajectories_.setBuffer(std::move(targetTrajectories));
   }
 
+  void setTargetFeetPlacement(const TargetFeetPlacement& targetFeetPlacement) override {
+    return targetFeetPlacement_.setBuffer(targetFeetPlacement);
+  }
+  void setTargetFeetPlacement(TargetFeetPlacement&& targetFeetPlacement) override {
+    return targetFeetPlacement_.setBuffer(std::move(targetFeetPlacement));
+  }
+
  protected:
   /**
    * Modifies the active ModeSchedule and TargetTrajectories.
@@ -77,6 +84,9 @@ class LeggedRobotReferenceManager : public ReferenceManagerInterface {
    */
   virtual void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
                                 ModeSchedule& modeSchedule) {}
+
+  virtual void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
+                                ModeSchedule& modeSchedule, TargetFeetPlacement& targetFeetPlacement) {}
 
  private:
   BufferedValue<ModeSchedule> modeSchedule_;

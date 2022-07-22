@@ -40,6 +40,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_msgs/mpc_performance_indices.h>
 #include <ocs2_msgs/mpc_target_trajectories.h>
+#include <ocs2_msgs/FootholdRegionGroup.h>
+#include "ocs2_core/reference/TargetFeetPlacement.h"
+
 
 namespace ocs2 {
 namespace ros_msg_conversions {
@@ -62,6 +65,7 @@ ocs2_msgs::mpc_target_trajectories createTargetTrajectoriesMsg(const TargetTraje
 /** Returns the TargetTrajectories message. */
 TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_trajectories& targetTrajectoriesMsg);
 
+TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg);
 /**
  * Creates the performance indices message.
  *

@@ -219,5 +219,54 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
   return {desiredTimeTrajectory, desiredStateTrajectory, desiredInputTrajectory};
 }
 
+TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg){
+  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
+
+  int leftSize = footholdRegionGroupMsg.footholdRegion_LF.size() + footholdRegionGroupMsg.footholdRegion_LH.size();
+  int rightSize = footholdRegionGroupMsg.footholdRegion_RF.size() + footholdRegionGroupMsg.footholdRegion_RH.size();
+
+  std::vector<vector3_t> leftPoints, rightPoints;
+  leftPoints.reserve(leftSize);
+  rightPoints.reserve(rightSize);
+
+
+  for(auto& LF:footholdRegionGroupMsg.footholdRegion_LF){
+    vector3_t point;
+    point.x() = LF.rectCenter_Position.x;
+    point.y() = LF.rectCenter_Position.y;
+    point.z() = LF.rectCenter_Position.z;
+    leftPoints.emplace_back(point);
+  }
+
+  for(auto& LH:footholdRegionGroupMsg.footholdRegion_LH){
+    vector3_t point;
+    point.x() = LH.rectCenter_Position.x;
+    point.y() = LH.rectCenter_Position.y;
+    point.z() = LH.rectCenter_Position.z;
+    leftPoints.emplace_back(point);
+  }
+
+  for(auto& RF:footholdRegionGroupMsg.footholdRegion_RF){
+    vector3_t point;
+    point.x() = RF.rectCenter_Position.x;
+    point.y() = RF.rectCenter_Position.y;
+    point.z() = RF.rectCenter_Position.z;
+    rightPoints.emplace_back(point);
+  }
+
+  for(auto& RH:footholdRegionGroupMsg.footholdRegion_RH){
+    vector3_t point;
+    point.x() = RH.rectCenter_Position.x;
+    point.y() = RH.rectCenter_Position.y;
+    point.z() = RH.rectCenter_Position.z;
+    rightPoints.emplace_back(point);
+  }
+
+  TargetFeetPlacement targetFeetPlacement(leftPoints, rightPoints);
+
+  return targetFeetPlacement;
+
+}
+
 }  // namespace ros_msg_conversions
 }  // namespace ocs2

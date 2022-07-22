@@ -248,7 +248,7 @@ int main(int argc, char**argv) {
 		    case kWBCMPC: {
 		    	if(isMPCMsgUpdate) {
 		    		// ReadMPCMsg
-		    		simpleMotion->UpdateMPCMsg(mpcData, estStatesOutput.time_stamp);
+		    		simpleMotion->UpdateMPCMsg(&mpcData, estStatesOutput.time_stamp);
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}

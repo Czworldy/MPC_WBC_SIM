@@ -76,5 +76,46 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   
 }
 
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState,
+                                                     TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
+                                                     TargetFeetPlacement& targetFeetPlacement) {
+  const auto timeHorizon = finalTime - initTime;
+  modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
+
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  std::cout << modeSchedule << std::endl;
+
+  const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
+
+  std::cout << "targetFeetPlacement L size:" << targetFeetPlacement.targetFeetPlacemetLeft_.size() << "\n";
+  std::cout << "targetFeetPlacement R size:" << targetFeetPlacement.targetFeetPlacemetRight_.size() << "\n";
+  const auto& left = targetFeetPlacement.targetFeetPlacemetLeft_;
+  const auto& right = targetFeetPlacement.targetFeetPlacemetRight_;
+  for(const auto& left_i : left) {
+    std::cout << "left_i:" << left_i.transpose() << "\n";
+  }
+  for(const auto& right_i : right) {
+    std::cout << "right_i:" << right_i.transpose() << "\n";
+  }
+  footPlacementPlannerPtr_->setTargetPoints(left, right);
+
+  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+  
+  // Normal swing feet trajectory
+  swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
+
+
+
+  // For terrain aware swing feet trajectory planning
+  // swingTrajectoryPtr_->update(modeSchedule, 
+  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(), 
+  //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
+  //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
+  
+}
+
 }  // namespace legged_robot
 }  // namespace ocs2

@@ -7,6 +7,8 @@ find_package(catkin REQUIRED
     COMPONENTS
         ${CATKIN_PACKAGE_DEPENDENCIES}
         message_generation
+        geometry_msgs
+        std_msgs
 )
 
 add_message_files(
@@ -21,6 +23,9 @@ add_message_files(
         mpc_flattened_controller.msg
         mpc_wbc_conversion.msg
         mpc_wbc_traj.msg
+        mpc_target_feetplacement.msg
+        FootholdRegion.msg
+        FootholdRegionGroup.msg
 )
 
 add_service_files(
@@ -31,6 +36,8 @@ add_service_files(
 generate_messages(
     DEPENDENCIES
         ${CATKIN_PACKAGE_DEPENDENCIES}
+        geometry_msgs
+        std_msgs
 )
 
 catkin_package(

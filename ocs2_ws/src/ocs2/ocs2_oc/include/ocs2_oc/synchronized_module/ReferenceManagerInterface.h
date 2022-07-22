@@ -32,6 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/Types.h>
 #include <ocs2_core/reference/ModeSchedule.h>
 #include <ocs2_core/reference/TargetTrajectories.h>
+#include <ocs2_core/reference/TargetFeetPlacement.h>
+
 
 namespace ocs2 {
 
@@ -90,6 +92,14 @@ class ReferenceManagerInterface {
    * @note: This method must be thread safe.
    */
   virtual void setTargetTrajectories(TargetTrajectories&& targetTrajectories) = 0;
+
+  virtual void setTargetFeetPlacement(const TargetFeetPlacement& targetFeetPlacement) {
+    printf("This is for legged robot!");
+  }
+  
+  virtual void setTargetFeetPlacement(TargetFeetPlacement&& targetFeetPlacement) {
+    printf("This is for legged robot!");
+  }
 };
 
 }  // namespace ocs2

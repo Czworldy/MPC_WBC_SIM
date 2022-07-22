@@ -586,51 +586,51 @@ const std::vector<Vec31<float>> SimpleMotion::RecordData() {
     return feet_result;
 }
 
-void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
+void SimpleMotion::UpdateMPCMsg(conversionData* mpcMsg, float time_stamp) {
+    mpcMsgPtr_ = mpcMsg;
+    // const int N_times = mpcMsg.stateTime.size();
+    // // std::cerr << "1 " << N_times <<"\n";
 
-    const int N_times = mpcMsg.stateTime.size();
-    // std::cerr << "1 " << N_times <<"\n";
+    // mpcMsg_.swingFeetPosition.clear();
+    // mpcMsg_.swingFeetPosition.resize(N_times);
+    // mpcMsg_.swingFeetVelocity.clear();
+    // mpcMsg_.swingFeetVelocity.resize(N_times);
+    // mpcMsg_.swingFeetAcceleration.clear();
+    // mpcMsg_.swingFeetAcceleration.resize(N_times);
+    // mpcMsg_.basePosition.clear();
+    // mpcMsg_.basePosition.resize(N_times);
+    // mpcMsg_.baseVelocity.clear();
+    // mpcMsg_.baseVelocity.resize(N_times);
+    // mpcMsg_.baseAcceleration.clear();
+    // mpcMsg_.baseAcceleration.resize(N_times);
+    // mpcMsg_.stateTime.resize(N_times);
+    // // std::cerr << "2" << "\n";
 
-    mpcMsg_.swingFeetPosition.clear();
-    mpcMsg_.swingFeetPosition.resize(N_times);
-    mpcMsg_.swingFeetVelocity.clear();
-    mpcMsg_.swingFeetVelocity.resize(N_times);
-    mpcMsg_.swingFeetAcceleration.clear();
-    mpcMsg_.swingFeetAcceleration.resize(N_times);
-    mpcMsg_.basePosition.clear();
-    mpcMsg_.basePosition.resize(N_times);
-    mpcMsg_.baseVelocity.clear();
-    mpcMsg_.baseVelocity.resize(N_times);
-    mpcMsg_.baseAcceleration.clear();
-    mpcMsg_.baseAcceleration.resize(N_times);
-    mpcMsg_.stateTime.resize(N_times);
-    // std::cerr << "2" << "\n";
+    // // Gait
+    // mpcMsg_.firstGait  = mpcMsg.firstGait;
+    // mpcMsg_.secondGait = mpcMsg.secondGait;
+    // mpcMsg_.thirdGait  = mpcMsg.thirdGait;
+    // mpcMsg_.switchTime = mpcMsg.switchTime;
+    // // std::cerr << "3" << "\n";
 
-    // Gait
-    mpcMsg_.firstGait  = mpcMsg.firstGait;
-    mpcMsg_.secondGait = mpcMsg.secondGait;
-    mpcMsg_.thirdGait  = mpcMsg.thirdGait;
-    mpcMsg_.switchTime = mpcMsg.switchTime;
-    // std::cerr << "3" << "\n";
+    // for (int i = 0; i < N_times; i++) { 
+    //     // State Times
+    //     mpcMsg_.stateTime[i] = mpcMsg.stateTime[i];
+    //     // std::cerr << "mpcMsg_.stateTime[i]" << mpcMsg_.stateTime[i] << "\n";
+    //     // Swing Feet Trajectories
+    //     mpcMsg_.swingFeetPosition[i].resize(4);
+    //     mpcMsg_.swingFeetVelocity[i].resize(4);
+    //     mpcMsg_.swingFeetAcceleration[i].resize(4);
+    //     for (uint8_t j = 0; j < 4; j++){
+    //         mpcMsg_.swingFeetPosition[i][j]     = mpcMsg.swingFeetPosition[i][j];
+    //         mpcMsg_.swingFeetVelocity[i][j]     = mpcMsg.swingFeetVelocity[i][j];
+    //         mpcMsg_.swingFeetAcceleration[i][j] = mpcMsg.swingFeetAcceleration[i][j];
+    //     }
 
-    for (int i = 0; i < N_times; i++) { 
-        // State Times
-        mpcMsg_.stateTime[i] = mpcMsg.stateTime[i];
-        // std::cerr << "mpcMsg_.stateTime[i]" << mpcMsg_.stateTime[i] << "\n";
-        // Swing Feet Trajectories
-        mpcMsg_.swingFeetPosition[i].resize(4);
-        mpcMsg_.swingFeetVelocity[i].resize(4);
-        mpcMsg_.swingFeetAcceleration[i].resize(4);
-        for (uint8_t j = 0; j < 4; j++){
-            mpcMsg_.swingFeetPosition[i][j]     = mpcMsg.swingFeetPosition[i][j];
-            mpcMsg_.swingFeetVelocity[i][j]     = mpcMsg.swingFeetVelocity[i][j];
-            mpcMsg_.swingFeetAcceleration[i][j] = mpcMsg.swingFeetAcceleration[i][j];
-        }
-
-        mpcMsg_.basePosition[i]     = mpcMsg.basePosition[i];
-        mpcMsg_.baseVelocity[i]     = mpcMsg.baseVelocity[i];
-        mpcMsg_.baseAcceleration[i] = mpcMsg.baseAcceleration[i];
-    }
+    //     mpcMsg_.basePosition[i]     = mpcMsg.basePosition[i];
+    //     mpcMsg_.baseVelocity[i]     = mpcMsg.baseVelocity[i];
+    //     mpcMsg_.baseAcceleration[i] = mpcMsg.baseAcceleration[i];
+    // }
 
     // std::cerr << "4" << "\n";
 
@@ -661,45 +661,45 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     // std::cerr << "6" << "\n";
     // StateTime
     indexMPCStateTime_ = 0;
-    while ((time_stamp) > mpcMsg_.stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsg_.stateTime.size() - 1) {
+    while ((time_stamp) > mpcMsgPtr_->stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsgPtr_->stateTime.size() - 1) {
         indexMPCStateTime_++;
     }
     // std::cerr << "7" << "\n";
     // Contact
-    if(indexMPCStateTime_ >= mpcMsg_.stateTime.size()) {
-        indexMPCStateTime_ = mpcMsg_.stateTime.size() - 1;
+    if(indexMPCStateTime_ >= mpcMsgPtr_->stateTime.size()) {
+        indexMPCStateTime_ = mpcMsgPtr_->stateTime.size() - 1;
         std::cerr << "\n[yjy: SimpleMotion::MPCWBCRun] MPC IS OUT OF TIME!\n";
     }
     // std::cerr << "8" << "\n";
-    if(time_stamp < mpcMsg_.switchTime[0]) {
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.firstGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.firstGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.firstGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.firstGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.firstGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.firstGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.firstGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.firstGait[3];
+    if(time_stamp < mpcMsgPtr_->switchTime[0]) {
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->firstGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->firstGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->firstGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->firstGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->firstGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->firstGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->firstGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->firstGait[3];
     }
-    else if(time_stamp < mpcMsg_.switchTime[1] && time_stamp >= mpcMsg_.switchTime[0]) {
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.secondGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.secondGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.secondGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.secondGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.secondGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.secondGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.secondGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.secondGait[3];
+    else if(time_stamp < mpcMsgPtr_->switchTime[1] && time_stamp >= mpcMsgPtr_->switchTime[0]) {
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->secondGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->secondGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->secondGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->secondGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->secondGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->secondGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->secondGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->secondGait[3];
     }
-    else if(time_stamp >= mpcMsg_.switchTime[1]){
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.thirdGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.thirdGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.thirdGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.thirdGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.thirdGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.thirdGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.thirdGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.thirdGait[3];  
+    else if(time_stamp >= mpcMsgPtr_->switchTime[1]){
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->thirdGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->thirdGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->thirdGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->thirdGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->thirdGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->thirdGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->thirdGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->thirdGait[3];  
     }
     else {
         currentStatesWBC_.bodyStateEst.contactEstimate << 1, 1, 1, 1;
@@ -709,28 +709,28 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     // std::cerr << "9" << "\n";
 
     // Desired WBC Trajectories
-    desiredDataWBC_.pBody_des = mpcMsg_.basePosition[indexMPCStateTime_].head(3);
-    desiredDataWBC_.vBody_des = mpcMsg_.baseVelocity[indexMPCStateTime_].head(3);
-    desiredDataWBC_.aBody_des = mpcMsg_.baseAcceleration[indexMPCStateTime_].head(3);
+    desiredDataWBC_.pBody_des = mpcMsgPtr_->basePosition[indexMPCStateTime_].head(3);
+    desiredDataWBC_.vBody_des = mpcMsgPtr_->baseVelocity[indexMPCStateTime_].head(3);
+    desiredDataWBC_.aBody_des = mpcMsgPtr_->baseAcceleration[indexMPCStateTime_].head(3);
 
-    desiredDataWBC_.pBody_RPY_des = mpcMsg_.basePosition[indexMPCStateTime_].tail(3);
-    desiredDataWBC_.vBody_RPY_des = mpcMsg_.baseVelocity[indexMPCStateTime_].tail(3);
-    desiredDataWBC_.aBody_RPY_des = mpcMsg_.baseAcceleration[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.pBody_RPY_des = mpcMsgPtr_->basePosition[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.vBody_RPY_des = mpcMsgPtr_->baseVelocity[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.aBody_RPY_des = mpcMsgPtr_->baseAcceleration[indexMPCStateTime_].tail(3);
 
-    desiredDataWBC_.pFoot_des[legID::LF] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][0];
-    desiredDataWBC_.pFoot_des[legID::RF] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][1];
-    desiredDataWBC_.pFoot_des[legID::LB] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][2];
-    desiredDataWBC_.pFoot_des[legID::RB] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][3];
+    desiredDataWBC_.pFoot_des[legID::LF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][0];
+    desiredDataWBC_.pFoot_des[legID::RF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][1];
+    desiredDataWBC_.pFoot_des[legID::LB] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][2];
+    desiredDataWBC_.pFoot_des[legID::RB] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][3];
 
-    desiredDataWBC_.vFoot_des[legID::LF] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][0];
-    desiredDataWBC_.vFoot_des[legID::RF] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][1];
-    desiredDataWBC_.vFoot_des[legID::LB] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][2];
-    desiredDataWBC_.vFoot_des[legID::RB] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][3];
+    desiredDataWBC_.vFoot_des[legID::LF] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][0];
+    desiredDataWBC_.vFoot_des[legID::RF] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][1];
+    desiredDataWBC_.vFoot_des[legID::LB] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][2];
+    desiredDataWBC_.vFoot_des[legID::RB] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][3];
 
-    desiredDataWBC_.aFoot_des[legID::LF] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][0];
-    desiredDataWBC_.aFoot_des[legID::RF] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][1];
-    desiredDataWBC_.aFoot_des[legID::LB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][2];
-    desiredDataWBC_.aFoot_des[legID::RB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][3];
+    desiredDataWBC_.aFoot_des[legID::LF] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][0];
+    desiredDataWBC_.aFoot_des[legID::RF] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][1];
+    desiredDataWBC_.aFoot_des[legID::LB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][2];
+    desiredDataWBC_.aFoot_des[legID::RB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][3];
 
     std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
 

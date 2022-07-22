@@ -20,37 +20,58 @@ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
 FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING,  zBUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "ocs2_jypro/synchronized_module/LeggedRobotReferenceManager.h"
-#include <iostream>
+#include "ocs2_jypro/synchronized_module/LeggedRobotRosReferenceManager.h"
+
+#include "ocs2_ros_interfaces/common/RosMsgConversions.h"
+
+#include <ros/transport_hints.h>
+
+// MPC messages
+#include <ocs2_msgs/mode_schedule.h>
+#include <ocs2_msgs/mpc_target_trajectories.h>
+#include <ocs2_msgs/FootholdRegionGroup.h>
+
 namespace ocs2 {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-LeggedRobotReferenceManager::LeggedRobotReferenceManager(TargetTrajectories initialTargetTrajectories, ModeSchedule initialModeSchedule,
-                                  TargetFeetPlacement initialFeetPlacement)
-    : targetTrajectories_(std::move(initialTargetTrajectories)), modeSchedule_(std::move(initialModeSchedule)),
-    targetFeetPlacement_(std::move(initialFeetPlacement))
-     {}
+LeggedRobotRosReferenceManager::LeggedRobotRosReferenceManager(std::string topicPrefix, std::shared_ptr<ReferenceManagerInterface> referenceManagerPtr)
+    : ReferenceManagerDecorator(std::move(referenceManagerPtr)), topicPrefix_(std::move(topicPrefix)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void LeggedRobotReferenceManager::preSolverRun(scalar_t initTime, scalar_t finalTime, const vector_t& initState) {
-  targetTrajectories_.updateFromBuffer(); //dqwang: Update targetTrajectories 
-  //modeSchedule_ modified in modifyReferences, this line is useless
-  modeSchedule_.updateFromBuffer();
-  targetFeetPlacement_.updateFromBuffer();
+void LeggedRobotRosReferenceManager::subscribe(ros::NodeHandle& nodeHandle) {
+  // ModeSchedule
+  auto modeScheduleCallback = [this](const ocs2_msgs::mode_schedule::ConstPtr& msg) {
+    auto modeSchedule = ros_msg_conversions::readModeScheduleMsg(*msg);
+    referenceManagerPtr_->setModeSchedule(std::move(modeSchedule));
+  };
+  modeScheduleSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mode_schedule>(topicPrefix_ + "_mode_schedule", 1, modeScheduleCallback);
 
-  modifyReferences(initTime, finalTime, initState, targetTrajectories_.get(), modeSchedule_.get(), targetFeetPlacement_.get()); // dqwang: Update Swing Trajectories
+  // TargetTrajectories
+  auto targetTrajectoriesCallback = [this](const ocs2_msgs::mpc_target_trajectories::ConstPtr& msg) {
+    auto targetTrajectories = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
+    referenceManagerPtr_->setTargetTrajectories(std::move(targetTrajectories));
+  };
+  targetTrajectoriesSubscriber_ =
+      nodeHandle.subscribe<ocs2_msgs::mpc_target_trajectories>(topicPrefix_ + "_mpc_target", 1, targetTrajectoriesCallback);
 
-} 
+  // TargetFeetPlacement
+  auto targetFeetPlacementCallback = [this](const ocs2_msgs::FootholdRegionGroup::ConstPtr& msg) {
+    auto targetFeetPlacement = ros_msg_conversions::readFootholdRegionGroupMsg(*msg);
+    referenceManagerPtr_->setTargetFeetPlacement(std::move(targetFeetPlacement));
+  };
+  targetFeetPlacementSubscriber_ =
+      nodeHandle.subscribe<ocs2_msgs::FootholdRegionGroup>(topicPrefix_ + "_target_feet_placement", 1, targetFeetPlacementCallback);
+}
 
 }  // namespace ocs2

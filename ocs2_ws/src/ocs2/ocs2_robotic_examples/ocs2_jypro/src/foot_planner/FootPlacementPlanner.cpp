@@ -135,13 +135,14 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           //TODO: test whether use swingStartTime or swingFinalTime to calculate the desired states.
           //This maybe affect the max velocity of the base motion, and the horizon of MPC.
           //Currently, we use swingFinalTime, MPC horizen = 0.5s. max velocity = 0.2m/s.
-          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalIndex);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
 
           pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
           pinocchio::updateFramePlacements(model, data);
 
           const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
           vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          // std::cout << "footplacement:" << footplacement.transpose() << "\tfeetPosition" << feetPosition.transpose() << std::endl; 
           scalar_t footplacementZ = footplacement[2];
           feetPlacement_[j].emplace_back(footplacement);          
           touchDownHeightSequence_[j].emplace_back(footplacementZ);    

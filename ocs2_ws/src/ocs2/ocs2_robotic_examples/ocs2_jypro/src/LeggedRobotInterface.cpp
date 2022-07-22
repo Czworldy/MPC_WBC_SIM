@@ -196,10 +196,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
-    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-    //                                           i, barrierPenaltyConfig_)
-    //                                          );
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig_)
+                                             );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

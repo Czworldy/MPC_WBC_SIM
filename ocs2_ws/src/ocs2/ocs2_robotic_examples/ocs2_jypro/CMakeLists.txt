@@ -87,6 +87,7 @@ add_library(ocs2_jypro
   src/initialization/LeggedRobotInitializer.cpp
   src/synchronized_module/LeggedRobotReferenceManager.cpp
   src/synchronized_module/SwitchedModelReferenceManager.cpp
+  src/synchronized_module/LeggedRobotRosReferenceManager.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
@@ -220,6 +221,20 @@ set_target_properties(LeggedRobotPyBindings
 )
 
 catkin_python_setup()
+
+#test publisher
+add_executable(TestFeetPlacementPublisher
+  src/TestFeetPlacementPublisher.cpp
+)
+add_dependencies(TestFeetPlacementPublisher
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(TestFeetPlacementPublisher
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 
 #########################
 ###   CLANG TOOLING   ###

@@ -91,7 +91,8 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
 
   auto footPlacementPoint = [&](size_t footIndex) {
     vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
-    scalar_t tol = 0.03;
+    // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
+    scalar_t tol = 0.06;
 
     Eigen::Matrix<scalar_t, 6, 1> constraint, b;
      b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
@@ -103,9 +104,9 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   if (request.contains(Request::Constraint)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
-      // swingTimeLeft_[i] = swingTimeLeftLambda(i);
-      // footPlacementConstraints_[i] = footPlacementPoint(i);
-      // std::cout << "preCompute times: " << footPlacementConstraints_[i].transpose() << std::endl;
+      swingTimeLeft_[i] = swingTimeLeftLambda(i);
+      footPlacementConstraints_[i] = footPlacementPoint(i);
+      // std::cout << "preCompute times: " << t << "\t" << footPlacementConstraints_[i].transpose() << std::endl;
 
     }
     // Eigen::Map<Eigen::Matrix<scalar_t, 4, 1>> times(swingTimeLeft_.data());
