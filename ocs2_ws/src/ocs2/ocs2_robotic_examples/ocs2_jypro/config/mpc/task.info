@@ -57,7 +57,7 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        1
+  nThreads                        3
   threadPriority                  50
 
   maxNumIterations                10
@@ -247,5 +247,5 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.01
-  delta                  0.0015
+  delta                  0.0025
 }

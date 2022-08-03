@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
        nodeHandle.advertise<ocs2_msgs::FootholdRegionGroup>("legged_robot_target_feet_placement", 1);
   std::default_random_engine e(2);
 
-  std::normal_distribution<ocs2::scalar_t> n(0,0.01);
+  std::normal_distribution<ocs2::scalar_t> n(0,0.05);
 
   std::vector<vector3_t> leftPoints;
   std::vector<vector3_t> rightPoints;
@@ -43,16 +43,18 @@ int main(int argc, char** argv) {
       if(i < 3){
         leftpoint[1] = 0.25*i - 0.338;
         rightpoint[1] = 0.25*i - 0.338;
-        leftpoint[0] += n(e);
-        rightpoint[0] += n(e);
+        double random = n(e);
+        leftpoint[0] += random;
+        rightpoint[0] += random;
       }
       else{
         leftpoint[1] = 0.25*(i - 3) + 0.338;
         rightpoint[1] = 0.25*(i - 3) + 0.338;
         // leftpoint[2] = 0.03+0.06*(i-3);
         // rightpoint[2] = 0.03+0.06*(i-3);
-        leftpoint[0] += n(e);
-        rightpoint[0] += n(e);
+        double random = n(e);
+        leftpoint[0] += random;
+        rightpoint[0] += random;
       }
 
       if (i == 0 || i == 3)

@@ -282,10 +282,18 @@ void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
     // double ros_time = ros::Time::now().toSec();
     Eigen::Quaternion<double> orientation_gazebo, orientation_tpl, orientation_final;
     Eigen::Matrix<double,3,1> rpy;
-    orientation_gazebo.w() = msg->pose[2].orientation.w;
-    orientation_gazebo.x() = msg->pose[2].orientation.x;
-    orientation_gazebo.y() = msg->pose[2].orientation.y;
-    orientation_gazebo.z() = msg->pose[2].orientation.z;
+    int index = 0;
+    for(auto& modelName:msg->name){
+        if(modelName == "JYPro")
+            break;
+        ++index;
+    }
+
+    
+    orientation_gazebo.w() = msg->pose[index].orientation.w;
+    orientation_gazebo.x() = msg->pose[index].orientation.x;
+    orientation_gazebo.y() = msg->pose[index].orientation.y;
+    orientation_gazebo.z() = msg->pose[index].orientation.z;
 
     rpy = yawTotalCounter.quaternionToTotalRad(orientation_gazebo);
     
@@ -298,16 +306,16 @@ void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
 
     // pose --- position
     Eigen::Matrix<double,3,1> position;
-    position[0] = msg->pose[2].position.x; 
-    position[1] = msg->pose[2].position.y;  
-    position[2] = msg->pose[2].position.z;
+    position[0] = msg->pose[index].position.x; 
+    position[1] = msg->pose[index].position.y;  
+    position[2] = msg->pose[index].position.z;
     mpcInputData.q_.head(3) =   position;
     
     // twist --- angular
     Eigen::Matrix<double,3,1> twist_angular, twist_angular_tpl;
-    twist_angular[0] = msg->twist[2].angular.x;
-    twist_angular[1] = msg->twist[2].angular.y;
-    twist_angular[2] = msg->twist[2].angular.z;
+    twist_angular[0] = msg->twist[index].angular.x;
+    twist_angular[1] = msg->twist[index].angular.y;
+    twist_angular[2] = msg->twist[index].angular.z;
     twist_angular_tpl =   twist_angular;
     mpcInputData.v_[3] = twist_angular_tpl[2];
     mpcInputData.v_[4] = twist_angular_tpl[1];
@@ -315,9 +323,9 @@ void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
     
     // twist --- linear
     Eigen::Matrix<double,3,1> twist_linear;
-    twist_linear[0] = msg->twist[2].linear.x;
-    twist_linear[1] = msg->twist[2].linear.y;
-    twist_linear[2] = msg->twist[2].linear.z;
+    twist_linear[0] = msg->twist[index].linear.x;
+    twist_linear[1] = msg->twist[index].linear.y;
+    twist_linear[2] = msg->twist[index].linear.z;
     mpcInputData.v_.head(3) =   twist_linear;
 
     gazeboStates_Msg = true; 

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="X20">
+  <link
+    name="BASE">
+    <inertial>
+      <origin
+        xyz="0.005 0.000413 0.004"
+        rpy="0 0 0" />
+      <mass
+        value="26.398" />
+      <inertia ixx="0.1632" ixy="-5.2136E-05" ixz="-0.00019406" iyy="0.40648" iyz="8.2679E-05" izz="0.52596" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0.005 0.000413 0.004"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/Torso.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.005 0.000413 0.004"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/Torso.dae" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="LF_HIP">
+    <inertial>
+      <origin xyz="-0.00075689 -0.0089129 -5.0528E-05" />
+      <mass value="1.5767" />
+      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="2.8652E-06" iyy="0.0016912" iyz="3.7E-06" izz="0.0013431" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/FL_Hip.dae" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="A_LF_HAA" type="revolute">
+    <origin xyz="0.292 0.08 0" />
+    <parent link="BASE" />
+    <child link="LF_HIP" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.523" upper="0.261" effort="30" velocity="20" />
+  </joint>
+
+  <link name="LF_THIGH">
+    <inertial>
+      <origin xyz="-0.0025264 -0.022118 -0.0292" />
+      <mass value="3.0063" />
+      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0437E-06" iyy="0.0080686" iyz="-6.889E-05" izz="0.003874" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/L_Thigh.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.13" />
+      <geometry>
+        <cylinder length="0.25" radius="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="A_LF_HFE" type="revolute">
+    <origin xyz="0 0.12325 0" />
+    <parent link="LF_HIP" />
+    <child link="LF_THIGH" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-2.53" upper="0.35" effort="40" velocity="20" />
+  </joint>
+
+  <link name="LF_SHANK">
+    <inertial>
+      <origin xyz="0.0075224 2.5888E-05 -0.17586" />
+      <mass value="0.54849" />
+      <inertia ixx="0.0057" ixy="1.16E-07" ixz="0.000153" iyy="0.006" iyz="-1.12E-06" izz="0.00029" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/Shank.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.00 0 -0.33" />
+      <geometry>
+        <sphere radius="0.036"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="A_LF_KFE" type="revolute">
+    <origin xyz="0 0 -0.3" />
+    <parent link="LF_THIGH" />
+    <child link="LF_SHANK" />
+    <axis xyz="0 -1 0" />
+    <limit lower="0.35" upper="2.53" effort="60" velocity="20" />
+  </joint>
+
+  <link name="LH_HIP">
+    <inertial>
+      <origin xyz="0.000757 -0.009 5.053E-05" />
+      <mass value="1.5767" />
+      <inertia ixx="0.00121" ixy="-6.2E-06" ixz="2.9E-06" iyy="0.0017" iyz="-3.7E-06" izz="0.00134" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/HL_Hip.dae" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="B_LH_HAA" type="revolute">
+    <origin xyz="-0.292 0.08 0" />
+    <parent link="BASE" />
+    <child link="LH_HIP" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.523" upper="0.261" effort="30" velocity="20" />
+  </joint>
+
+  <link name="LH_THIGH">
+    <inertial>
+      <origin xyz="-0.0025264 -0.022118 -0.0292" />
+      <mass value="3.0063" />
+      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0433E-06" iyy="0.008" iyz="-6.8889E-05" izz="0.003874" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/L_Thigh.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.13" />
+      <geometry>
+        <cylinder length="0.25" radius="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="B_LH_HFE" type="revolute">
+    <origin xyz="0 0.12325 0" />
+    <parent link="LH_HIP" />
+    <child link="LH_THIGH" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-2.53" upper="0.35" effort="40" velocity="20" />
+  </joint>
+
+  <link name="LH_SHANK">
+    <inertial>
+      <origin xyz="0.0075224 2.5888E-05 -0.17586" />
+      <mass value="0.54849" />
+      <inertia ixx="0.0057" ixy="1.16E-07" ixz="0.000153" iyy="0.006" iyz="-1.12E-06" izz="0.00029" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/Shank.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.00 0 -0.33" />
+      <geometry>
+        <sphere radius="0.036"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="B_LH_KFE" type="revolute">
+    <origin xyz="0 0 -0.3" />
+    <parent link="LH_THIGH" />
+    <child link="LH_SHANK" />
+    <axis xyz="0 -1 0" />
+    <limit lower="0.35" upper="2.53" effort="60" velocity="20" />
+  </joint>
+
+  <link name="RF_HIP">
+    <inertial>
+      <origin xyz="-0.000757 0.009 5.0528E-05" />
+      <mass value="1.5767" />
+      <inertia ixx="0.0012141" ixy="-6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="3.7E-06" izz="0.0013431" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/FR_Hip.dae" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="A_RF_HAA" type="revolute">
+    <origin xyz="0.292 -0.08 0" />
+    <parent link="BASE" />
+    <child link="RF_HIP" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-0.523" upper="0.261" effort="30" velocity="20" />
+  </joint>
+
+  <link name="RF_THIGH">
+    <inertial>
+      <origin xyz="-0.0025266 0.022119 -0.029194" />
+      <mass value="3.0062" />
+      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0682E-06" iyy="0.0080684" iyz="6.8812E-05" izz="0.0038739" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/R_Thigh.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.13" />
+      <geometry>
+        <cylinder length="0.25" radius="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="A_RF_HFE" type="revolute">
+    <origin xyz="0 -0.12325 0" />
+    <parent link="RF_HIP" />
+    <child link="RF_THIGH" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-2.53" upper="0.35" effort="40" velocity="20" />
+  </joint>
+
+  <link name="RF_SHANK">
+    <inertial>
+      <origin xyz="0.0075224 2.5888E-05 -0.17586" />
+      <mass value="0.54849" />
+      <inertia ixx="0.0057" ixy="1.16E-07" ixz="0.000153" iyy="0.006" iyz="-1.12E-06" izz="0.00029" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/Shank.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.00 0 -0.33" />
+      <geometry>
+        <sphere radius="0.036"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="A_RF_KFE" type="revolute">
+    <origin xyz="0 0 -0.3" />
+    <parent link="RF_THIGH" />
+    <child link="RF_SHANK" />
+    <axis xyz="0 -1 0" />
+    <limit lower="0.35" upper="2.53" effort="60" velocity="20" />
+  </joint>
+
+  <link name="RH_HIP">
+    <inertial>
+      <origin xyz="0.00075689 0.0089129 -5.0528E-05" />
+      <mass value="1.5767" />
+      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="-3.7E-06" izz="0.0013431" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/HR_Hip.dae" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="B_RH_HAA" type="revolute">
+    <origin xyz="-0.292 -0.08 0" />
+    <parent link="BASE" />
+    <child link="RH_HIP" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-0.523" upper="0.261" effort="30" velocity="20" />
+  </joint>
+
+  <link name="RH_THIGH">
+    <inertial>
+      <origin xyz="-0.0025266 0.022119 -0.029194" />
+      <mass value="3.0062" />
+      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0681E-06" iyy="0.0080684" iyz="6.8812E-05" izz="0.0038739" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/R_Thigh.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.13" />
+      <geometry>
+        <cylinder length="0.25" radius="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="B_RH_HFE" type="revolute">
+    <origin xyz="0 -0.12325 0" />
+    <parent link="RH_HIP" />
+    <child link="RH_THIGH" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-2.53" upper="0.35" effort="40" velocity="20" />
+  </joint>
+
+  <link name="RH_SHANK">
+    <inertial>
+      <origin xyz="0.0075224 2.589E-05 -0.17586" />
+      <mass value="0.54849" />
+      <inertia ixx="0.0056981" ixy="1.1608E-07" ixz="0.00015292" iyy="0.0059026" iyz="-1.1243E-06" izz="0.00028822" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://JYPro/meshes/Shank.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.00 0 -0.33" />
+      <geometry>
+        <sphere radius="0.036"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="B_RH_KFE" type="revolute">
+    <origin xyz="0 0 -0.3" />
+    <parent link="RH_THIGH" />
+    <child link="RH_SHANK" />
+    <axis xyz="0 -1 0" />
+    <limit lower="0.35" upper="2.53" effort="60" velocity="20" />
+  </joint>
+</robot>

@@ -351,23 +351,30 @@ void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg) {
 }
 
 void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
-    basePosWorldCur[0] = msg->pose[2].position.x;
-    basePosWorldCur[1] = msg->pose[2].position.y;
-    basePosWorldCur[2] = msg->pose[2].position.z;
+    int index = 0;
+    for(auto& modelName:msg->name){
+        if(modelName == "JYPro")
+            break;
+        ++index;
+    }
 
-    baseLinearVelWorldCur[0] = msg->twist[2].linear.x; 
-    baseLinearVelWorldCur[1] = msg->twist[2].linear.y; 
-    baseLinearVelWorldCur[2] = msg->twist[2].linear.z; 
+    basePosWorldCur[0] = msg->pose[index].position.x;
+    basePosWorldCur[1] = msg->pose[index].position.y;
+    basePosWorldCur[2] = msg->pose[index].position.z;
+
+    baseLinearVelWorldCur[0] = msg->twist[index].linear.x; 
+    baseLinearVelWorldCur[1] = msg->twist[index].linear.y; 
+    baseLinearVelWorldCur[2] = msg->twist[index].linear.z; 
 
 
-    baseOriWorldCur.w() = msg->pose[2].orientation.w;
-    baseOriWorldCur.x() = msg->pose[2].orientation.x;
-    baseOriWorldCur.y() = msg->pose[2].orientation.y;
-    baseOriWorldCur.z() = msg->pose[2].orientation.z;
+    baseOriWorldCur.w() = msg->pose[index].orientation.w;
+    baseOriWorldCur.x() = msg->pose[index].orientation.x;
+    baseOriWorldCur.y() = msg->pose[index].orientation.y;
+    baseOriWorldCur.z() = msg->pose[index].orientation.z;
 
-    baseAngularVelWorldCur[0] = msg->twist[2].angular.x;
-    baseAngularVelWorldCur[1] = msg->twist[2].angular.y;
-    baseAngularVelWorldCur[2] = msg->twist[2].angular.z;
+    baseAngularVelWorldCur[0] = msg->twist[index].angular.x;
+    baseAngularVelWorldCur[1] = msg->twist[index].angular.y;
+    baseAngularVelWorldCur[2] = msg->twist[index].angular.z;
 
     baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
     

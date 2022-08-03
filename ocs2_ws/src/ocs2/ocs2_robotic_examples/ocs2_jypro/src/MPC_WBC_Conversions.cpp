@@ -205,6 +205,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
     } // end of k loop
 
     // modeSchedule
+    // this loop may cause crash if ros time is not correct
     for (uint8_t i = 0; i < N_modeSequence - 1; i++){
         double delta_time = msg->modeSchedule.eventTimes[i] - msg->timeTrajectory[0];
         if(delta_time > 0){
