@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="JYPro" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="motor_damp" value="1.2"/>
+  <xacro:property name="motor_fric" value="0.1"/>
+
+  <!-- <link name="origin_link">
+    </link>
+  <joint name="origin_joint" type="fixed">
+    <origin
+      xyz="0 0 0.6"
+      rpy="0 0 0"/>
+    <parent link="origin_link"/>
+    <child link="BASE"/>
+  </joint> -->
+
+  <link
+    name="BASE">
+    <inertial>
+      <origin
+        xyz="0.00043155 0.039218 0.025123"
+        rpy="0 0 0" />
+      <mass
+        value="25.086" />
+      <inertia
+        ixx="2.2278"
+        ixy="0.0021782"
+        ixz="0.0009097"
+        iyy="0.27493"
+        iyz="-0.13204"
+        izz="2.1908" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/body.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/body.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+    <link name="imu_link">
+    <inertial>
+      <mass value="0.0000001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0000000001" ixy="0" ixz="0" iyy="0.00000000001" iyz="0" izz="0.000000001"/>
+    </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size="0.001 0.001 0.001"/>
+    </geometry>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size=".001 .001 .001"/>
+    </geometry>
+  </collision>
+ </link>
+ <joint name="imu_joint" type="fixed">
+    <axis xyz="0 0 0"/> 
+    <origin xyz="0 0 0"/>
+    <parent link="BASE"/>
+    <child link="imu_link"/>
+  </joint>
+
+  <link
+    name="LF_HIP">
+    <inertial>
+      <origin
+        xyz="4.14485893307365E-05 -0.00113627716579498 -0.0268906627091174"
+        rpy="0 0 0" />
+      <mass
+        value="2.50549192294322" />
+      <inertia
+        ixx="0.00412481611325406"
+        ixy="-8.61923036175591E-07"
+        ixz="3.73143726705958E-06"
+        iyy="0.00494762206279559"
+        iyz="0.000113743229299035"
+        izz="0.00567911706773225" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_LF_HAA"
+    type="revolute">
+    <origin
+      xyz="-0.135 0.33 0"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="BASE" />
+    <child
+      link="LF_HIP" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.38397"
+      upper="0.38397"
+      effort="126.1"
+      velocity="12"  />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="LF_THIGH">
+    <inertial>
+      <origin
+        xyz="-0.0077577 0.07269 0.019016"
+        rpy="0 0 0" />
+      <mass
+        value="4.5006" />
+      <inertia
+        ixx="0.058988"
+        ixy="0.0032662"
+        ixz="-0.00079631"
+        iyy="0.010824"
+        iyz="0.0057941"
+        izz="0.061893" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_LF_HFE"
+    type="revolute">
+    <origin
+      xyz="0 0 0.0419999999999999"
+      rpy="0 0 0" />
+    <parent
+      link="LF_HIP" />
+    <child
+      link="LF_THIGH" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-2.75762"
+      upper="0.48869"
+      effort="111.4"
+      velocity="19"/>
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="LF_SHANK">
+    <inertial>
+      <origin
+        xyz="0.0014413 0.14344 1.6577E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.50672" />
+      <inertia
+        ixx="0.012216"
+        ixy="-0.00022753"
+        ixz="2.7026E-08"
+        iyy="0.00021985"
+        iyz="-1.6284E-06"
+        izz="0.012354" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LF_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_LF_KFE"
+    type="revolute">
+    <origin
+      xyz="0 0.33 0"
+      rpy="0 0 0" />
+    <parent
+      link="LF_THIGH" />
+    <child
+      link="LF_SHANK" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0.66322"
+      upper="2.84488"
+      effort="195.8"
+      velocity="19"  />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+
+  <link
+    name="RF_HIP">
+    <inertial>
+      <origin
+        xyz="-4.14485947367454E-05 -0.00113627717429798 0.02689066268977"
+        rpy="0 0 0" />
+      <mass
+        value="2.50549191925909" />
+      <inertia
+        ixx="0.00412481611134714"
+        ixy="8.61923183582635E-07"
+        ixz="3.73143744918099E-06"
+        iyy="0.00494762206188555"
+        iyz="-0.000113743229014181"
+        izz="0.00567911706619976" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_RF_HAA"
+    type="revolute">
+    <origin
+      xyz="0.135 0.33 0"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="BASE" />
+    <child
+      link="RF_HIP" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-0.38397"
+      upper="0.38397"
+      effort="126.1"
+      velocity="12"   />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="RF_THIGH">
+    <inertial>
+      <origin
+        xyz="-0.0077577 0.07269 -0.019016"
+        rpy="0 0 0" />
+      <mass
+        value="4.5006" />
+      <inertia
+        ixx="0.058988"
+        ixy="0.0032662"
+        ixz="0.0007963"
+        iyy="0.010824"
+        iyz="-0.005794"
+        izz="0.061893" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_RF_HFE"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.042"
+      rpy="0 0 0" />
+    <parent
+      link="RF_HIP" />
+    <child
+      link="RF_THIGH" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-2.75762"
+      upper="0.48869"
+      effort="111.4"
+      velocity="19" />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="RF_SHANK">
+    <inertial>
+      <origin
+        xyz="0.0014413 0.14344 1.6577E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.50672" />
+      <inertia
+        ixx="0.012216"
+        ixy="-0.00022753"
+        ixz="2.7026E-08"
+        iyy="0.00021985"
+        iyz="-1.6284E-06"
+        izz="0.012354" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RF_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="A_RF_KFE"
+    type="revolute">
+    <origin
+      xyz="0 0.33 0"
+      rpy="0 0 0" />
+    <parent
+      link="RF_THIGH" />
+    <child
+      link="RF_SHANK" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0.66322"
+      upper="2.84488"
+      effort="195.8"
+      velocity="19" />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+
+  <link
+    name="LH_HIP">
+    <inertial>
+      <origin
+        xyz="4.14485800360742E-05 -0.00113627716607437 -0.0268906627007571"
+        rpy="0 0 0" />
+      <mass
+        value="2.50549192134742" />
+      <inertia
+        ixx="0.00412481611295601"
+        ixy="-8.61923030740982E-07"
+        ixz="3.73143695454939E-06"
+        iyy="0.00494762206190561"
+        iyz="0.000113743229290125"
+        izz="0.00567911706709784" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_LH_HAA"
+    type="revolute">
+    <origin
+      xyz="-0.135 -0.33 0"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="BASE" />
+    <child
+      link="LH_HIP" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.38397"
+      upper="0.38397"
+      effort="126.1"
+      velocity="12"  />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="LH_THIGH">
+    <inertial>
+      <origin
+        xyz="-0.00775771796402047 0.0726900313706462 0.0190159993999425"
+        rpy="0 0 0" />
+      <mass
+        value="4.50059878456915" />
+      <inertia
+        ixx="0.0589879584366234"
+        ixy="0.00326615871700767"
+        ixz="-0.000796308739824401"
+        iyy="0.010823989200702"
+        iyz="0.00579405626212472"
+        izz="0.0618928093310483" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_LH_HFE"
+    type="revolute">
+    <origin
+      xyz="0 0 0.0419999999999999"
+      rpy="0 0 0" />
+    <parent
+      link="LH_HIP" />
+    <child
+      link="LH_THIGH" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-2.75762"
+      upper="0.48869"
+      effort="111.4"
+      velocity="19" />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="LH_SHANK">
+    <inertial>
+      <origin
+        xyz="0.0014413 0.14344 1.6577E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.50672" />
+      <inertia
+        ixx="0.012216"
+        ixy="-0.00022753"
+        ixz="2.7026E-08"
+        iyy="0.00021985"
+        iyz="-1.6284E-06"
+        izz="0.012354" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/LB_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_LH_KFE"
+    type="revolute">
+    <origin
+      xyz="0 0.33 0"
+      rpy="0 0 0" />
+    <parent
+      link="LH_THIGH" />
+    <child
+      link="LH_SHANK" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0.66322"
+      upper="2.84488"
+      effort="195.8"
+      velocity="19"  />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+
+  <link
+    name="RH_HIP">
+    <inertial>
+      <origin
+        xyz="-4.14485765461992E-05 -0.00113627716531262 0.0268906626955816"
+        rpy="0 0 0" />
+      <mass
+        value="2.50549192036455" />
+      <inertia
+        ixx="0.00412481611229508"
+        ixy="8.61922976232822E-07"
+        ixz="3.73143683697258E-06"
+        iyy="0.00494762206182641"
+        iyz="-0.000113743229315575"
+        izz="0.00567911706670221" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_RH_HAA"
+    type="revolute">
+    <origin
+      xyz="0.135 -0.33 0"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="BASE" />
+    <child
+      link="RH_HIP" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-0.38397"
+      upper="0.38397"
+      effort="126.1"
+      velocity="12"   />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="RH_THIGH">
+    <inertial>
+      <origin
+        xyz="-0.0077577 0.07269 -0.019016"
+        rpy="0 0 0" />
+      <mass
+        value="4.5006" />
+      <inertia
+        ixx="0.058988"
+        ixy="0.0032662"
+        ixz="0.0007963"
+        iyy="0.010824"
+        iyz="-0.005794"
+        izz="0.061893" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_RH_HFE"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.0419999999999999"
+      rpy="0 0 0" />
+    <parent
+      link="RH_HIP" />
+    <child
+      link="RH_THIGH" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-2.75762"
+      upper="0.48869"
+      effort="111.4"
+      velocity="19" />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+  <link
+    name="RH_SHANK">
+    <inertial>
+      <origin
+        xyz="0.00144130821614064 0.143436695663533 1.65770431969081E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.506717439816204" />
+      <inertia
+        ixx="0.0122163341692312"
+        ixy="-0.000227526374818526"
+        ixz="2.70255941452921E-08"
+        iyy="0.000219848406703217"
+        iyz="-1.62843314387346E-06"
+        izz="0.0123538734657825" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://JYPro/meshes/RB_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="B_RH_KFE"
+    type="revolute">
+    <origin
+      xyz="0 0.33 0"
+      rpy="0 0 0" />
+    <parent
+      link="RH_THIGH" />
+    <child
+      link="RH_SHANK" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0.66322"
+      upper="2.84488"
+      effort="195.8"
+      velocity="19" />
+    <dynamics
+      damping="${motor_damp}"
+      friction="${motor_fric}" />
+  </joint>
+
+  <link name="LF_FOOT">
+  </link>
+  <joint name = "LF_FOOT_joint" type = "fixed">
+    <origin xyz="0 0.33 0" rpy = "0 0 0"/>
+    <parent link="LF_SHANK"/>
+    <child link = "LF_FOOT"/>
+  </joint>
+
+  <link name="LH_FOOT">
+  </link>
+  <joint name = "LH_FOOT_joint" type = "fixed">
+    <origin xyz="0 0.33 0" rpy = "0 0 0"/>
+    <parent link="LH_SHANK"/>
+    <child link = "LH_FOOT"/>
+  </joint>
+
+  <link name="RF_FOOT">
+  </link>
+  <joint name = "RF_FOOT_joint" type = "fixed">
+    <origin xyz="0 0.33 0" rpy = "0 0 0"/>
+    <parent link="RF_SHANK"/>
+    <child link = "RF_FOOT"/>
+  </joint>
+
+  <link name="RH_FOOT">
+  </link>
+  <joint name = "RH_FOOT_joint" type = "fixed">
+    <origin xyz="0 0.33 0" rpy = "0 0 0"/>
+    <parent link="RH_SHANK"/>
+    <child link = "RH_FOOT"/>
+  </joint>
+
+    <!-- ros_control plugin -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/JYPro</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+    <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>400</update_rate>
+      <visualize>true</visualize>
+      <topic>/sensors/imu</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>/sensors/imu</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>400.0</updateRateHZ>
+        <gaussianNoise>0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+  <!-- Joint 'implicitSpringDamper' setup, according to official website's suggestion-->
+  <xacro:macro name="joint_setup_block" params="joint_name">
+    <gazebo reference="${joint_name}">
+      <implicitSpringDamper>1</implicitSpringDamper>
+    </gazebo>
+  </xacro:macro>
+  <xacro:joint_setup_block joint_name="A_LF_HAA"/>
+  <xacro:joint_setup_block joint_name="A_LF_HFE"/>
+  <xacro:joint_setup_block joint_name="A_LF_KFE"/>
+  <xacro:joint_setup_block joint_name="A_RF_HAA"/>
+  <xacro:joint_setup_block joint_name="A_RF_HFE"/>
+  <xacro:joint_setup_block joint_name="A_RF_KFE"/>
+  <xacro:joint_setup_block joint_name="B_LH_HAA"/>
+  <xacro:joint_setup_block joint_name="B_LH_HFE"/>
+  <xacro:joint_setup_block joint_name="B_LH_KFE"/>
+  <xacro:joint_setup_block joint_name="B_RH_HAA"/>
+  <xacro:joint_setup_block joint_name="B_RH_HFE"/>
+  <xacro:joint_setup_block joint_name="B_RH_KFE"/>
+
+  <!-- Link setup-->
+  <xacro:macro name="link_setup_block" params="link_name">
+    <gazebo reference="${link_name}">
+      <kp>1000000.0</kp>
+      <kd>1.0</kd>
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+  </xacro:macro>
+  <xacro:link_setup_block link_name="LF_SHANK"/>  
+  <xacro:link_setup_block link_name="LH_SHANK"/>
+  <xacro:link_setup_block link_name="RF_SHANK"/>
+  <xacro:link_setup_block link_name="RH_SHANK"/>
+  
+  <xacro:macro name="link_setup_block2" params="link_name">
+    <gazebo reference="${link_name}">
+      <kp>1000000.0</kp>
+      <kd>1.0</kd>
+      <mu1>0.8</mu1>
+      <mu2>0.8</mu2>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+  </xacro:macro>
+  <xacro:link_setup_block2 link_name="LF_HIP"/>
+  <xacro:link_setup_block2 link_name="LF_THIGH"/>
+  <xacro:link_setup_block2 link_name="RF_HIP"/>
+  <xacro:link_setup_block2 link_name="RF_THIGH"/>
+  <xacro:link_setup_block2 link_name="LH_HIP"/>
+  <xacro:link_setup_block2 link_name="LH_THIGH"/>
+  <xacro:link_setup_block2 link_name="RH_HIP"/>
+  <xacro:link_setup_block2 link_name="RH_THIGH"/>
+
+  <!--setup the robot's color-->
+  <gazebo reference="BASE">
+    <material>Gazebo/Blue</material>
+    <turnGravityOff>false</turnGravityOff>
+  </gazebo>
+
+</robot>
