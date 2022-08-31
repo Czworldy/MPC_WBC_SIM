@@ -1,9 +1,0 @@
-2021.01.15
-对于Plan Frame/ Control Frame 的考虑：
-1.Plan Frame 和 Control Frame 都是针对地面倾斜时，将Yaw轴成为评估斜面的法线。Pitch和Row与Body Frame在斜面的投影保持一致。
-2. 目前的MOTION_PLAN和WBC不考虑倾斜地面，Yaw轴一直与Inertial Frame保持一致。Pitch和 Row与Body Frame在Inertial Frame的投影保持一致。原点与Inertial Frame保持一致。
-因此算法做如下改动：
-WBC的轨迹伺服部分的任务的反馈量不在通过RBDL的model计算，而是和MOTION_PlAN一样采用反馈量，然后自己计算。
-
-对于SwingFootTrajectory:
-ETH采用5阶Hermite Spline.
