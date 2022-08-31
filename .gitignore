@@ -1,0 +1,9 @@
+*.vscode*/
+catkin_ws/build/
+catkin_ws/devel/
+catkin_ws/.vscode/
+catkin_ws/.gitignore
+ocs2_ws/build/
+ocs2_ws/devel/
+ocs2_ws/.vscode/
+ocs2_ws/.gitignore
