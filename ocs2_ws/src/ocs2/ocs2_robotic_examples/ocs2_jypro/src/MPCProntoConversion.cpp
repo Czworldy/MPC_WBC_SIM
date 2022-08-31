@@ -275,7 +275,7 @@ void contactStateCallback(const pronto_msgs::QuadrupedStance::ConstPtr& msg){
 }
 
 
-quaternionToRad yawTotalCounter;
+QuaternionToRPY yawTotalCounter;
 
 void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
     // pose --- orientation

@@ -81,6 +81,27 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, scalar_t t
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
+void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const vector_t& terrainHeight) {
+  const scalar_array_t terrainHeightSequenceLF(modeSchedule.modeSequence.size(), terrainHeight[0]);
+  const scalar_array_t terrainHeightSequenceLH(modeSchedule.modeSequence.size(), terrainHeight[1]);
+  const scalar_array_t terrainHeightSequenceRF(modeSchedule.modeSequence.size(), terrainHeight[2]);
+  const scalar_array_t terrainHeightSequenceRH(modeSchedule.modeSequence.size(), terrainHeight[3]);
+  // const scalar_array_t terrainHeightSequence_(modeSchedule.modeSequence.size(), terrainHeight+0.1);
+  feet_array_t<scalar_array_t> liftOffHeightSequence;  //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"}
+  liftOffHeightSequence[0] = terrainHeightSequenceLF;
+  liftOffHeightSequence[1] = terrainHeightSequenceRF;
+  liftOffHeightSequence[2] = terrainHeightSequenceLH;
+  liftOffHeightSequence[3] = terrainHeightSequenceRH;
+
+
+  feet_array_t<scalar_array_t> touchDownHeightSequence = liftOffHeightSequence;
+  // touchDownHeightSequence.fill(terrainHeightSequence);
+  update(modeSchedule, liftOffHeightSequence, touchDownHeightSequence);
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
 void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
                                     const feet_array_t<scalar_array_t>& touchDownHeightSequence) {
   const auto& modeSequence = modeSchedule.modeSequence;

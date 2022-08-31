@@ -24,6 +24,7 @@ add_message_files(
         mpc_wbc_conversion.msg
         mpc_wbc_traj.msg
         mpc_target_feetplacement.msg
+        mpc_terrain.msg
         FootholdRegion.msg
         FootholdRegionGroup.msg
 )

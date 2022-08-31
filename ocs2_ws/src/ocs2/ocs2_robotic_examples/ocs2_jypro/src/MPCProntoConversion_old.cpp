@@ -405,7 +405,7 @@ void twistCallback(const geometry_msgs::TwistWithCovarianceStamped::ConstPtr& ms
     twistMsg = true;
 }
 
-quaternionToRad yawTotalCounter;
+QuaternionToRPY yawTotalCounter;
 
 void gazebo_link_states_callback(const gazebo_msgs::LinkStates::ConstPtr& msg){
     // pose --- orientation

@@ -252,7 +252,8 @@ int main(int argc, char**argv) {
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}
-                // simpleMotion->TerrainEst(contact_flag_real);
+                std::cout << "contact_flag_real: " << contact_flag_real << std::endl;
+                simpleMotion->TerrainEst(contact_flag_real);
 		    	simpleMotion->MPCWBCRun(estStatesOutput.time_stamp, command, isSafe);
                 feet_point_pos = simpleMotion->RecordData();
                 sendFeetPointData(feet_pos,feet_point_pos);
@@ -326,7 +327,7 @@ void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos,
         foot_pos.header.seq = (uint32_t)leg;
         foot_pos.header.frame_id = "odom";
 
-        std::cout << "leg: " << leg << std::endl;
+        // std::cout << "leg: " << leg << std::endl;
 
         foot_pos.point.x = feet_point_pos[leg][0];
         foot_pos.point.y = feet_point_pos[leg][1];

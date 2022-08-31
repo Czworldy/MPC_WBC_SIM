@@ -60,4 +60,4 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
 }
 
 }  // namespace legged_robot
-}  // namespace ocs2
+}  // namespace ocs2 

@@ -1,9 +1,9 @@
-#ifndef BODYPOSITIONEST_H
-#define BODYPOSITIONEST_H
+#pragma once
 
 #include "cppTypes.h"
 #include "SystemParameter.h"
-
+#include "ocs2_core/Types.h"
+namespace ocs2 {
 class BodyPositionEst{
     public:
         BodyPositionEst(){_body_height_pre = 0.45;};
@@ -37,20 +37,20 @@ class BodyPositionEst{
 
 };
 
-class quaternionToRad
+class QuaternionToRPY
 {
 
 public:
     int circle_counter = 0;
-    double preYaw = 0;
+    scalar_t preYaw = 0;
 
-    Vec31<double> quaternionToTotalRad(Eigen::Quaternion<double> q){
-        Vec31<double> rpy;
+    Vec31<scalar_t> quaternionToTotalRad(const Eigen::Quaternion<scalar_t>& q){
+        Vec31<scalar_t> rpy;
         rpy[0] = atan2(2*(q.w()*q.x()+q.y()*q.z()), 1-2*(pow(q.x(), 2)+pow(q.y(), 2)));
         rpy[1] = asin(2*(q.w()*q.y() - q.z()*q.x()));
         rpy[2] = atan2(2*(q.w()*q.z() + q.x()*q.y()), 1 - 2*(pow(q.y(), 2)+pow(q.z(), 2)));
 
-        double deltaYaw = rpy[2] - preYaw;
+        scalar_t deltaYaw = rpy[2] - preYaw;
         if(deltaYaw > 1.6*M_PI){
             circle_counter--;
         }
@@ -65,7 +65,7 @@ public:
     
     void reset(){circle_counter = 0; preYaw = 0;}
 
-    quaternionToRad(){reset();}
+    QuaternionToRPY(){reset();}
 };
+} //namespace ocs2
 
-#endif

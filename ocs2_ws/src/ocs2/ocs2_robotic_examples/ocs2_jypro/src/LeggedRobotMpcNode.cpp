@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_jypro/synchronized_module/LeggedRobotRosReferenceManager.h>
 #include "ocs2_jypro/LeggedRobotInterface.h"
 #include "ocs2_jypro/gait/GaitReceiver.h"
+#include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
 
 int main(int argc, char** argv) {
   std::vector<std::string> programArgs{};
@@ -72,11 +73,16 @@ int main(int argc, char** argv) {
   auto rosReferenceManagerPtr = std::make_shared<ocs2::LeggedRobotRosReferenceManager>(robotName, interface.getSwitchedModelReferenceManagerPtr());
   rosReferenceManagerPtr->subscribe(nodeHandle);
 
+  // Terrain receiver
+  auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainReceiver>(nodeHandle, 
+      interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
+
   // MPC
   ocs2::MPC_DDP mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
                     interface.getInitializer());
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
+  mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
 
   // Launch MPC ROS node
   ocs2::MPC_ROS_Interface mpcNode(mpc, robotName);

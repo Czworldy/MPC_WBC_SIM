@@ -582,7 +582,7 @@ const std::vector<Vec31<float>> SimpleMotion::RecordData() {
     in_foot_rh_x << desiredDataWBC_.pFoot_des[legID::RB][0] << "\t" << foot_position[0] << "\n";
     in_foot_rh_y << desiredDataWBC_.pFoot_des[legID::RB][1] << "\t" << foot_position[1] << "\n";
     in_foot_rh_z << desiredDataWBC_.pFoot_des[legID::RB][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] << "\n";
-    std::cout << "feet_result: " << feet_result.size() << std::endl;
+    // std::cout << "feet_result: " << feet_result.size() << std::endl;
     return feet_result;
 }
 
@@ -732,7 +732,7 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     desiredDataWBC_.aFoot_des[legID::LB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][2];
     desiredDataWBC_.aFoot_des[legID::RB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][3];
 
-    std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
+    // std::cerr << "pBody_RPY_des:\n" << desiredDataWBC_.pBody_RPY_des << "\n";
 
     // desiredDataWBC_.pBody_RPY_des[0] = 0.1;
     // desiredDataWBC_.pBody_RPY_des[1] = 0.1;
@@ -813,10 +813,10 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     foot_rf = jueying_.swingFootPosition(legID::RF, q.cast<double>()).cast<float>();
     foot_rh = jueying_.swingFootPosition(legID::RB, q.cast<double>()).cast<float>();
 
-    cout << "foot_lf: " << foot_lf.transpose() << endl;
-    cout << "foot_lh: " << foot_lh.transpose() << endl;
-    cout << "foot_rf: " << foot_rf.transpose() << endl;
-    cout << "foot_rh: " << foot_rh.transpose() << endl;
+    // cout << "foot_lf: " << foot_lf.transpose() << endl;
+    // cout << "foot_lh: " << foot_lh.transpose() << endl;
+    // cout << "foot_rf: " << foot_rf.transpose() << endl;
+    // cout << "foot_rh: " << foot_rh.transpose() << endl;
     
     Vec31<float> terrNormal = terrEst.run(foot_lf,foot_lh,foot_rf,foot_rh,contact_flag);
     // cout << "terrEst:\n" << terrNormal << "\n";
@@ -837,12 +837,12 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
 
     
-    slope_delta_roll  = std::atan2(terrNormal[1],1);
-    slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
+    // slope_delta_roll  = std::atan2(terrNormal[1],1);
+    // slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
     // std::cout << ">>>>>>>>>>>>rpy:" <<  rpy.transpose() << "\n";
 
-    // std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] << std::endl;
-    //               << "\t p: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
+    std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] 
+                   << "  rpy:---\n" << rpy_terr <<"\n";  
 
     // cout << "rpy_real:\n" << rpy_in_world << "\n";
     // terr << terrNormal[0] << "\t" << terrNormal[1] << "\n";  
