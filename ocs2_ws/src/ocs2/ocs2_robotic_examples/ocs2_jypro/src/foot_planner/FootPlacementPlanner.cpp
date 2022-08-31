@@ -77,7 +77,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
 
   const size_t initIndex = lookup::findIndexInTimeArray(eventTimes, initTime);
 
-  std::cout << "initIndex: " << initIndex << std::endl;
+  // std::cout << "initIndex: " << initIndex << std::endl;
 
   // cut those past sequence
   // std::vector<size_t> modeSequence(modeSequence_.begin() + initIndex, modeSequence_.end());
@@ -97,9 +97,9 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
   }
 
-  std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
-  std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
-  std::cout << "initState:" << initState.transpose() << std::endl;
+  // std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
+  // std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
+  std::cout << "initState:" << initState.segment(6,6).transpose() << std::endl;
   for (size_t j = 0; j < numFeet_; j++) {
       //using current state to calculate foot placement, where are the liffoff height.
       const auto& model = pinocchioInterface_.getModel();

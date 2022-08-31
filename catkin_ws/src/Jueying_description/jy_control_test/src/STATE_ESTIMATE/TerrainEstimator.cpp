@@ -1,0 +1,176 @@
+#include <queue>
+#include "cppTypes.h"
+#include "TerrainEstimator.h"
+#include <iostream>
+
+#define USE_PAST_DATA_NUM 2
+#define NZEROS 2
+#define NPOLES 2
+#define GAIN   1.140829091e+04
+
+double xv_a[NZEROS+1]={0}, yv_a[NPOLES+1]={0};
+double xv_b[NZEROS+1]={0}, yv_b[NPOLES+1]={0};
+
+
+
+float filterloop(double input, double* xv, double* yv);
+Vec31<float> filterloop(Vec31<float> input, std::vector<Vec31<float>>& xv, std::vector<Vec31<float>>& yv);
+TerrainEstimator::TerrainEstimator(){
+    estSlopeNormal << 0., 0., 1.;
+    xv_lf.resize(NZEROS+1);yv_lf.resize(NPOLES+1);
+    xv_lh.resize(NZEROS+1);yv_lh.resize(NPOLES+1);
+    xv_rf.resize(NZEROS+1);yv_rf.resize(NPOLES+1);
+    xv_rh.resize(NZEROS+1);yv_rh.resize(NPOLES+1);
+
+    for (auto &v:xv_lf)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:xv_lh)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:xv_rf)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:xv_rh)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:yv_lf)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:yv_lh)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:yv_rf)
+        v = Eigen::Vector3f::Zero();
+    for (auto &v:yv_rh)
+        v = Eigen::Vector3f::Zero();
+
+    
+    // estSlopeNormal_last << 0., 0., 1.;
+}
+
+TerrainEstimator::~TerrainEstimator(){}
+
+
+Vec31<float> TerrainEstimator::run(const Vec31<float> &lf,
+                                    const Vec31<float> &lh,
+                                    const Vec31<float> &rf,
+                                    const Vec31<float> &rh,
+                                    const Vec41<int> &contact){
+
+    // std::cout << "contact:" << contact;
+    if(contact[0] != 0)
+        lfPosQueue.insert(lfPosQueue.begin(),filterloop(lf,xv_lf,yv_lf));
+    if(contact[1] != 0)
+        lhPosQueue.insert(lhPosQueue.begin(),filterloop(lh,xv_lh,yv_lh));
+    if(contact[2] != 0)
+        rfPosQueue.insert(rfPosQueue.begin(),filterloop(rf,xv_rf,yv_rf));
+    if(contact[3] != 0)
+        rhPosQueue.insert(rhPosQueue.begin(),filterloop(rh,xv_rh,yv_rh));
+
+    if(lfPosQueue.size() > USE_PAST_DATA_NUM)
+        lfPosQueue.pop_back();
+    if(lhPosQueue.size() > USE_PAST_DATA_NUM)
+        lhPosQueue.pop_back();
+    if(rfPosQueue.size() > USE_PAST_DATA_NUM)
+        rfPosQueue.pop_back();
+    if(rhPosQueue.size() > USE_PAST_DATA_NUM)
+        rhPosQueue.pop_back();
+
+    if(lfPosQueue.size() == USE_PAST_DATA_NUM && 
+            lhPosQueue.size() == USE_PAST_DATA_NUM && 
+                rfPosQueue.size() == USE_PAST_DATA_NUM && 
+                    rhPosQueue.size() == USE_PAST_DATA_NUM ){
+
+        Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 3> H;
+        Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 1> I = Eigen::MatrixXf::Constant(USE_PAST_DATA_NUM*4,1,1);
+        Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 1> Z = Eigen::MatrixXf::Constant(USE_PAST_DATA_NUM*4,1,1);
+        for (uint i = 0; i < USE_PAST_DATA_NUM; i++){
+            H.row(i)                     = -lfPosQueue[i];
+            H.row(i+USE_PAST_DATA_NUM)   = -lhPosQueue[i];
+            H.row(i+2*USE_PAST_DATA_NUM) = -rfPosQueue[i];
+            H.row(i+3*USE_PAST_DATA_NUM) = -rhPosQueue[i];
+        }
+        Z = H.col(2);
+        H.col(2) = I;
+
+        // std::cout << "H:\n" << H << "\n";
+        // std::cout << "Z:\n" << Z << "\n";
+        
+
+        Eigen::JacobiSVD<DMat<float>> svd(H, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        // not sure if we need to svd.sort()... probably not
+        int const nrows(svd.singularValues().rows());
+        DMat<float> invS;
+        invS = DMat<float>::Zero(nrows, nrows);
+        const float sigmaThreshold = 0.0000001;
+        for (int ii(0); ii < nrows; ++ii) {
+            if (svd.singularValues().coeff(ii) > sigmaThreshold) {
+            invS.coeffRef(ii, ii) = 1.0 / svd.singularValues().coeff(ii);
+            } else {
+            // invS.coeffRef(ii, ii) = 1.0/ sigmaThreshold;
+            // printf("sigular value is too small: %f\n",svd.singularValues().coeff(ii));
+            }
+        }
+        DMat<float> H_invMatrix = svd.matrixV() * invS * svd.matrixU().transpose();
+        
+        estParam =  H_invMatrix * Z;
+
+        Vec31<float> currest = estParam;
+        currest[2] = 1;
+        estSlopeNormal = currest;
+        // std::cout <<"estTerr!!!\n";
+        // estSlopeNormal = lowpass_cof * currest + (1 - lowpass_cof) * estSlopeNormal_last;
+        // estSlopeNormal_last = estSlopeNormal;
+        estSlopeNormal[0] = filterloop(currest[0], xv_a, yv_a);
+        estSlopeNormal[1] = filterloop(currest[1], xv_b, yv_b);
+        // estSlopeNormal[1] = filterloop(currest[1]);   
+        return estSlopeNormal;
+    }
+    else{
+        return estSlopeNormal;
+    }
+}
+
+
+
+/* Digital filter designed by mkfilter/mkshape/gencode   A.J. Fisher
+   Command line: ./mkfilter -Ch -0.5 -Lp -o 4 -a 0.001 -l */
+
+
+float filterloop(double input, double* xv, double* yv)
+  { 
+// xv[0] = xv[1]; xv[1] = xv[2]; xv[2] = xv[3]; xv[3] = xv[4]; xv[4] = xv[5]; 
+//         xv[5] = input / GAIN;
+//         yv[0] = yv[1]; yv[1] = yv[2]; yv[2] = yv[3]; yv[3] = yv[4]; yv[4] = yv[5]; 
+//         yv[5] =   (xv[0] + xv[5]) + 5 * (xv[1] + xv[4]) + 10 * (xv[2] + xv[3])
+//                      + (  0.8585472563 * yv[0]) + ( -4.4236578665 * yv[1])
+//                      + (  9.1191966574 * yv[2]) + ( -9.4015942664 * yv[3])
+//                      + (  4.8475080037 * yv[4]);
+        // std::cout << "GAIN:" << GAIN << "\nin:" << xv[4] << "\n";
+        xv[0] = xv[1]; xv[1] = xv[2]; 
+        xv[2] = input / GAIN;
+        yv[0] = yv[1]; yv[1] = yv[2]; 
+        yv[2] =   (xv[0] + xv[2]) + 2 * xv[1]
+                     + ( -0.9736948720 * yv[0]) + (  1.9733442498 * yv[1]);
+
+        return yv[2];
+      
+  }
+
+Vec31<float> filterloop(Vec31<float> input, std::vector<Vec31<float>>& xv, std::vector<Vec31<float>>& yv)
+  { 
+        xv[0] = xv[1]; xv[1] = xv[2]; 
+        xv[2] = input / GAIN;
+        yv[0] = yv[1]; yv[1] = yv[2]; 
+        yv[2] =   (xv[0] + xv[2]) + 2 * xv[1]
+                     + ( -0.9736948720 * yv[0]) + (  1.9733442498 * yv[1]);
+        return yv[2];
+  }
+
+// template <typename T>
+// T Filter<T>::run(T input){
+//         xv[0] = xv[1]; xv[1] = xv[2]; xv[2] = xv[3]; xv[3] = xv[4]; 
+//         xv[4] = input / gain;
+//         yv[0] = yv[1]; yv[1] = yv[2]; yv[2] = yv[3]; yv[3] = yv[4]; 
+//         yv[4] =   (xv[0] + xv[4]) + 4 * (xv[1] + xv[3]) + 6 * xv[2]
+//                      + ( -0.9925048376 * yv[0]) + (  3.9774471147 * yv[1])
+//                      + ( -5.9773794638 * yv[2]) + (  3.9924371861 * yv[3]);
+//         std::cout << "GAIN:" << gain << "\nin:" << xv[4] << "\n";
+
+//         return yv[4];
+// }
