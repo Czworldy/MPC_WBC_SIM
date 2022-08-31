@@ -90,8 +90,9 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
   } else {
     KDL::Tree kdlTree;
     kdl_parser::treeFromUrdfModel(urdfModel, kdlTree);
+
     robotStatePublisherPtr_.reset(new robot_state_publisher::RobotStatePublisher(kdlTree));
-    robotStatePublisherPtr_->publishFixedTransforms(true); // TWILIGHT DEBUG
+    robotStatePublisherPtr_->publishFixedTransforms(true);
   }
 }
 
@@ -106,8 +107,8 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation, const P
     pinocchio::updateFramePlacements(model, data);
 
     const auto timeStamp = ros::Time::now();
-    // publishObservation(timeStamp, observation); // TWILIGHT DEBUG
-    // publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
+    publishObservation(timeStamp, observation);
+    publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
     publishOptimizedStateTrajectory(timeStamp, primalSolution.timeTrajectory_, primalSolution.stateTrajectory_,
                                     primalSolution.modeSchedule_);
     lastTime_ = observation.time;
