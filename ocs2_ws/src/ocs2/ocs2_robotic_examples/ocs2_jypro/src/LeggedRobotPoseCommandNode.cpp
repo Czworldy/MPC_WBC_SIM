@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
   comHeight = pt.get<scalar_t>("comHeight");
   ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
+  std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
   // ros node handle
   ::ros::init(argc, argv, robotName + "_target");
   ::ros::NodeHandle nodeHandle;

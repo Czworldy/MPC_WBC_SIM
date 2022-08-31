@@ -21,7 +21,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.2     ;-0.2
-  swingHeight                   0.13
+  swingHeight                   0.12
   touchdownAfterHorizon         0.2
   swingTimeScale                0.05
 }
@@ -57,7 +57,7 @@ ddp
 {
   algorithm                       SLQ
 
-  nThreads                        1
+  nThreads                        4
   threadPriority                  50
 
   maxNumIterations                10
@@ -108,8 +108,8 @@ rollout
 
 mpc
 {
-  timeHorizon                     0.5
-  numPartitions                   2
+  timeHorizon                     1
+  numPartitions                   3
 
   runtimeMaxNumIterations         5
   initMaxNumIterations            10
@@ -170,7 +170,7 @@ Q
   scaling 1e+0
 
   ;; Normalized Centroidal Momentum: [linear, angular] ;;
-  (0,0)   15.0     ; vcom_x
+  (0,0)   15.0     ; vcom_x0
   (1,1)   15.0     ; vcom_y
   (2,2)   30.0     ; vcom_z
   (3,3)   5.0      ; L_x / robotMass
@@ -178,26 +178,26 @@ Q
   (5,5)   10.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;
-  (6,6)   250.0    ; p_base_x                         reduce is for foot placement constraints.
-  (7,7)   250.0    ; p_base_y                         reduce is for foot placement constraints.
-  (8,8)   250.0    ; p_base_z                         reduce is for foot placement constraints.
+  (6,6)   250.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
+  (7,7)   250.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
+  (8,8)   250.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
   (9,9)   100.0    ; theta_base_z
   (10,10) 200.0    ; theta_base_y
   (11,11) 200.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;;
-  (12,12) 20.0     ; LF_HAA
-  (13,13) 20.0     ; LF_HFE
-  (14,14) 20.0     ; LF_KFE
-  (15,15) 20.0     ; LH_HAA
-  (16,16) 20.0     ; LH_HFE
-  (17,17) 20.0     ; LH_KFE
-  (18,18) 20.0     ; RF_HAA
-  (19,19) 20.0     ; RF_HFE
-  (20,20) 20.0     ; RF_KFE
-  (21,21) 20.0     ; RH_HAA
-  (22,22) 20.0     ; RH_HFE
-  (23,23) 20.0     ; RH_KFE
+  (12,12) 40.0     ; LF_HAA
+  (13,13) 10.0     ; LF_HFE
+  (14,14) 5.0     ; LF_KFE
+  (15,15) 40.0     ; LH_HAA
+  (16,16) 10.0     ; LH_HFE
+  (17,17) 5.0     ; LH_KFE
+  (18,18) 40.0     ; RF_HAA
+  (19,19) 10.0     ; RF_HFE
+  (20,20) 5.0     ; RF_KFE
+  (21,21) 40.0     ; RH_HAA
+  (22,22) 10.0     ; RH_HFE
+  (23,23) 5.0     ; RH_KFE
 }
 
 ; control weight matrix
@@ -247,5 +247,5 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.01
-  delta                  0.003
+  delta                  0.0025
 }

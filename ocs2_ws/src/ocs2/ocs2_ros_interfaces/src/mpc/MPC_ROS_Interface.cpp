@@ -271,17 +271,23 @@ void MPC_ROS_Interface::mpcObservationCallback(const ocs2_msgs::mpc_observation:
   // }
 
   // measure the delay in running MPC
-  mpcTimer_.startTimer();
+  try{
+    mpcTimer_.startTimer();
 
-  // run MPC
-  bool controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
-  if (!controllerIsUpdated) {
+    // run MPC
+    bool controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
+    if (!controllerIsUpdated) {
+      return;
+    }
+    copyToBuffer(currentObservation);
+
+    // measure the delay for sending ROS messages
+    mpcTimer_.endTimer();
+  }
+  catch(std::exception& e){
+    std::cout << "Exception YJY: " << e.what() << std::endl;
     return;
   }
-  copyToBuffer(currentObservation);
-
-  // measure the delay for sending ROS messages
-  mpcTimer_.endTimer();
 
   // check MPC delay and solution window compatibility
   scalar_t timeWindow = mpc_.settings().solutionTimeWindow_;

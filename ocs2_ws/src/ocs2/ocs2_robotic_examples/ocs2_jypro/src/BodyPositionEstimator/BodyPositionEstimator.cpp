@@ -1,6 +1,7 @@
 #include "BodyPositionEstimator.h"
 #include "ros/ros.h"
 
+namespace ocs2 {
 Vec31<double> BodyPositionEst::bodyPositionEst(const Vec31<double> & qleg_lf,
                                               const Vec31<double> & qleg_lb,
                                               const Vec31<double> & qleg_rf,
@@ -181,3 +182,4 @@ Vec2<double> BodyPositionEst::getPolygonCenter(const vectorAligned<Vec2<double>>
     }
     return center;
 }
+} //namespace ocs2

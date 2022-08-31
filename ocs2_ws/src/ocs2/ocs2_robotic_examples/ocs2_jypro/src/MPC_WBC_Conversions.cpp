@@ -120,7 +120,6 @@ int main(int argc, char **argv)
     // spin
     // spin
     while (ros::ok() && ros::master::check()) {
-      std::cout << "spinning" << std::endl;
         ros::spinOnce();
         if(wbcMsgisdone){
             mpc_wbcPublisher.publish(wbcMsg);
@@ -131,7 +130,6 @@ int main(int argc, char **argv)
 }
 
 void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg) {
-    std::cout << "in the callback" << std::endl;
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     
     size_t N_times = msg->timeTrajectory.size(); // Time Horison
@@ -183,14 +181,12 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
     wbcMsg.thirdGait.resize(4);
     wbcMsg.switchTime.resize(2);
     wbcMsg.stateTime.resize(N_times);
-    std::cout << "callback 1\n";
 
     // Copy MPC Policy Data from msg
     // time
     for(size_t k = 0; k < N_times; k++){
         mpcData.timeTrajectory_[k] = msg->timeTrajectory[k];
     } // end of k loop
-    std::cout << "callback 1.1\n";
 
     // state
     for(size_t k = 0; k < N_times; k++){
@@ -199,7 +195,6 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
             mpcData.stateTrajectory_[k][j] = msg->stateTrajectory[k].value[j];
         }
     } // end of k loop
-    std::cout << "callback 1.2\n";
 
     // input
     for(size_t k = 0; k < N_times; k++){
@@ -208,13 +203,11 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
             mpcData.inputTrajectory_[k][j] = msg->inputTrajectory[k].value[j];
         }
     } // end of k loop
-    std::cout << "callback 1.3\n";
 
     // modeSchedule
-    std::cout << "N_modeSequence:" << N_modeSequence << std::endl;
+    // this loop may cause crash if ros time is not correct
     for (uint8_t i = 0; i < N_modeSequence - 1; i++){
         double delta_time = msg->modeSchedule.eventTimes[i] - msg->timeTrajectory[0];
-        std::cout << "delta_time:" << delta_time << std::endl;
         if(delta_time > 0){
             wbcInterfaceData.switchTime[0] = msg->modeSchedule.eventTimes[i];
             wbcInterfaceData.stanceFeet[0] = modeNumber2StanceLeg_WBC(msg->modeSchedule.modeSequence[i]);
@@ -233,18 +226,11 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
             break;
         }
     }
-    std::cout << "callback 2\n";
-
 
     FiniteDifferencesActuatedJointAcc();
-    std::cout << "callback 3\n";
-
     getGeneralizedCoordinates();
     getGeneralizedVelocities();
-    std::cout << "callback 4\n";
-
     DesiredTrajectoriesForWBC();
-    std::cout << "callback 5\n";
 
     for (int i = 0; i < N_times; i++){  
         //position
@@ -285,8 +271,6 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         wbcMsg.stateTime[i] = mpcData.timeTrajectory_[i];
         
     }
-    std::cout << "callback 6\n";
-
     for (uint8_t i = 0; i < 4; i++){ // LF RF LH RH
         wbcMsg.firstGait[i] = wbcInterfaceData.stanceFeet[0][i];
         wbcMsg.secondGait[i]= wbcInterfaceData.stanceFeet[1][i];

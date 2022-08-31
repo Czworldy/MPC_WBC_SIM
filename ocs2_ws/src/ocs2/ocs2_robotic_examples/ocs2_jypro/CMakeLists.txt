@@ -88,6 +88,7 @@ add_library(ocs2_jypro
   src/synchronized_module/LeggedRobotReferenceManager.cpp
   src/synchronized_module/SwitchedModelReferenceManager.cpp
   src/synchronized_module/LeggedRobotRosReferenceManager.cpp
+  src/synchronized_module/TerrainReceiver.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
@@ -161,6 +162,36 @@ target_link_libraries(MPCProntoConversion
 )
 target_compile_options(MPCProntoConversion PUBLIC ${pinocchio_CFLAGS_OTHER})
 
+# MPCProntoConversionUDP
+add_executable(MPCProntoConversionUDP
+  src/MPCProntoConversionUDP.cpp
+)
+add_dependencies(MPCProntoConversionUDP
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(MPCProntoConversionUDP
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+target_compile_options(MPCProntoConversionUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# MPC_WBC_ConversionsUDP
+add_executable(MPC_WBC_ConversionsUDP
+  src/MPC_WBC_ConversionsUDP.cpp
+)
+add_dependencies(MPC_WBC_ConversionsUDP
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(MPC_WBC_ConversionsUDP
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+target_compile_options(MPC_WBC_ConversionsUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
+
 # Dummy node
 add_executable(legged_robot_dummy
   src/LeggedRobotDummyNode.cpp
@@ -187,6 +218,22 @@ target_link_libraries(legged_robot_target
   ${catkin_LIBRARIES}
 )
 target_compile_options(legged_robot_target PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# Joy Command node for legged robot walking (gait selection and target selection)
+add_executable(legged_robot_target_joy
+  src/LeggedRobotPoseCommandJoyNode.cpp
+  src/command/TargetTrajectoriesJoyPublisher.cpp
+)
+add_dependencies(legged_robot_target_joy
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(legged_robot_target_joy
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+target_compile_options(legged_robot_target_joy PUBLIC ${pinocchio_CFLAGS_OTHER})
+
 
 add_executable(legged_robot_gait_command
   src/gait/Gait.cpp
