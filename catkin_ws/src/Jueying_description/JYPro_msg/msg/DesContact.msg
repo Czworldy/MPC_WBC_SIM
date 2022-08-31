@@ -1,1 +1,0 @@
-int8[4] contact_state

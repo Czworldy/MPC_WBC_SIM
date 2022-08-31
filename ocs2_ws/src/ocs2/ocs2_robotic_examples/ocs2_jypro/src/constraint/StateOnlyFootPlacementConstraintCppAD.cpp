@@ -207,8 +207,8 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   }
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
-  // std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
-  //   << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
+  std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" 
+    << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
 
   // std::cout << "cppad:" << f.transpose() << "\n";
 

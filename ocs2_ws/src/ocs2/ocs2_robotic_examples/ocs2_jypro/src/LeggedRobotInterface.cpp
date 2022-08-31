@@ -138,11 +138,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                        modelSettings().contactNames3DoF);
   std::unique_ptr<FootPlacementPlanner> footPlacementPlanner(
       new FootPlacementPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
-  
-  std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
+
   // Mode schedule manager
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner), 
-                                                                            std::move(footPlacementPlanner), terrainEstDataPtr);
+                                                                            std::move(footPlacementPlanner));
 
   // Optimal control problem
   problemPtr_.reset(new OptimalControlProblem);
@@ -197,10 +196,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
-    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-    //                                           i, barrierPenaltyConfig_)
-    //                                          );
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig_)
+                                             );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));
