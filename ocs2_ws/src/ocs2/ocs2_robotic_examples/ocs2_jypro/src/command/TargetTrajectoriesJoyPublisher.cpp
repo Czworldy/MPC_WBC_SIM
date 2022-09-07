@@ -40,9 +40,8 @@ namespace ocs2 {
 /******************************************************************************************************/
 /******************************************************************************************************/
 TargetTrajectoriesJoyPublisher::TargetTrajectoriesJoyPublisher(::ros::NodeHandle& nodeHandle, const std::string& topicPrefix,
-                                                                        const ocs2::scalar_t joyGainLinearFactors, const ocs2::scalar_t joyGainAngularFactors),
-                                                                         const scalar_array_t& targetCommandLimits,
-                                                                         CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun)
+                                              const scalar_array_t& targetCommandLimits, const ocs2::scalar_t joyGainLinearFactors, const ocs2::scalar_t joyGainAngularFactors,
+                                              CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun)
     : targetCommandLimits_(Eigen::Map<const vector_t>(targetCommandLimits.data(), targetCommandLimits.size())),
       joyGainLinearFactors_(joyGainLinearFactors), joyGainAngularFactors_(joyGainAngularFactors),
       commandLineToTargetTrajectoriesFun_(std::move(commandLineToTargetTrajectoriesFun)) {
@@ -57,9 +56,13 @@ TargetTrajectoriesJoyPublisher::TargetTrajectoriesJoyPublisher(::ros::NodeHandle
   auto joyCallback = [this](const sensor_msgs::Joy::ConstPtr& msg) {
     std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
 
-    deltaX = msg->axes[1] * 0.3;
-    deltaY = msg->axes[0] * 0.3;
-    deltaYaw = msg->axes[3] * 0.2;
+    deltaX = msg->axes[1] * joyGainLinearFactors_;
+    deltaY = msg->axes[0] * joyGainLinearFactors_;
+    deltaYaw = msg->axes[3] * joyGainAngularFactors_;
+
+    filter(deltaX, lastdeltaX, 0.4);
+    filter(deltaY, lastdeltaY, 0.4);
+    filter(deltaYaw, lastdeltaYaw, 0.4);
     this->isJoyMsgsCome = true;
   };
   joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);
@@ -74,7 +77,7 @@ void TargetTrajectoriesJoyPublisher::publishKeyboardCommand(const std::string& c
   ::ros::Rate rate(10);
   while (ros::ok() && ros::master::check()) {
     ::ros::spinOnce();
-    if(isJoyMsgsCome){
+    if(isJoyMsgsCome && isMpcPolicyCome){
       std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
       const Eigen::Matrix<ocs2::scalar_t, 4, 1> commandLineInput = {deltaX, deltaY, 0, deltaYaw};
     
@@ -96,6 +99,12 @@ void TargetTrajectoriesJoyPublisher::publishKeyboardCommand(const std::string& c
     }
     rate.sleep();
   }  // end of while loop
+}
+
+ocs2::scalar_t TargetTrajectoriesJoyPublisher::filter(ocs2::scalar_t& input, ocs2::scalar_t& lastOutput, ocs2::scalar_t alpha){
+  lastOutput = alpha * input + (1 - alpha) * lastOutput;
+  input = lastOutput;
+  return lastOutput;
 }
 
 }  // namespace ocs2

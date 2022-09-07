@@ -74,7 +74,8 @@ class TargetTrajectoriesJoyPublisher final {
   void publishKeyboardCommand(const std::string& commadMsg = "Enter command, separated by space");
 
  private:
-  /** Gets the target from command line. */
+
+  ocs2::scalar_t filter(ocs2::scalar_t& input, ocs2::scalar_t& lastInput, ocs2::scalar_t alpha);
 
   const vector_t targetCommandLimits_;
   CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun_;
@@ -86,8 +87,9 @@ class TargetTrajectoriesJoyPublisher final {
   SystemObservation latestObservation_;
 
   scalar_t deltaX, deltaY, deltaYaw;
+  scalar_t lastdeltaX = 0, lastdeltaY = 0, lastdeltaYaw = 0;
 
-  const ocs2::scalar_t joyGainLinearFactors_, joyGainAngleFactors_;
+  const ocs2::scalar_t joyGainLinearFactors_, joyGainAngularFactors_;
 
   bool isMpcPolicyCome = false;
   bool isJoyMsgsCome = false;
