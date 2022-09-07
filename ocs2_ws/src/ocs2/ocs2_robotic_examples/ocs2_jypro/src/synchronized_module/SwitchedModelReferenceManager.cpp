@@ -139,6 +139,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   std::cout << *terrainEstDataPtr_ << std::endl;
   // For terrain aware swing feet trajectory planning
+  // this part makes the robot performance worse. something wrong in this part.
   // swingTrajectoryPtr_->update(modeSchedule, 
   //                               footPlacementPlannerPtr_->getliftOffHeightSequence(), 
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),

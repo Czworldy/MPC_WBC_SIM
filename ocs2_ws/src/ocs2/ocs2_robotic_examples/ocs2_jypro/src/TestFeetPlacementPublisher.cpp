@@ -7,6 +7,10 @@
 
 using vector3_t = Eigen::Matrix<ocs2::scalar_t, 3, 1>;
 
+#define __FOOT_X__ 0.3377
+#define __FOOT_Y__ 0.2033
+#define __FOOT_R__ 0.036
+
 int main(int argc, char** argv) {
 
   ros::init(argc, argv, "ocs2_jypro_test_publisher");
@@ -38,29 +42,29 @@ int main(int argc, char** argv) {
     
 
     for(size_t i = 0; i < 10; ++i) {
-      Eigen::Matrix<ocs2::scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
-      Eigen::Matrix<ocs2::scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
+      Eigen::Matrix<ocs2::scalar_t, 3, 1> leftpoint =  {0.0, __FOOT_Y__, __FOOT_R__};
+      Eigen::Matrix<ocs2::scalar_t, 3, 1> rightpoint = {0.0, -__FOOT_Y__, __FOOT_R__};
       if(i < 3){
-        leftpoint[1] = 0.25*i - 0.338;
-        rightpoint[1] = 0.25*i - 0.338;
+        leftpoint[0] = 0.25*i - 0.338;
+        rightpoint[0] = 0.25*i - 0.338;
         double random = n(e);
-        leftpoint[0] += random;
-        rightpoint[0] += random;
+        leftpoint[1] += random;
+        rightpoint[1] += random;
       }
       else{
-        leftpoint[1] = 0.25*(i - 3) + 0.338;
-        rightpoint[1] = 0.25*(i - 3) + 0.338;
+        leftpoint[0] = 0.25*(i - 3) + 0.338;
+        rightpoint[0] = 0.25*(i - 3) + 0.338;
         // leftpoint[2] = 0.03+0.06*(i-3);
         // rightpoint[2] = 0.03+0.06*(i-3);
         double random = n(e);
-        leftpoint[0] += random;
-        rightpoint[0] += random;
+        leftpoint[1] += random;
+        rightpoint[1] += random;
       }
 
       if (i == 0 || i == 3)
       {
-        leftpoint[0] = -0.177;
-        rightpoint[0] = 0.177;
+        leftpoint[1]  = __FOOT_Y__;
+        rightpoint[1] = -__FOOT_Y__;
       }
       msg.rectCenter_Position.x = leftpoint[0];
       msg.rectCenter_Position.y = leftpoint[1];

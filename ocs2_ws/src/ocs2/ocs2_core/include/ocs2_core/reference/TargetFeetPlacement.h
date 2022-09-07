@@ -8,13 +8,16 @@
 
 namespace ocs2 {
 
-
+//X20 (x,y) = (0.3377,0.2033)
+#define __FOOT_X__ 0.3377
+#define __FOOT_Y__ 0.2033
+#define __FOOT_R__ 0.036
 struct TargetFeetPlacement {
  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
 
   TargetFeetPlacement() : TargetFeetPlacement(
-    std::vector<vector3_t>{{-0.177,0.338,0.03},{-0.177,-0.338,0.03}}, 
-    std::vector<vector3_t>{{0.177,0.338,0.03},{0.177,-0.338,0.03}}) {}
+    std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}}, 
+    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}) {}
   TargetFeetPlacement(std::vector<vector3_t> Left, std::vector<vector3_t> Right)
     : targetFeetPlacemetLeft_(std::move(Left)), targetFeetPlacemetRight_(std::move(Right)) {}
 
