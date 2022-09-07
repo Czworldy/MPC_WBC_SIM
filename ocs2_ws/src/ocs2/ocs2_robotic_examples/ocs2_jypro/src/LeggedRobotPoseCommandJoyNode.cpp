@@ -70,7 +70,7 @@ TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTar
     // base z relative to the default height
     target(2) = currentPose(2);
     // theta_z relative to current
-    target(3) = currentPose(3) + commadLineTarget(3) * 180.0 / M_PI;
+    target(3) = currentPose(3) + commadLineTarget(3) * M_PI / 180.0;
     // theta_y, theta_x
     target(4) = 0;
     target(5) = 0;
@@ -112,7 +112,8 @@ int main(int argc, char* argv[]) {
   comHeight = pt.get<scalar_t>("comHeight");
   ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
-  ocs2::scalar_t
+  ocs2::scalar_t joyLinearVelocityGain = pt.get<scalar_t>("joyLinearVelocityGain");
+  ocs2::scalar_t joyRotationVelocityGain = pt.get<scalar_t>("joyRotationVelocityGain");
 
   std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
   // ros node handle
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
 
   // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
   const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};
-  TargetTrajectoriesJoyPublisher targetPoseCommand(nodeHandle, robotName, relativeBaseLimit, &commandLineToTargetTrajectories);
+  TargetTrajectoriesJoyPublisher targetPoseCommand(nodeHandle, robotName, relativeBaseLimit, joyLinearVelocityGain, joyRotationVelocityGain, &commandLineToTargetTrajectories);
 
   const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
   targetPoseCommand.publishKeyboardCommand(commandMsg);
