@@ -284,7 +284,7 @@ void gazebo_link_states_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
     Eigen::Matrix<double,3,1> rpy;
     int index = 0;
     for(auto& modelName:msg->name){
-        if(modelName == "JYPro")
+        if(modelName == "X20")
             break;
         ++index;
     }

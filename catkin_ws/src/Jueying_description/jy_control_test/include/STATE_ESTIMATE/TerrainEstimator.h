@@ -12,7 +12,7 @@ private:
     std::vector<Vec31<float>> lhPosQueue;
     std::vector<Vec31<float>> rhPosQueue;
 
-    Vec31<float> estSlopeNormal;
+    Vec31<float> estSlopeParam;
     // Vec31<float> estSlopeNormal_last;
     Vec31<float> estParam;
 
@@ -32,6 +32,15 @@ public:
                                         const Vec31<float> &rf,
                                         const Vec31<float> &rh,
                                         const Vec41<int> &contact);
+    
+    Vec41<float> getFeetHeight(){ 
+        Vec41<float> feetHeight;
+        if(lfPosQueue.empty() || rfPosQueue.empty() || lhPosQueue.empty() || rhPosQueue.empty())
+            return Vec41<float>::Zero();
+        feetHeight << lfPosQueue.back().z(), lhPosQueue.back().z(), 
+                        rfPosQueue.back().z(), rhPosQueue.back().z();
+        return feetHeight;
+    }
 
 
 };

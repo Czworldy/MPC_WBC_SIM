@@ -11,8 +11,10 @@
 // #include "gazebo_msgs/LinkStates.h"   //yjy::可以不用LinkStates而使用ModelStates
 #include "gazebo_msgs/ModelStates.h"
 #include "ocs2_msgs/mpc_wbc_conversion.h"
+#include "ocs2_msgs/mpc_terrain.h"
 #include <gazebo_msgs/ContactsState.h>
 #include <fstream>
+#include "pronto_msgs/QuadrupedStance.h"
 
 // Global Variables
 conversionData mpcData;
@@ -104,10 +106,10 @@ bool isSafe(true);
 int Num_of_Contactpoint = 4;
 int dofOfRobot = 18;
 
-Vec41<int> contact_flag_real;
+Vec41<int> contact_flag_real = Vec41<int>::Zero();
 
 // Record Data
-ofstream in_pose;
+// ofstream in_pose;
 
 
 // Functions
@@ -115,23 +117,25 @@ void mpcComunicacion();
 void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg);
 void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg);
-void lf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
-void rf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
-void lh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
-void rh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
+void contactStateCallback(const pronto_msgs::QuadrupedStance::ConstPtr& msg);
+// void lf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
+// void rf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
+// void lh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
+// void rh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg);
 
 int main(int argc, char**argv) {
     //FOR ROS
     ros::init(argc, argv, "motion_node");
     ros::NodeHandle nh;
-    ros::Subscriber jointStatesSub, gazeboLinkStatesSub, mpcSub; 
-    ros::Subscriber lf_contactState, rf_contactState, lh_contactState, rh_contactState;
+    ros::Subscriber jointStatesSub, gazeboLinkStatesSub, mpcSub, contactStateSub;; 
+    // ros::Subscriber lf_contactState, rf_contactState, lh_contactState, rh_contactState;
 
     ros::Publisher lf_haa_pub, lf_hfe_pub, lf_kfe_pub;
     ros::Publisher lh_haa_pub, lh_hfe_pub, lh_kfe_pub;
     ros::Publisher rf_haa_pub, rf_hfe_pub, rf_kfe_pub;
     ros::Publisher rh_haa_pub, rh_hfe_pub, rh_kfe_pub;
-    
+    ros::Publisher mpc_terrain_sync_input;
+    ocs2_msgs::mpc_terrain mpc_terrain_sync_input_msg;
 
     std_msgs::Float64 lf_haa_tau, lf_hfe_tau, lf_kfe_tau;
     std_msgs::Float64 lh_haa_tau, lh_hfe_tau, lh_kfe_tau;
@@ -140,13 +144,15 @@ int main(int argc, char**argv) {
 
     ros::Rate rate(400);
 
+    mpc_terrain_sync_input = nh.advertise<ocs2_msgs::mpc_terrain>("/legged_robot_mpc_terrain", 1);
     jointStatesSub = nh.subscribe("/X20/joint_states", 1, &jointStatesCallback);
     mpcSub = nh.subscribe("/mpc_wbcPublisher", 1, &mpcCallback);
-    gazeboLinkStatesSub = nh.subscribe("/gazebo/link_states", 1,&gazeboLinkStatesCallback);
-    lf_contactState = nh.subscribe("/LF_contact", 1, &lf_bumper_callback); 
-    rf_contactState = nh.subscribe("/RF_contact", 1, &rf_bumper_callback); 
-    lh_contactState = nh.subscribe("/LH_contact", 1, &lh_bumper_callback); 
-    rh_contactState = nh.subscribe("/RH_contact", 1, &rh_bumper_callback); 
+    gazeboLinkStatesSub = nh.subscribe("/gazebo/model_states", 1,&gazeboLinkStatesCallback);
+    contactStateSub = nh.subscribe("/state_estimator_pronto/stance", 1, &contactStateCallback);
+    // lf_contactState = nh.subscribe("/LF_contact", 1, &lf_bumper_callback); 
+    // rf_contactState = nh.subscribe("/RF_contact", 1, &rf_bumper_callback); 
+    // lh_contactState = nh.subscribe("/LH_contact", 1, &lh_bumper_callback); 
+    // rh_contactState = nh.subscribe("/RH_contact", 1, &rh_bumper_callback); 
 
     lf_haa_pub = nh.advertise<std_msgs::Float64>("/X20/LF_HAA_controller/command",1);
     lf_hfe_pub = nh.advertise<std_msgs::Float64>("/X20/LF_HFE_controller/command",1);
@@ -163,8 +169,8 @@ int main(int argc, char**argv) {
 	
 	// Simple Motion Control
 	simpleMotion.reset(new SimpleMotion(verbose));
-    in_pose.open("/home/dqwang/pose.txt", ios::trunc);
-
+    // in_pose.open("/home/dqwang/pose.txt", ios::trunc);
+    simpleMotion->setMPCMsgPtr(&mpcData);
     while(nh.ok()){
         // Estimator
         estStatesOutput.time_stamp = ros::Time::now().toSec();
@@ -196,8 +202,11 @@ int main(int argc, char**argv) {
 		    estStatesOutput.jointStates.lh_vel.value[i] = jointStatesCur.lh_vel.value[i];
 		    estStatesOutput.jointStates.rh_vel.value[i] = jointStatesCur.rh_vel.value[i];	
         }
+        estStatesOutput.terrainEstData = simpleMotion->TerrainEst(contact_flag_real);
+
 
         simpleMotion->EstimatedStatesInput(estStatesOutput);
+
 	    
         switch (robotState) {
             case kWaitForMsg: {
@@ -317,14 +326,13 @@ int main(int argc, char**argv) {
 		    case kWBCMPC: {
 		    	if(isMPCMsgUpdate) {
 		    		// ReadMPCMsg
-		    		simpleMotion->UpdateMPCMsg(mpcData, estStatesOutput.time_stamp);
+		    		simpleMotion->UpdateMPCMsg(estStatesOutput.time_stamp);
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}
-                simpleMotion->TerrainEst(contact_flag_real);
 		    	simpleMotion->MPCWBCRun(estStatesOutput.time_stamp, command, isSafe);
-                in_pose << ros::Time::now().toSec() << " " << basePosWorldCur[0] << " " << basePosWorldCur[1] << " " << basePosWorldCur[2] << " "
-                        << baseOriWorldCur.x() << " " << baseOriWorldCur.y() << " " << baseOriWorldCur.z() << " " << baseOriWorldCur.w() << "\n";
+                // in_pose << ros::Time::now().toSec() << " " << basePosWorldCur[0] << " " << basePosWorldCur[1] << " " << basePosWorldCur[2] << " "
+                //         << baseOriWorldCur.x() << " " << baseOriWorldCur.y() << " " << baseOriWorldCur.z() << " " << baseOriWorldCur.w() << "\n";
 		    	if(!isSafe) {
 		    		// robotState = kSafeState;
 		    	}
@@ -340,6 +348,24 @@ int main(int argc, char**argv) {
 		    	break;
 		    }
         }
+
+        const auto& buf = estStatesOutput;
+
+        mpc_terrain_sync_input_msg.a = buf.terrainEstData.terrainParams[0];
+        mpc_terrain_sync_input_msg.b = buf.terrainEstData.terrainParams[1];
+        mpc_terrain_sync_input_msg.d = buf.terrainEstData.terrainParams[2];
+
+        mpc_terrain_sync_input_msg.quaternion.w = buf.terrainEstData.terrainQuat.w();
+        mpc_terrain_sync_input_msg.quaternion.x = buf.terrainEstData.terrainQuat.x();
+        mpc_terrain_sync_input_msg.quaternion.y = buf.terrainEstData.terrainQuat.y();
+        mpc_terrain_sync_input_msg.quaternion.z = buf.terrainEstData.terrainQuat.z();
+
+        mpc_terrain_sync_input_msg.feetHeight[0] = buf.terrainEstData.feetHeight[0];
+        mpc_terrain_sync_input_msg.feetHeight[1] = buf.terrainEstData.feetHeight[1];
+        mpc_terrain_sync_input_msg.feetHeight[2] = buf.terrainEstData.feetHeight[2];
+        mpc_terrain_sync_input_msg.feetHeight[3] = buf.terrainEstData.feetHeight[3];
+
+        mpc_terrain_sync_input.publish(mpc_terrain_sync_input_msg);
         
         lf_haa_tau.data = command.lf_tau.value[0];
         lf_hfe_tau.data = command.lf_tau.value[1];
@@ -378,7 +404,7 @@ int main(int argc, char**argv) {
         bool rate_bool = rate.sleep();
     }
 
-    in_pose.close();
+    // in_pose.close();
     return 0;
 }
 
@@ -431,7 +457,7 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
 
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     const int N_times = msg->stateTime.size();
-    std::cerr << "N_times: " << N_times << "\n";
+    // std::cerr << "N_times: " << N_times << "\n";
 
     mpcData.stateTime.resize(N_times);
     mpcData.baseAcceleration.clear();
@@ -527,17 +553,33 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
 	isMPCMsgUpdate = true;
 }
 
+void contactStateCallback(const pronto_msgs::QuadrupedStance::ConstPtr& msg){
+    // LF
+    if(msg->lf != 0)
+        contact_flag_real[0] = 1; // For Body Position Estimator ---- LF LH RF RH
+                                             // For MPC Input Data ---- LF RF LH RH
+    // lh
+    if(msg->lh != 0)
+        contact_flag_real[1] = 1;
 
-void lf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
-    contact_flag_real[0] = int(!msg->states.empty());
+    if(msg->rf != 0)
+        contact_flag_real[2] = 1;
+
+    if(msg->rh != 0)
+        contact_flag_real[3] = 1;
+
 }
-void rf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
-    contact_flag_real[2] = int(!msg->states.empty());
-}
-void lh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
-    contact_flag_real[1] = int(!msg->states.empty());
-}
-void rh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
-    contact_flag_real[3] = int(!msg->states.empty());
-}
+
+// void lf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
+//     contact_flag_real[0] = int(!msg->states.empty());
+// }
+// void rf_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
+//     contact_flag_real[2] = int(!msg->states.empty());
+// }
+// void lh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
+//     contact_flag_real[1] = int(!msg->states.empty());
+// }
+// void rh_bumper_callback(const gazebo_msgs::ContactsState::ConstPtr& msg){
+//     contact_flag_real[3] = int(!msg->states.empty());
+// }
 

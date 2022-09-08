@@ -9,7 +9,7 @@
     <arg name="multiplot"          default="false"/>
     <arg name="description_name"   default="legged_robot_description"/>
     <!-- <arg name="description_file"   default="$(find JYPro)/urdf/JYPro_ocs2.urdf"/> -->
-    <arg name="description_file"   default="$(find X20)/urdf/X20_rsm.urdf"/>
+    <arg name="description_file"   default="$(find X20)/urdf/X20_ocs2.urdf"/>
     
     <group if="$(arg rviz)">
       <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
