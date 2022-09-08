@@ -2,12 +2,12 @@
 #define SIMPLEMOTION_H
 
 // WBC
-#include "quadruped_dynamics_model.h"
-#include "wbc_ctrl.h"
-#include "UserParameter.h"
+#include "WBC_CONTROL/dynamics/quadruped_dynamics_model.h"
+#include "WBC_CONTROL/wbc_ctrl/wbc_ctrl.h"
+#include "PARAMETER/UserParameter.h"
 #include "cppTypes.h"
-#include "wbc_definitions.h"
-#include "TerrainEstimator.h"
+#include "MAIN/wbc_definitions.h"
+#include "STATE_ESTIMATE/TerrainEstimator.h"
 // C++
 #include <iostream>
 #include <fstream>
@@ -53,7 +53,7 @@ public:
 
     void PDMotionRun(LimbsCommand& command);
     void WBCMotionRun(LimbsCommand& command, bool& safeGuard);
-    void MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safeGuard);
+    size_t MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safeGuard);
     void PDSafeGuardRun(LimbsCommand& command);
 
     // PD 
@@ -71,14 +71,15 @@ public:
                                  size_t foot_id, float foot_x, float foot_y, float foot_z,
                                  float timeGoal);
     void KeepSwingFootStates(); 
-    void UpdateMPCMsg(const conversionData mpcMsg, float time_stamp);
+    void UpdateMPCMsg(float time_stamp);
+    void setMPCMsgPtr(conversionData* mpcMsgPtr){mpcMsgPtr_ = mpcMsgPtr;}
     void UpdateControlFrame(const EstimatorOutput& input);
     void RecordData();                 
 
     // SafeGuard
     void PDSafeGuardSetUpMotion();
 
-    void TerrainEst(const Vec41<int>&);
+    TerrainEstData TerrainEst(const Vec41<int>&);
 
 private:
     // PD
@@ -131,7 +132,7 @@ private:
     ControlFSMData<float> currentStatesWBC_; 
 
     // mpc
-    conversionData mpcMsg_;
+    const conversionData* mpcMsgPtr_ = nullptr;
     size_t indexMPCStateTime_;
     size_t indexMPCSwitchTime_;
     float timeUpdateMPC_;
@@ -153,8 +154,8 @@ private:
     //terrEst para
     TerrainEstimator terrEst;
 
-    double slope_delta_roll;
-    double slope_delta_pitch;
+    // double slope_delta_roll;
+    // double slope_delta_pitch;
 
 };
 

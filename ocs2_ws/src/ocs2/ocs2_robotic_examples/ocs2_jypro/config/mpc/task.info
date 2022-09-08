@@ -108,7 +108,7 @@ rollout
 
 mpc
 {
-  timeHorizon                     1
+  timeHorizon                     0.5
   numPartitions                   3
 
   runtimeMaxNumIterations         5
@@ -247,5 +247,5 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.01
-  delta                  0.0025
+  delta                  0.003
 }

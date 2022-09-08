@@ -9,35 +9,35 @@ verbose_(verbose) {
     wbc_ctrl_.reset(new WBC_Ctrl<float>(&jueying_));
     timeCycle_ = paramf.cycle_time;
 
-    in_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_x.txt", ios::trunc);
-    in_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_y.txt", ios::trunc);
-    in_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_z.txt", ios::trunc);
-    in_roll.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_roll.txt", ios::trunc);
-    in_pitch.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_pitch.txt", ios::trunc);
-    in_yaw.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_yaw.txt", ios::trunc);
+    // in_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_x.txt", ios::trunc);
+    // in_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_y.txt", ios::trunc);
+    // in_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_z.txt", ios::trunc);
+    // in_roll.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_roll.txt", ios::trunc);
+    // in_pitch.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_pitch.txt", ios::trunc);
+    // in_yaw.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_yaw.txt", ios::trunc);
 
-    in_x_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_x_vel.txt", ios::trunc);
-    in_y_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_y_vel.txt", ios::trunc);
-    in_z_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_z_vel.txt", ios::trunc);
-    in_roll_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_roll_vel.txt", ios::trunc);
-    in_pitch_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_pitch_vel.txt", ios::trunc);
-    in_yaw_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_yaw_vel.txt", ios::trunc);
+    // in_x_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_x_vel.txt", ios::trunc);
+    // in_y_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_y_vel.txt", ios::trunc);
+    // in_z_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_z_vel.txt", ios::trunc);
+    // in_roll_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_roll_vel.txt", ios::trunc);
+    // in_pitch_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_pitch_vel.txt", ios::trunc);
+    // in_yaw_vel.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_yaw_vel.txt", ios::trunc);
 
-    in_foot_lf_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_x.txt", ios::trunc);
-    in_foot_lf_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_y.txt", ios::trunc);
-    in_foot_lf_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_z.txt", ios::trunc);
+    // in_foot_lf_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_x.txt", ios::trunc);
+    // in_foot_lf_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_y.txt", ios::trunc);
+    // in_foot_lf_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lf_z.txt", ios::trunc);
 
-    in_foot_rf_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_x.txt", ios::trunc);
-    in_foot_rf_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_y.txt", ios::trunc);
-    in_foot_rf_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_z.txt", ios::trunc);
+    // in_foot_rf_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_x.txt", ios::trunc);
+    // in_foot_rf_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_y.txt", ios::trunc);
+    // in_foot_rf_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rf_z.txt", ios::trunc);
 
-    in_foot_lh_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_x.txt", ios::trunc);
-    in_foot_lh_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_y.txt", ios::trunc);
-    in_foot_lh_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_z.txt", ios::trunc);
+    // in_foot_lh_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_x.txt", ios::trunc);
+    // in_foot_lh_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_y.txt", ios::trunc);
+    // in_foot_lh_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_lh_z.txt", ios::trunc);
 
-    in_foot_rh_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_x.txt", ios::trunc);
-    in_foot_rh_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_y.txt", ios::trunc);
-    in_foot_rh_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_z.txt", ios::trunc);
+    // in_foot_rh_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_x.txt", ios::trunc);
+    // in_foot_rh_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_y.txt", ios::trunc);
+    // in_foot_rh_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_z.txt", ios::trunc);
 }
 
 void SimpleMotion::EstimatedStatesInput(const EstimatorOutput& input) {
@@ -237,9 +237,9 @@ void SimpleMotion::PDMotionRun(LimbsCommand& command) {
     if(verbose_) {
         std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] timePD_Now: " << timeNowPD_;
         std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] timeCycle: " << timeCycle_;
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] paramf.Kp_lf_haa_pd: " <<  paramf.Kp_lf_haa_pd;
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] planedLimbsStates_.lf_pos.value[0]: " <<  planedLimbsStates_.lf_pos.value[0];
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] currentLimbsStates_.lf_pos.value[0]: " <<  currentLimbsStates_.lf_pos.value[0];
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] paramf.Kp_rh_kfe_pd: " <<  paramf.Kp_rh_kfe_pd;
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] planedLimbsStates_.rh_pos.value[2]: " <<  planedLimbsStates_.rh_pos.value[2];
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] currentLimbsStates_.rh_pos.value[2]: " <<  currentLimbsStates_.rh_pos.value[2];
     }
 }
 
@@ -402,6 +402,13 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = 0;
 
+    // std::cout << "iteratorWBC_:" << iteratorWBC_ << " " << timeGoalWBC_ << " pBody_des:" << desiredDataWBC_.pBody_des.transpose() << "\n";
+    // std::cout << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des.transpose() << "\n";
+    // std::cout << "curpBody:" << currentStatesWBC_.bodyStateEst.base_pos_world.transpose() << "\n";
+    // std::cout << "rpy: " << currentStatesWBC_.bodyStateEst.base_rpy_world.transpose() << "\n";
+    // std::cout << "leg: " << currentStatesWBC_.legStateEst->q.transpose() << "\n";
+
+
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
 
     for (int i(0); i < 3; i++) {
@@ -557,67 +564,12 @@ void SimpleMotion::RecordData() {
     // in_foot_rh_z << desiredDataWBC_.pFoot_des[legID::RB][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] << "\n";
 }
 
-void SimpleMotion::UpdateMPCMsg(const conversionData mpcMsg, float time_stamp) {
-
-    const int N_times = mpcMsg.stateTime.size();
-    std::cerr << "1 " << N_times <<"\n";
-
-    mpcMsg_.swingFeetPosition.clear();
-    mpcMsg_.swingFeetPosition.resize(N_times);
-    mpcMsg_.swingFeetVelocity.clear();
-    mpcMsg_.swingFeetVelocity.resize(N_times);
-    mpcMsg_.swingFeetAcceleration.clear();
-    mpcMsg_.swingFeetAcceleration.resize(N_times);
-    mpcMsg_.basePosition.clear();
-    mpcMsg_.basePosition.resize(N_times);
-    mpcMsg_.baseVelocity.clear();
-    mpcMsg_.baseVelocity.resize(N_times);
-    mpcMsg_.baseAcceleration.clear();
-    mpcMsg_.baseAcceleration.resize(N_times);
-    mpcMsg_.stateTime.resize(N_times);
-
-    mpcMsg_.actJointPos.clear();
-    mpcMsg_.actJointPos.resize(N_times);
-    mpcMsg_.actJointVel.clear();
-    mpcMsg_.actJointVel.resize(N_times);
-    std::cerr << "2" << "\n";
-
-    // Gait
-    mpcMsg_.firstGait  = mpcMsg.firstGait;
-    mpcMsg_.secondGait = mpcMsg.secondGait;
-    mpcMsg_.thirdGait  = mpcMsg.thirdGait;
-    mpcMsg_.switchTime = mpcMsg.switchTime;
-    std::cerr << "3" << "\n";
-
-    for (int i = 0; i < N_times; i++) { 
-        // State Times
-        mpcMsg_.stateTime[i] = mpcMsg.stateTime[i];
-        // std::cerr << "mpcMsg_.stateTime[i]" << mpcMsg_.stateTime[i] << "\n";
-        // Swing Feet Trajectories
-        mpcMsg_.swingFeetPosition[i].resize(4);
-        mpcMsg_.swingFeetVelocity[i].resize(4);
-        mpcMsg_.swingFeetAcceleration[i].resize(4);
-        for (uint8_t j = 0; j < 4; j++){
-            mpcMsg_.swingFeetPosition[i][j]     = mpcMsg.swingFeetPosition[i][j];
-            mpcMsg_.swingFeetVelocity[i][j]     = mpcMsg.swingFeetVelocity[i][j];
-            mpcMsg_.swingFeetAcceleration[i][j] = mpcMsg.swingFeetAcceleration[i][j];
-        }
-
-        mpcMsg_.basePosition[i]     = mpcMsg.basePosition[i];
-        mpcMsg_.baseVelocity[i]     = mpcMsg.baseVelocity[i];
-        mpcMsg_.baseAcceleration[i] = mpcMsg.baseAcceleration[i];
-        
-        mpcMsg_.actJointPos[i] = mpcMsg.actJointPos[i];
-        mpcMsg_.actJointVel[i] = mpcMsg.actJointVel[i];
-    }
-
-    std::cerr << "4" << "\n";
-
+void SimpleMotion::UpdateMPCMsg(float time_stamp) {
+    assert(mpcMsgPtr_ != nullptr);
     indexMPCStateTime_ = 0;
     indexMPCSwitchTime_ = 0;
     timeUpdateMPC_ = time_stamp;
 
-    std::cerr << "5" << "\n";
 }
 
 void SimpleMotion::UpdateControlFrame(const EstimatorOutput& input) {
@@ -635,50 +587,50 @@ void SimpleMotion::UpdateControlFrame(const EstimatorOutput& input) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = input.frame_c_xyz_in_world[2];
 }
 
-void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safeGuard) {
+size_t SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safeGuard) {
 
     // std::cerr << "6" << "\n";
     // StateTime
     indexMPCStateTime_ = 0;
-    while ((time_stamp) > mpcMsg_.stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsg_.stateTime.size() - 1) {
+    while ((time_stamp) > mpcMsgPtr_->stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsgPtr_->stateTime.size() - 1) {
         indexMPCStateTime_++;
     }
     // std::cerr << "7" << "\n";
     // Contact
-    if(indexMPCStateTime_ >= mpcMsg_.stateTime.size()) {
-        indexMPCStateTime_ = mpcMsg_.stateTime.size() - 1;
+    if(indexMPCStateTime_ >= mpcMsgPtr_->stateTime.size()) {
+        indexMPCStateTime_ = mpcMsgPtr_->stateTime.size() - 1;
         std::cerr << "\n[yjy: SimpleMotion::MPCWBCRun] MPC IS OUT OF TIME!\n";
     }
     // std::cerr << "8" << "\n";
-    if(time_stamp < mpcMsg_.switchTime[0]) {
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.firstGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.firstGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.firstGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.firstGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.firstGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.firstGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.firstGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.firstGait[3];
+    if(time_stamp < mpcMsgPtr_->switchTime[0]) {
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->firstGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->firstGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->firstGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->firstGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->firstGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->firstGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->firstGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->firstGait[3];
     }
-    else if(time_stamp < mpcMsg_.switchTime[1] && time_stamp >= mpcMsg_.switchTime[0]) {
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.secondGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.secondGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.secondGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.secondGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.secondGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.secondGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.secondGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.secondGait[3];
+    else if(time_stamp < mpcMsgPtr_->switchTime[1] && time_stamp >= mpcMsgPtr_->switchTime[0]) {
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->secondGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->secondGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->secondGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->secondGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->secondGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->secondGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->secondGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->secondGait[3];
     }
-    else if(time_stamp >= mpcMsg_.switchTime[1]){
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsg_.thirdGait[0];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsg_.thirdGait[1];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsg_.thirdGait[2];
-        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsg_.thirdGait[3];
-        desiredDataWBC_.contact_state[legID::LF] = mpcMsg_.thirdGait[0];
-        desiredDataWBC_.contact_state[legID::RF] = mpcMsg_.thirdGait[1];
-        desiredDataWBC_.contact_state[legID::LB] = mpcMsg_.thirdGait[2];
-        desiredDataWBC_.contact_state[legID::RB] = mpcMsg_.thirdGait[3];  
+    else if(time_stamp >= mpcMsgPtr_->switchTime[1]){
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] = mpcMsgPtr_->thirdGait[0];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] = mpcMsgPtr_->thirdGait[1];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] = mpcMsgPtr_->thirdGait[2];
+        currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] = mpcMsgPtr_->thirdGait[3];
+        desiredDataWBC_.contact_state[legID::LF] = mpcMsgPtr_->thirdGait[0];
+        desiredDataWBC_.contact_state[legID::RF] = mpcMsgPtr_->thirdGait[1];
+        desiredDataWBC_.contact_state[legID::LB] = mpcMsgPtr_->thirdGait[2];
+        desiredDataWBC_.contact_state[legID::RB] = mpcMsgPtr_->thirdGait[3];  
     }
     else {
         currentStatesWBC_.bodyStateEst.contactEstimate << 1, 1, 1, 1;
@@ -688,30 +640,30 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     // std::cerr << "9" << "\n";
 
     // Desired WBC Trajectories
-    desiredDataWBC_.pBody_des = mpcMsg_.basePosition[indexMPCStateTime_].head(3);
-    desiredDataWBC_.vBody_des = mpcMsg_.baseVelocity[indexMPCStateTime_].head(3);
-    desiredDataWBC_.aBody_des = mpcMsg_.baseAcceleration[indexMPCStateTime_].head(3);
+    desiredDataWBC_.pBody_des = mpcMsgPtr_->basePosition[indexMPCStateTime_].head(3);
+    desiredDataWBC_.vBody_des = mpcMsgPtr_->baseVelocity[indexMPCStateTime_].head(3);
+    desiredDataWBC_.aBody_des = mpcMsgPtr_->baseAcceleration[indexMPCStateTime_].head(3);
 
-    desiredDataWBC_.pBody_RPY_des = mpcMsg_.basePosition[indexMPCStateTime_].tail(3);
-    desiredDataWBC_.vBody_RPY_des = mpcMsg_.baseVelocity[indexMPCStateTime_].tail(3);
-    desiredDataWBC_.aBody_RPY_des = mpcMsg_.baseAcceleration[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.pBody_RPY_des = mpcMsgPtr_->basePosition[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.vBody_RPY_des = mpcMsgPtr_->baseVelocity[indexMPCStateTime_].tail(3);
+    desiredDataWBC_.aBody_RPY_des = mpcMsgPtr_->baseAcceleration[indexMPCStateTime_].tail(3);
 
-    desiredDataWBC_.pFoot_des[legID::LF] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][0];
-    desiredDataWBC_.pFoot_des[legID::RF] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][1];
-    desiredDataWBC_.pFoot_des[legID::LB] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][2];
-    desiredDataWBC_.pFoot_des[legID::RB] = mpcMsg_.swingFeetPosition[indexMPCStateTime_][3];
+    desiredDataWBC_.pFoot_des[legID::LF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][0];
+    desiredDataWBC_.pFoot_des[legID::RF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][1];
+    desiredDataWBC_.pFoot_des[legID::LB] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][2];
+    desiredDataWBC_.pFoot_des[legID::RB] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][3];
 
-    desiredDataWBC_.vFoot_des[legID::LF] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][0];
-    desiredDataWBC_.vFoot_des[legID::RF] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][1];
-    desiredDataWBC_.vFoot_des[legID::LB] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][2];
-    desiredDataWBC_.vFoot_des[legID::RB] = mpcMsg_.swingFeetVelocity[indexMPCStateTime_][3];
+    desiredDataWBC_.vFoot_des[legID::LF] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][0];
+    desiredDataWBC_.vFoot_des[legID::RF] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][1];
+    desiredDataWBC_.vFoot_des[legID::LB] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][2];
+    desiredDataWBC_.vFoot_des[legID::RB] = mpcMsgPtr_->swingFeetVelocity[indexMPCStateTime_][3];
 
-    desiredDataWBC_.aFoot_des[legID::LF] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][0];
-    desiredDataWBC_.aFoot_des[legID::RF] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][1];
-    desiredDataWBC_.aFoot_des[legID::LB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][2];
-    desiredDataWBC_.aFoot_des[legID::RB] = mpcMsg_.swingFeetAcceleration[indexMPCStateTime_][3];
+    desiredDataWBC_.aFoot_des[legID::LF] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][0];
+    desiredDataWBC_.aFoot_des[legID::RF] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][1];
+    desiredDataWBC_.aFoot_des[legID::LB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][2];
+    desiredDataWBC_.aFoot_des[legID::RB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][3];
 
-    std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
+    // std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
 
     // desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
     // desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
@@ -722,21 +674,21 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
-    command.lf_tau.value[0] = tauWBC_[0] + paramf.Kp_joint_lf[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].q[0]) + paramf.Kd_joint_lf[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].qd[0]);
-    command.lf_tau.value[1] = tauWBC_[1] + paramf.Kp_joint_lf[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].q[1]) + paramf.Kd_joint_lf[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].qd[1]);
-    command.lf_tau.value[2] = tauWBC_[2] + paramf.Kp_joint_lf[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].q[2]) + paramf.Kd_joint_lf[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].qd[2]);
+    command.lf_tau.value[0] = tauWBC_[0] + paramf.Kp_joint_lf[0] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].q[0]) + paramf.Kd_joint_lf[0] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].qd[0]);
+    command.lf_tau.value[1] = tauWBC_[1] + paramf.Kp_joint_lf[1] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].q[1]) + paramf.Kd_joint_lf[1] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][1] - currentStatesWBC_.legStateEst[legID::LF].qd[1]);
+    command.lf_tau.value[2] = tauWBC_[2] + paramf.Kp_joint_lf[2] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].q[2]) + paramf.Kd_joint_lf[2] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][2] - currentStatesWBC_.legStateEst[legID::LF].qd[2]);
 
-    command.lh_tau.value[0] = tauWBC_[3] + paramf.Kp_joint_lh[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].q[0]) + paramf.Kd_joint_lh[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].qd[0]);
-    command.lh_tau.value[1] = tauWBC_[4] + paramf.Kp_joint_lh[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].q[1]) + paramf.Kd_joint_lh[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].qd[1]);
-    command.lh_tau.value[2] = tauWBC_[5] + paramf.Kp_joint_lh[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].q[2]) + paramf.Kd_joint_lh[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].qd[2]);
+    command.lh_tau.value[0] = tauWBC_[3] + paramf.Kp_joint_lh[0] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].q[0]) + paramf.Kd_joint_lh[0] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][3] - currentStatesWBC_.legStateEst[legID::LB].qd[0]);
+    command.lh_tau.value[1] = tauWBC_[4] + paramf.Kp_joint_lh[1] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].q[1]) + paramf.Kd_joint_lh[1] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][4] - currentStatesWBC_.legStateEst[legID::LB].qd[1]);
+    command.lh_tau.value[2] = tauWBC_[5] + paramf.Kp_joint_lh[2] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].q[2]) + paramf.Kd_joint_lh[2] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][5] - currentStatesWBC_.legStateEst[legID::LB].qd[2]);
 
-    command.rf_tau.value[0] = tauWBC_[6] + paramf.Kp_joint_rf[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].q[0]) + paramf.Kd_joint_rf[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].qd[0]);
-    command.rf_tau.value[1] = tauWBC_[7] + paramf.Kp_joint_rf[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].q[1]) + paramf.Kd_joint_rf[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].qd[1]);
-    command.rf_tau.value[2] = tauWBC_[8] + paramf.Kp_joint_rf[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].q[2]) + paramf.Kd_joint_rf[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].qd[2]);
+    command.rf_tau.value[0] = tauWBC_[6] + paramf.Kp_joint_rf[0] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].q[0]) + paramf.Kd_joint_rf[0] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][6] - currentStatesWBC_.legStateEst[legID::RF].qd[0]);
+    command.rf_tau.value[1] = tauWBC_[7] + paramf.Kp_joint_rf[1] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].q[1]) + paramf.Kd_joint_rf[1] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][7] - currentStatesWBC_.legStateEst[legID::RF].qd[1]);
+    command.rf_tau.value[2] = tauWBC_[8] + paramf.Kp_joint_rf[2] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].q[2]) + paramf.Kd_joint_rf[2] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][8] - currentStatesWBC_.legStateEst[legID::RF].qd[2]);
 
-    command.rh_tau.value[0] = tauWBC_[9]  + paramf.Kp_joint_rh[0] * (mpcMsg_.actJointPos[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].q[0]) + paramf.Kd_joint_rh[0] * (mpcMsg_.actJointVel[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].qd[0]);
-    command.rh_tau.value[1] = tauWBC_[10] + paramf.Kp_joint_rh[1] * (mpcMsg_.actJointPos[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].q[1]) + paramf.Kd_joint_rh[1] * (mpcMsg_.actJointVel[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].qd[1]);
-    command.rh_tau.value[2] = tauWBC_[11] + paramf.Kp_joint_rh[2] * (mpcMsg_.actJointPos[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].q[2]) + paramf.Kd_joint_rh[2] * (mpcMsg_.actJointVel[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].qd[2]);
+    command.rh_tau.value[0] = tauWBC_[9]  + paramf.Kp_joint_rh[0] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].q[0]) + paramf.Kd_joint_rh[0] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][9]  - currentStatesWBC_.legStateEst[legID::RB].qd[0]);
+    command.rh_tau.value[1] = tauWBC_[10] + paramf.Kp_joint_rh[1] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].q[1]) + paramf.Kd_joint_rh[1] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][10] - currentStatesWBC_.legStateEst[legID::RB].qd[1]);
+    command.rh_tau.value[2] = tauWBC_[11] + paramf.Kp_joint_rh[2] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].q[2]) + paramf.Kd_joint_rh[2] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][11] - currentStatesWBC_.legStateEst[legID::RB].qd[2]);
     
     if(abs(currentStatesWBC_.bodyStateEst.base_pos_world[0] - desiredDataWBC_.pBody_des[0]) > paramf.x_delta ||
        abs(currentStatesWBC_.bodyStateEst.base_pos_world[1] - desiredDataWBC_.pBody_des[1]) > paramf.y_delta ||
@@ -748,6 +700,7 @@ void SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& safe
         safeGuard = false;
     }
     RecordData();
+    return indexMPCStateTime_;
 }
 
 void SimpleMotion::PDSafeGuardSetUpMotion() {
@@ -782,10 +735,11 @@ void SimpleMotion::PDSafeGuardRun(LimbsCommand& command) {
     command.rh_tau.value[2] = paramf.Kp_rh_kfe_pd_safe * (planedLimbsStates_.rh_pos.value[2] - currentLimbsStates_.rh_pos.value[2]) + paramf.Kd_rh_kfe_pd_safe * (planedLimbsStates_.rh_vel.value[2] - currentLimbsStates_.rh_vel.value[2]); 
 }
 
-void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
+TerrainEstData SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     Eigen::Matrix<float,19,1> q;
     Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
-    q.head(3) << 0,0,0;
+    // q.head(3) << 0,0,0;
+    q.head(3) = currentStatesWBC_.bodyStateEst.base_pos_world;
     q.segment(3, 3)  << quat.x(), quat.y(), quat.z();
     q.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     q.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
@@ -799,14 +753,65 @@ void SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     foot_rf = jueying_.swingFootPosition(legID::RF, q.cast<double>()).cast<float>();
     foot_rh = jueying_.swingFootPosition(legID::RB, q.cast<double>()).cast<float>();
 
-    Vec31<float> terrNormal = terrEst.run(foot_lf,foot_lh,foot_rf,foot_rh,contact_flag);
-    cout << "terrEst:\n" << terrNormal << "\n";
-    
-    slope_delta_roll  = std::atan2(terrNormal[1],1);
-    slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
+    // cout << "foot_lf: " << foot_lf.transpose() << endl;
 
-    std::cout << "theta_x: " << slope_delta_roll
-                  << "\ttheta_y: " << slope_delta_pitch << "\n";  
+    Vec31<float> terrParam = terrEst.run(foot_lf, foot_lh, foot_rf, foot_rh, contact_flag);
+    Vec31<float> terrNormal;
+    terrNormal << terrParam[0], terrParam[1], 1.f;
+    terrNormal.normalize();
+    // cout << "base_pos_world: " << q.head(3).transpose() << endl;
+    // cout << "terrEst:" << terrNormal.transpose() << "\tterrainParams: " << terrParam.transpose() << "\n";
+
+    Vec31<float> xNormal = currentStatesWBC_.bodyStateEst.base_orientation_world.toRotationMatrix().col(0);
+    // std::cout << "xNormal: " << xNormal.transpose() << std::endl;
+    Vec31<float> xAxis = xNormal - xNormal.dot(terrNormal) * terrNormal;
+    xAxis.normalize();
+    Vec31<float> yAxis = terrNormal.cross(xAxis);
+    yAxis.normalize();terrNormal.normalize();
+    Mat3<float> terrFramToWorld;xAxis.normalize();
+    terrFramToWorld << xAxis, yAxis, terrNormal;
+    Eigen::Quaternionf terrainQuat(terrFramToWorld);
+
+    TerrainEstData terrainEstData;
+    terrainEstData.terrainQuat = terrainQuat;
+    terrainEstData.terrainParams = terrParam;
+    terrainEstData.feetHeight = terrEst.getFeetHeight(); //lf lh rf rh 
+
+    return terrainEstData;
+
+
+    // std::cout << "terrFramToWorld**\n " << terrFramToWorld*terrFramToWorld.transpose() << std::endl;
+    // std::cout << "terrFramToWorld det: " << terrFramToWorld.determinant() << std::endl;
+
+    // float pitch = atan2(terrNormal[0], 1);
+    // float roll = atan2(terrNormal[1], 1);
+    // std::cout << "terrain est: " << pitch << " " << roll << std::endl;
+    
+
+    // Mat3<float> terrFramToWorld;
+    // float a = terrNormal[0], b = terrNormal[1];
+    // float coff_a = std::sqrt(1+a*a),
+    //       coff_b = std::sqrt(1+b*b),
+    //       coff_c = std::sqrt(1+a*a+b*b);
+
+    // terrFramToWorld << 1/coff_a, 0, a/coff_a,
+    //                     0, 1/coff_b, b/coff_b,
+    //                     -a/coff_c, -b/coff_c, 1/coff_c;
+    
+    // Vec31<float> rpy = terrFramToWorld.eulerAngles(0,1,2);
+    // Eigen::Quaternion<float> quat_terr(currentStatesWBC_.bodyStateEst.frame_c_quat_in_world.toRotationMatrix() 
+    //                                         * terrFramToWorld);
+    // Vec31<float> rpy_terr = quaternionTOrpy(quat_terr);
+
+    // std::cout << "r: " << rpy[0] << " p: " << rpy[1] << " y: " << rpy[2] <<
+    //               "\t p: " << slope_delta_pitch << "  rpy:---\n" << rpy_terr <<"\n";  
+
+    
+    // slope_delta_roll  = std::atan2(terrNormal[1],1);
+    // slope_delta_pitch = std::atan2(terrNormal[0], std::sqrt(1 + terrNormal[1] * terrNormal[1]));
+
+    // std::cout << "theta_x: " << slope_delta_roll
+    //               << "\ttheta_y: " << slope_delta_pitch << "\n";  
 
     // cout << "rpy_real:\n" << rpy_in_world << "\n";
     // terr << terrNormal[0] << "\t" << terrNormal[1] << "\n";  

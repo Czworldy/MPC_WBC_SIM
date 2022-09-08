@@ -131,9 +131,9 @@ void LeggedRobotVisualizer::publishObservation(ros::Time timeStamp, const System
   }
 
   // Publish
-  publishJointTransforms(timeStamp, qJoints);
-  publishBaseTransform(timeStamp, basePose);
-  publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
+  // publishJointTransforms(timeStamp, qJoints);
+  // publishBaseTransform(timeStamp, basePose);
+  // publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
 }
 
 /******************************************************************************************************/

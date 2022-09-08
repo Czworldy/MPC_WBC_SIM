@@ -10,13 +10,14 @@
 
 double xv_a[NZEROS+1]={0}, yv_a[NPOLES+1]={0};
 double xv_b[NZEROS+1]={0}, yv_b[NPOLES+1]={0};
+double xv_d[NZEROS+1]={0}, yv_d[NPOLES+1]={0};
 
 
 
 float filterloop(double input, double* xv, double* yv);
 Vec31<float> filterloop(Vec31<float> input, std::vector<Vec31<float>>& xv, std::vector<Vec31<float>>& yv);
 TerrainEstimator::TerrainEstimator(){
-    estSlopeNormal << 0., 0., 1.;
+    estSlopeParam << 0., 0., 1.;
     xv_lf.resize(NZEROS+1);yv_lf.resize(NPOLES+1);
     xv_lh.resize(NZEROS+1);yv_lh.resize(NPOLES+1);
     xv_rf.resize(NZEROS+1);yv_rf.resize(NPOLES+1);
@@ -40,7 +41,7 @@ TerrainEstimator::TerrainEstimator(){
         v = Eigen::Vector3f::Zero();
 
     
-    // estSlopeNormal_last << 0., 0., 1.;
+    // estSlopeParam_last << 0., 0., 1.;
 }
 
 TerrainEstimator::~TerrainEstimator(){}
@@ -76,6 +77,15 @@ Vec31<float> TerrainEstimator::run(const Vec31<float> &lf,
                 rfPosQueue.size() == USE_PAST_DATA_NUM && 
                     rhPosQueue.size() == USE_PAST_DATA_NUM ){
 
+        // std::cout << "lfPosQueue: \n" << lfPosQueue[0].transpose() << std::endl 
+        //     << lfPosQueue[1].transpose() << std::endl;
+        // std::cout << "lhPosQueue: \n" << lhPosQueue[0].transpose() << std::endl 
+        //     << lhPosQueue[1].transpose() << std::endl;
+        // std::cout << "rfPosQueue: \n" << rfPosQueue[0].transpose() << std::endl 
+        //     << rfPosQueue[1].transpose() << std::endl;
+        // std::cout << "rhPosQueue: \n" << rhPosQueue[0].transpose() << std::endl 
+        //     << rhPosQueue[1].transpose() << std::endl;
+
         Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 3> H;
         Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 1> I = Eigen::MatrixXf::Constant(USE_PAST_DATA_NUM*4,1,1);
         Eigen::Matrix<float, USE_PAST_DATA_NUM*4, 1> Z = Eigen::MatrixXf::Constant(USE_PAST_DATA_NUM*4,1,1);
@@ -85,7 +95,7 @@ Vec31<float> TerrainEstimator::run(const Vec31<float> &lf,
             H.row(i+2*USE_PAST_DATA_NUM) = -rfPosQueue[i];
             H.row(i+3*USE_PAST_DATA_NUM) = -rhPosQueue[i];
         }
-        Z = H.col(2);
+        Z = -H.col(2); // "-" is very important 
         H.col(2) = I;
 
         // std::cout << "H:\n" << H << "\n";
@@ -103,26 +113,27 @@ Vec31<float> TerrainEstimator::run(const Vec31<float> &lf,
             invS.coeffRef(ii, ii) = 1.0 / svd.singularValues().coeff(ii);
             } else {
             // invS.coeffRef(ii, ii) = 1.0/ sigmaThreshold;
-            // printf("sigular value is too small: %f\n",svd.singularValues().coeff(ii));
+            printf("terrain sigular value is too small: %f\n",svd.singularValues().coeff(ii));
             }
         }
         DMat<float> H_invMatrix = svd.matrixV() * invS * svd.matrixU().transpose();
         
-        estParam =  H_invMatrix * Z;
+        estParam =  H_invMatrix * Z; // estParams = [a b -d]
 
-        Vec31<float> currest = estParam;
-        currest[2] = 1;
-        estSlopeNormal = currest;
+        // Vec31<float> currentResult = estParam;
+
+        // estSlopeParam = currentResult;
         // std::cout <<"estTerr!!!\n";
-        // estSlopeNormal = lowpass_cof * currest + (1 - lowpass_cof) * estSlopeNormal_last;
-        // estSlopeNormal_last = estSlopeNormal;
-        estSlopeNormal[0] = filterloop(currest[0], xv_a, yv_a);
-        estSlopeNormal[1] = filterloop(currest[1], xv_b, yv_b);
-        // estSlopeNormal[1] = filterloop(currest[1]);   
-        return estSlopeNormal;
+        // estSlopeParam = lowpass_cof * currest + (1 - lowpass_cof) * estSlopeParam_last;
+        // estSlopeParam_last = estSlopeParam;
+        estSlopeParam[0] = filterloop(estParam[0], xv_a, yv_a);
+        estSlopeParam[1] = filterloop(estParam[1], xv_b, yv_b);
+        estSlopeParam[2] = filterloop(-estParam[2], xv_d, yv_d); // -d -> d
+        // estSlopeParam[1] = filterloop(currest[1]);   
+        return estSlopeParam;
     }
     else{
-        return estSlopeNormal;
+        return estSlopeParam;
     }
 }
 
