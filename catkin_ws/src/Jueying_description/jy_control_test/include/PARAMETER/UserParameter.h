@@ -8,8 +8,8 @@ template<typename T>
 struct HierNWeig
 {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-        Eigen::Matrix<int, 3, 1> hierarchy;
-        Eigen::Matrix<T, 8, 1>  weight;
+        Eigen::Matrix<int, 2, 1> hierarchy;
+        Eigen::Matrix<T, 7, 1>  weight;
 };
 
 
@@ -36,6 +36,11 @@ class UserParameter{
         Vec31<T> Kp_body_rb, Kd_body_rb;
         Vec31<T> Kp_ori_rb, Kd_ori_rb;
         Vec31<T> Kp_foot_rb, Kd_foot_rb;
+
+        Vec31<T> Kp_joint_lf, Kd_joint_lf;
+        Vec31<T> Kp_joint_rf, Kd_joint_rf;
+        Vec31<T> Kp_joint_lh, Kd_joint_lh;
+        Vec31<T> Kp_joint_rh, Kd_joint_rh;
         
         //Physical Parameters
         Vec12<T> TauMax, TauMin;

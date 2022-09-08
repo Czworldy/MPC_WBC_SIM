@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     std::unique_ptr<PinocchioInterface> pinocchioInterfacePtr;
     legged_robot::ModelSettings modelSettings;
 
-    jointState = nh.subscribe("/JYPro/joint_states", 1, &jointStateCallback);
+    jointState = nh.subscribe("/X20/joint_states", 1, &jointStateCallback);
     contactState = nh.subscribe("/state_estimator_pronto/stance", 1, &contactStateCallback);
     gazebo_linkStates = nh.subscribe("/gazebo/model_states", 1,&gazebo_link_states_callback);
     mpc_input = nh.advertise<ocs2_msgs::mpc_observation>("/legged_robot_mpc_observation", 1);

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     twist_state = []
     torque_state = []
 
-    file = open("/home/MPC_WBC/dqwang/catkin_ws/src/Jueying_description/jy_estimate_test/data_jypro/JY-P1-003 2021-05-21 15-48-41.csv")
+    file = open("/home/MPC_WBC/dqwang/catkin_ws/src/Jueying_description/jy_estimate_test/data_x20/JY-P1-003 2021-05-21 15-48-41.csv")
     reader = csv.reader(file)
     result = list(reader)
     i = 0

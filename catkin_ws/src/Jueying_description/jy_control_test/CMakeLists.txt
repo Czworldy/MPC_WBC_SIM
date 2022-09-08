@@ -7,7 +7,7 @@ project(jy_control_test)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-list(INSERT CMAKE_MODULE_PATH 0 "~/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/cmake")
+list(INSERT CMAKE_MODULE_PATH 0 "~/MPC_WBC_sim_X20/catkin_ws/src/Jueying_description/jy_control_test/cmake")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -32,8 +32,6 @@ find_package(osqp REQUIRED)
 find_package(Threads)
 
 find_package(OsqpEigen)
-
-find_package(raisim CONFIG REQUIRED)
 
 
 catkin_package(
@@ -133,22 +131,13 @@ add_library(${PROJECT_NAME}
 
 
 add_executable(wbc_pd_trot_mpc src/MAIN/main.cpp)
+
 target_link_libraries(wbc_pd_trot_mpc
  ${catkin_LIBRARIES}
  ${PROJECT_NAME}
  ${RBDL_LIBRARY}
  #${RBDL_URDFReader_LIBRARY}
  ${EIGEN3_LIBRARY}
-OsqpEigen::OsqpEigen
-/usr/local/lib/libquadprog.a
-)
-
-add_executable(raisim_test src/MAIN/raisim_test.cpp)
-target_link_libraries(raisim_test
-PUBLIC raisim::raisim pthread
-${PROJECT_NAME}
-${RBDL_LIBRARY}
-${catkin_LIBRARIES}
 OsqpEigen::OsqpEigen
 /usr/local/lib/libquadprog.a
 )

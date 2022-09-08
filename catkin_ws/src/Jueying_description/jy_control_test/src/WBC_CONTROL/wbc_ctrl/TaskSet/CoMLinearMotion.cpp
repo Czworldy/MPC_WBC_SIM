@@ -59,18 +59,11 @@ bool CoMLinearMotion<T>::Update_size(){
     return true;
 }
 
-
-/* 
-    TK::A_:size 3	30
-    A_in_frame_c:size 3	18
-*/
 template<typename T>
 bool CoMLinearMotion<T>::Update_A(){
     DMat<T> A_in_frame_c = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
     A_in_frame_c = _robot_sys->getCoM6DJacobian_c_frame().topRows(3).cast<T>();
-    // TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
-    // TK::A_ = A_in_frame_c; // yjy:不能这样写
-    TK::A_.leftCols(TK::dim_config_) = A_in_frame_c;
+    TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
 
     return true;
 }
@@ -80,7 +73,7 @@ bool CoMLinearMotion<T>::Update_b(){
     DVec<T> Q_CoM, QDot_CoM, JDotQDot;
     Q_CoM = _robot_sys->Q_c_frame.cast<T>();
     QDot_CoM = _robot_sys->QDot_c_frame.cast<T>();
-    // JDotQDot = _robot_sys->getCoM6DJDotQDot_c_frame().cast<T>();
+    JDotQDot = _robot_sys->getCoM6DJDotQDot_c_frame().cast<T>();
     for (size_t i(0); i<3; ++i){
         TK::b_[i] = acc_d_[i] + Kd[i]*(vel_d_[i] - QDot_CoM[i]) + Kp[i]*(pos_d_[i] - Q_CoM[i]);// - JDotQDot[i];
     }

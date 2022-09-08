@@ -103,7 +103,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
 
     // QDot.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3); 
     QDot.head(3) = state.bodyVelocity.head(3);//yjy :按照论文 线速度先不旋转
-    QDot.segment(3,3) = rotMat_world_to_c * state.bodyVelocity.segment(3,3); 
+    QDot.segment(3,3) = state.bodyVelocity.segment(3,3); 
     QDot.tail(JYPro::num_act_joint) = state.qd_leg; 
 
     Q_c_frame.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world);
@@ -119,7 +119,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     Q_c_frame.segment(6, JYPro::num_act_joint) = state.q_leg;
 
     QDot_c_frame.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3);
-    QDot_c_frame.segment(3,3) = rotMat_world_to_c * state.bodyVelocity.segment(3,3); 
+    QDot_c_frame.segment(3,3) = state.bodyVelocity.segment(3,3); 
     QDot_c_frame.tail(JYPro::num_act_joint) = state.qd_leg; 
 
     contact_state = state.contact_state_;
@@ -511,45 +511,9 @@ DVec<double> QuadrupedDynamicsModel::swingFootVelocity_c_frame (size_t foot_id){
 }
 
 Vec31<double> QuadrupedDynamicsModel::hipPosition(size_t hip_id){//for motion plan
-    if(hip_id == 0){
-        Vector3d hip_in_base_lf(-0.177, 0.33, 0);
-        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_lf);
-    }
-    if(hip_id == 1){
-        Vector3d hip_in_base_lb(-0.177, -0.33, 0);
-        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_lb);
-    }
-    if(hip_id == 2){
-        Vector3d hip_in_base_rb(0.177, -0.33, 0);
-        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_rb);
-    }
-    if(hip_id == 3){
-        Vector3d hip_in_base_rf(0.177, 0.33, 0);
-        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_rf);
-    }
-
-    return hip_position;
 }
 
 Vec31<double> QuadrupedDynamicsModel::hipVelocity(size_t hip_id){// for motion plan
-    if(hip_id == 0){
-        Vector3d hip_in_base_lf(-0.135, 0.33, 0);
-        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_lf);
-    }
-    if(hip_id == 1){
-        Vector3d hip_in_base_lb(-0.135, -0.33, 0);
-        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_lb);
-    }
-    if(hip_id == 2){
-        Vector3d hip_in_base_rb(0.135, -0.33, 0);
-        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_rb);
-    }
-    if(hip_id == 3){
-        Vector3d hip_in_base_rf(0.135, 0.33, 0);
-        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_rf);
-    }
-
-    return hip_velocity;
 }
 
 Vec31<double> QuadrupedDynamicsModel::footPosition(size_t foot_id){
@@ -604,146 +568,133 @@ const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot_c_frame(){
 
 
 void QuadrupedDynamicsModel::initParameters(){
-    BodyMass[Base]     = 31.086;
-    BodyMass[LF_Hip]   = 2.50549192294322;
-    BodyMass[LF_Thigh] = 4.5006;
-    BodyMass[LF_Shank] = 0.50672;
-    BodyMass[LB_Hip]   = 2.50549192294322;
-    BodyMass[LB_Thigh] = 4.5006;
-    BodyMass[LB_Shank] = 0.50672;
-    BodyMass[RF_Hip]   = 2.50549192294322;
-    BodyMass[RF_Thigh] = 4.5006;
-    BodyMass[RF_Shank] = 0.50672;
-    BodyMass[RB_Hip]   = 2.50549192294322;
-    BodyMass[RB_Thigh] = 4.5006;
-    BodyMass[RB_Shank] = 0.50672;
+    BodyMass[Base]     = 26.398;
+    BodyMass[LF_Hip]   = 1.5767;
+    BodyMass[LF_Thigh] = 3.0063;
+    BodyMass[LF_Shank] = 0.54849;
+    BodyMass[LB_Hip]   = 1.5767;
+    BodyMass[LB_Thigh] = 3.0063;
+    BodyMass[LB_Shank] = 0.54849;
+    BodyMass[RF_Hip]   = 1.5767;
+    BodyMass[RF_Thigh] = 3.0062;
+    BodyMass[RF_Shank] = 0.54849;
+    BodyMass[RB_Hip]   = 1.5767;
+    BodyMass[RB_Thigh] = 3.0062;
+    BodyMass[RB_Shank] = 0.54849;
 
-    BodyCoM[Base]     << 0.00043155, 0.039218, 0.025123;
-    BodyCoM[LF_Hip]   << 4.14485893307365E-05, -0.00113627716579498, -0.0268906627091174;
-    BodyCoM[LF_Thigh] << -0.0077577, 0.07269, 0.019016;
-    BodyCoM[LF_Shank] << 0.0014413, 0.14344, 1.6577E-05;
-    BodyCoM[LB_Hip]   << 4.14485800360742E-05,  -0.00113627716607437, -0.0268906627007571;
-    BodyCoM[LB_Thigh] << -0.0077577, 0.07269, 0.019016;
-    BodyCoM[LB_Shank] << 0.0014413, 0.14344, 1.6577E-05;
-    BodyCoM[RF_Hip]   << -4.14485947367454E-05, -0.00113627717429798, 0.02689066268977;
-    BodyCoM[RF_Thigh] << -0.0077577, 0.07269, -0.019016;
-    BodyCoM[RF_Shank] << 0.0014413, 0.14344, 1.6577E-05;
-    BodyCoM[RB_Hip]   << -4.14485947367454E-05, -0.00113627717429798, 0.02689066268977;
-    BodyCoM[RB_Thigh] << -0.0077577, 0.07269, -0.019016;
-    BodyCoM[RB_Shank] << 0.0014413, 0.14344, 1.6577E-05;
 
-    BodyInertia[Base] << 2.2278, 0.0021782, 0.0009097,
-                         0.0021782, 0.27493, -0.13204,
-                         0.0009097, -0.13204, 2.1908;
-    BodyInertia[LF_Hip] << 0.00412481611325406, -8.61923036175591E-07, 3.73143726705958E-06,
-                           -8.61923036175591E-07, 0.00494762206279559, 0.000113743229299035,
-                           3.73143726705958E-06, 0.000113743229299035, 0.00567911706773225;
-    BodyInertia[LF_Thigh] << 0.058988, 0.0032662, -0.00079631, 
-                             0.0032662, 0.010824, 0.0057941,
-                             -0.00079631, 0.0057941, 0.061893;
-    BodyInertia[LF_Shank] << 0.012216, -0.00022753, 2.7026E-08,
-                            -0.00022753, 0.00021985, -1.6284E-06,
-                             2.7026E-08, -1.6284E-06, 0.012354;
-    BodyInertia[LB_Hip] << 0.00412481611295601, -8.61923030740982E-07, 3.73143695454939E-06,
-                           -8.61923030740982E-07, 0.00494762206190561, 0.000113743229290125,
-                           3.73143695454939E-06, 0.000113743229290125, 0.00567911706709784;
-    BodyInertia[LB_Thigh] << 0.058988, 0.0032662, -0.00079631, 
-                             0.0032662, 0.010824, 0.0057941,
-                             -0.00079631, 0.0057941, 0.061893;
-    BodyInertia[LB_Shank] << 0.012216, -0.00022753, 2.7026E-08,
-                             -0.00022753, 0.00021985, -1.6284E-06,
-                              2.7026E-08, -1.6284E-06, 0.012354;
-    BodyInertia[RF_Hip] << 0.00412481611134714, 8.61923183582635E-07, 3.73143744918099E-06,
-                           8.61923183582635E-07, 0.00494762206188555, -0.000113743229014181,
-                           3.73143744918099E-06, -0.000113743229014181, 0.00567911706619976;
-    BodyInertia[RF_Thigh] << 0.058988, 0.0032662, 0.0007963,
-                             0.0032662, 0.010824, -0.005794,
-                             0.0007963, -0.005794, 0.061893;
-    BodyInertia[RF_Shank] << 0.012216, -0.00022753, 2.7026E-08, 
-                            -0.00022753, 0.00021985, -1.6284E-06,
-                             2.7026E-08, -1.6284E-06, 0.012354;
-    BodyInertia[RB_Hip] << 0.00412481611134714, 8.61923183582635E-07, 3.73143744918099E-06,
-                           8.61923183582635E-07, 0.00494762206188555, -0.000113743229014181,
-                           3.73143744918099E-06, -0.000113743229014181, 0.00567911706619976;
-    BodyInertia[RB_Thigh] << 0.058988, 0.0032662, 0.0007963,
-                             0.0032662, 0.010824, -0.005794,
-                             0.0007963, -0.005794, 0.061893;
-    BodyInertia[RB_Shank] << 0.012216, -0.00022753, 2.7026E-08, 
-                            -0.00022753, 0.00021985, -1.6284E-06,
-                             2.7026E-08, -1.6284E-06, 0.012354;
-    
-    // Trans[FloatBase].R.setIdentity();
-    // Trans[FloatBase].Tr.setZero();
-    // Trans[LF_HipX].R << 0., 0., -1.,
-    //                                            1., 0., 0.,
-    //                                            0, -1., 0.;
-    // Trans[LF_HipX].Tr << -0.135, 0.33, 0;
-    // Trans[LF_HipY].R.setIdentity();
-    // Trans[LF_HipY].Tr << 0, 0, 0.042;
-    // Trans[LF_Knee].R.setIdentity();
-    // Trans[LF_Knee].Tr << 0, 0.33, 0;
-    // Trans[LB_HipX].R <<  0., 0., -1.,
-    //                                            1., 0., 0.,
-    //                                            0, -1., 0.;
-    // Trans[LB_HipX].Tr << -0.135, -0.33, 0;
-    // Trans[LB_HipY].R.setIdentity();s
-    // Trans[LB_HipY].Tr << 0, 0, 0.042;
-    // Trans[LB_Knee].R.setIdentity();
-    // Trans[LB_Knee].Tr << 0, 0.33, 0;
-    // Trans[RF_HipX].R <<  0., 0., -1.,
-    //                                            1., 0., 0.,
-    //                                            0, -1., 0.;
-    // Trans[RF_HipX].Tr << 0.135, 0.33, 0;
-    // Trans[RF_HipY].R.setIdentity();
-    // Trans[RF_HipY].Tr<< 0, 0, -0.042;
-    // Trans[RF_Knee].R.setIdentity();
-    // Trans[RF_Knee].Tr << 0, 0.33, 0;
-    // Trans[RB_HipX].R << 0., 0., -1.,
-    //                                            1., 0., 0.,
-    //                                            0, -1., 0.;
-    // Trans[RB_HipX].Tr << 0.135, -0.33, 0;
-    // Trans[RB_HipY].R.setIdentity();
-    // Trans[RB_HipY].Tr << 0, 0, -0.042;
-    // Trans[RB_Knee].R.setIdentity();
-    // Trans[RB_Knee].Tr << 0, 0.33, 0;
+
+    BodyCoM[Base]     << 0.005, 0.000413, 0.004;
+    BodyCoM[LF_Hip]   << -0.00075689, -0.0089129, -5.0528E-05;
+    BodyCoM[LF_Thigh] << -0.0025264, -0.022118, -0.0292;
+    BodyCoM[LF_Shank] << 0.0075224, 2.5888E-05, -0.17586;
+    BodyCoM[LB_Hip]   << 0.000757, -0.009, 5.053E-05;
+    BodyCoM[LB_Thigh] << -0.0025264, -0.022118, -0.0292;
+    BodyCoM[LB_Shank] << 0.0075224, 2.5888E-05, -0.17586;
+    BodyCoM[RF_Hip]   << -0.000757, 0.009, 5.0528E-05;
+    BodyCoM[RF_Thigh] << -0.0025266, 0.022119, -0.029194;
+    BodyCoM[RF_Shank] << 0.0075224, 2.5888E-05, -0.17586;
+    BodyCoM[RB_Hip]   << 0.00075689, 0.0089129, -5.0528E-05;
+    BodyCoM[RB_Thigh] << -0.0025266, 0.022119, -0.029194;
+    BodyCoM[RB_Shank] << 0.0075224, 2.589E-05, -0.17586;
+
+
+
+    BodyInertia[Base] << 0.1632, -5.2136E-05, -0.00019406,
+                         -5.2136E-05, 0.40648, 8.2679E-05,
+                         -0.00019406, 8.2679E-05, 0.52596;
+
+    BodyInertia[LF_Hip] << 0.0012141, 6.1989E-06, 2.8652E-06,
+                           6.1989E-06, 0.0016912, 3.7E-06,
+                           2.8652E-06, 3.7E-06, 0.0013431;
+
+    BodyInertia[LF_Thigh] << 0.0058102, 4.2848E-05, -3.0437E-06,
+                             4.2848E-05, 0.0080686, -6.889E-05,
+                             -3.0437E-06, -6.889E-05, 0.003874;
+
+    BodyInertia[LF_Shank] << 0.0057, 1.16E-07, 0.000153,
+                             1.16E-07, 0.006, -1.12E-06,
+                             0.000153, -1.12E-06, 0.00029;
+
+    BodyInertia[LB_Hip] << 0.00121, -6.2E-06, 2.9E-06,
+                           -6.2E-06, 0.0017, -3.7E-06,
+                           2.9E-06, -3.7E-06, 0.00134;
+
+    BodyInertia[LB_Thigh] << 0.0058102, 4.2848E-05, -3.0433E-06,
+                             4.2848E-05, 0.008, -6.8889E-05,
+                             -3.0433E-06, -6.8889E-05, 0.003874;
+
+    BodyInertia[LB_Shank] << 0.0057, 1.16E-07, 0.000153,
+                             1.16E-07, 0.006, -1.12E-06,
+                             0.000153, -1.12E-06, 0.00029;
+
+    BodyInertia[RF_Hip] << 0.0012141, -6.1989E-06, -2.8652E-06,
+                           -6.1989E-06, 0.0016912, 3.7E-06,
+                           -2.8652E-06, 3.7E-06, 0.0013431;
+
+    BodyInertia[RF_Thigh] << 0.00581, -4.2781E-05, -3.0682E-06,
+                             -4.2781E-05, 0.0080684, 6.8812E-05,
+                             -3.0682E-06, 6.8812E-05, 0.0038739;
+
+    BodyInertia[RF_Shank] << 0.0057, 1.16E-07, 0.000153,
+                             1.16E-07, 0.006, -1.12E-06,
+                             0.000153, -1.12E-06, 0.00029;
+
+    BodyInertia[RB_Hip] << 0.0012141, 6.1989E-06, -2.8652E-06,
+                           6.1989E-06, 0.0016912, -3.7E-06,
+                           -2.8652E-06, -3.7E-06, 0.0013431;
+
+    BodyInertia[RB_Thigh] << 0.00581, -4.2781E-05, -3.0681E-06,
+                             -4.2781E-05, 0.0080684, 6.8812E-05,
+                             -3.0681E-06, 6.8812E-05, 0.0038739;
+
+    BodyInertia[RB_Shank] << 0.0056981, 1.1608E-07, 0.00015292,
+                             1.1608E-07, 0.0059026, -1.1243E-06,
+                             0.00015292, -1.1243E-06, 0.00028822;
+
+
 
     Trans[FloatBase].R.setIdentity();
     Trans[FloatBase].Tr.setZero();
-    Trans[LF_HipX].R << 0., 1., 0.,
-                        0., 0., -1.,
-                        -1, 0., 0.;
-    Trans[LF_HipX].Tr << -0.135, 0.33, 0;
+
+    Trans[LF_HipX].R.setIdentity();
+    Trans[LF_HipX].Tr << 0.292, 0.08, 0;
+
     Trans[LF_HipY].R.setIdentity();
-    Trans[LF_HipY].Tr << 0, 0,0.042;
+    Trans[LF_HipY].Tr << 0, 0.12325, 0;
+
     Trans[LF_Knee].R.setIdentity();
-    Trans[LF_Knee].Tr << 0, 0.33, 0;
-    Trans[LB_HipX].R << 0., 1., 0.,
-                        0., 0., -1.,
-                        -1, 0., 0.;
-    Trans[LB_HipX].Tr << -0.135, -0.33, 0;
+    Trans[LF_Knee].Tr << 0, 0, -0.3;
+
+    Trans[LB_HipX].R.setIdentity();
+    Trans[LB_HipX].Tr << -0.292, 0.08, 0;
+    
     Trans[LB_HipY].R.setIdentity();
-    Trans[LB_HipY].Tr << 0, 0, 0.042;
+    Trans[LB_HipY].Tr << 0, 0.12325, 0;
+
     Trans[LB_Knee].R.setIdentity();
-    Trans[LB_Knee].Tr << 0, 0.33, 0;
-    Trans[RF_HipX].R << 0., 1., 0.,
-                        0., 0., -1.,
-                        -1, 0., 0.;
-    Trans[RF_HipX].Tr << 0.135, 0.33, 0;
+    Trans[LB_Knee].Tr << 0, 0, -0.3;
+
+    Trans[RF_HipX].R.setIdentity();
+    Trans[RF_HipX].Tr << 0.292, -0.08, 0;
+
     Trans[RF_HipY].R.setIdentity();
-    Trans[RF_HipY].Tr<< 0, 0, -0.042;
+    Trans[RF_HipY].Tr << 0, -0.12325, 0;
+
     Trans[RF_Knee].R.setIdentity();
-    Trans[RF_Knee].Tr << 0, 0.33, 0;
-    Trans[RB_HipX].R << 0., 1., 0.,
-                        0., 0., -1.,
-                        -1, 0., 0.;
-    Trans[RB_HipX].Tr << 0.135, -0.33, 0;
+    Trans[RF_Knee].Tr << 0, 0, -0.3;
+    
+    Trans[RB_HipX].R.setIdentity();
+    Trans[RB_HipX].Tr << -0.292, -0.08, 0;
+
     Trans[RB_HipY].R.setIdentity();
-    Trans[RB_HipY].Tr << 0, 0, -0.042;
+    Trans[RB_HipY].Tr << 0, -0.12325, 0;
+
     Trans[RB_Knee].R.setIdentity();
-    Trans[RB_Knee].Tr << 0, 0.33, 0;
+    Trans[RB_Knee].Tr << 0, 0, -0.3;
 
     //contact related
-    contact_point << 0., 0.33, 0.;
+    contact_point << 0, 0, -0.33;
 }
 
 
@@ -762,26 +713,19 @@ void QuadrupedDynamicsModel::generate(){
     Body RB_Thigh_body = Body(BodyMass[RB_Thigh], BodyCoM[RB_Thigh], BodyInertia[RB_Thigh]);
     Body RB_Shank_body = Body(BodyMass[RB_Shank], BodyCoM[RB_Shank], BodyInertia[RB_Shank]);
 
-    // Joint FloatBase_joint = Joint(
-    //                               SpatialVector (0., 0., 0., 1., 0., 0.), //tx
-    //                               SpatialVector (0., 0., 0., 0., 1., 0.), //ty
-    //                               SpatialVector (0., 0., 0., 0., 0., 1.), //tz
-    //                               SpatialVector (1., 0., 0., 0., 0., 0.), //rx
-    //                               SpatialVector (0., 1., 0., 0., 0., 0.), //ry
-    //                               SpatialVector (0., 0., 1., 0., 0., 0.));//rz
     Joint FloatBase_joint = Joint(JointTypeFloatingBase);
     Joint LF_HipX_joint = Joint(SpatialVector (1., 0., 0., 0., 0., 0.));
-    Joint LF_HipY_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
-    Joint LF_Knee_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
+    Joint LF_HipY_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
+    Joint LF_Knee_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
     Joint LB_HipX_joint = Joint(SpatialVector (1., 0., 0., 0., 0., 0.));
-    Joint LB_HipY_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
-    Joint LB_Knee_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
+    Joint LB_HipY_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
+    Joint LB_Knee_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
     Joint RF_HipX_joint = Joint(SpatialVector (-1., 0., 0., 0., 0., 0.));
-    Joint RF_HipY_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
-    Joint RF_Knee_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
+    Joint RF_HipY_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
+    Joint RF_Knee_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
     Joint RB_HipX_joint = Joint(SpatialVector (-1., 0., 0., 0., 0., 0.));
-    Joint RB_HipY_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
-    Joint RB_Knee_joint = Joint(SpatialVector (0., 0., -1., 0., 0., 0.));
+    Joint RB_HipY_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
+    Joint RB_Knee_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
 
 
 

@@ -3,7 +3,7 @@
 
 template<typename T>
 UserParameter<T>::UserParameter(){
-    const std::string filename = "/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/include/PARAMETER/UserParameter.info";
+    const std::string filename = "/home/dqwang/MPC_WBC_sim_X20/catkin_ws/src/Jueying_description/jy_control_test/include/PARAMETER/UserParameter.info";
     const std::string pdCfg = "PD";
     const std::string wbcCfg = "WBC";
     const std::string safeGuardCfg = "SafeGuard";
@@ -95,6 +95,26 @@ UserParameter<T>::UserParameter(){
         Kd_foot_rb[i] = kd_foot_rb[i];
         Kp_foot_rb[i] = kp_foot_rb[i];
     }
+    std::vector<T> kd_joint_lf, kp_joint_lf, kd_joint_rf, kp_joint_rf, kd_joint_lh, kp_joint_lh, kd_joint_rh, kp_joint_rh;
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_joint_lf", kd_joint_lf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_joint_lf", kp_joint_lf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_joint_rf", kd_joint_rf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_joint_rf", kp_joint_rf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_joint_lh", kd_joint_lh, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_joint_lh", kp_joint_lh, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_joint_rh", kd_joint_rh, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_joint_rh", kp_joint_rh, verbose);
+    for (int i(0); i < 3; i++) {
+        Kd_joint_lf[i] = kd_joint_lf[i];
+        Kp_joint_lf[i] = kp_joint_lf[i];
+        Kd_joint_rf[i] = kd_joint_rf[i];
+        Kp_joint_rf[i] = kp_joint_rf[i];
+        Kd_joint_lh[i] = kd_joint_lh[i];
+        Kp_joint_lh[i] = kp_joint_lh[i];
+        Kd_joint_rh[i] = kd_joint_rh[i];
+        Kp_joint_rh[i] = kp_joint_rh[i];
+    }
+
     std::vector<T> nContact, hContact, iContact;
     loadData::loadStdVector(filename, wbcCfg + ".NContact", nContact, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".HContact", hContact, verbose);

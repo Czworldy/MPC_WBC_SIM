@@ -1,0 +1,185 @@
+<robot name="arm">
+    <link name = "base">
+        <inertial>
+            <mass value="1.546877"/>
+            <origin xyz="-0.030474 0.000329 0.051723"/>
+            <inertia ixx="0.002534" ixy="-0.00011" ixz="0.000201" iyy="0.005867" iyz="-0.000030" izz="0.006539"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="mesh/base.obj" scale="1.0"/>
+            </geometry>
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="-0.045 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.206 0.115 0.082"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name = "link1">
+        <inertial>
+            <mass value="1.770103"/>
+            <origin xyz="-0.000082 0.000337 0.087753"/>
+            <inertia ixx="0.007275" ixy="0.000010" ixz="0.000003" iyy="0.002284" iyz="0.000042" izz="0.006462"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="mesh/link1.obj" scale="1.0"/>
+            </geometry>
+            <origin xyz="0 0 0.0345"/>
+            <material name="pink">
+                <color rgba="0.9 0.2 0.6 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="mesh/link1.obj" scale="1.0"/>
+                <origin xyz="0 0 0.0345"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint1" type="revolute">
+        <origin xyz="0 0 0.0813"/>
+        <origin xyz="0 0 1"/>
+        <parent link="base"/>
+        <child link="link1"/>
+        <axis xyz="0.0 0.0 1.0"/>
+        <limit lower="-2.70526" upper="2.70526" effort="24" velocity="22" />
+    </joint>
+
+    <link name="link2">
+        <inertial>
+            <mass value="0.923887"/>
+            <origin xyz="0.180777 0.001473 -0.000488"/>
+            <inertia ixx="0.000498" iyy="0.013862" izz="0.013889" ixy="0.000099" ixz="0.000033" iyz="0.0"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="mesh/link2.obj" scale="1.0"/>
+            </geometry>
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+            
+        <collision>
+            <origin xyz="165.75 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.38375 0.049 0.052"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint2" type="revolute">
+        <parent link="link1"/>
+        <child link="link2"/>
+        <origin xyz="0 0 0.0995"/>
+        <axis xyz="0.0 1.0 0.0"/>
+        <limit lower="-3.1415926" upper="0.5236" effort="49.9" velocity="16.4" />
+    </joint>
+
+    <link name="link3">
+        <inertial>
+            <mass value="0.683763"/>
+            <origin xyz="0.073116 0.000516 0.058417"/>
+            <inertia ixx="0.000581" iyy="0.001184" izz="0.0.001065" ixy="0.000011" ixz="0.000281" iyz="0.000004"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="mesh/link3.obj" scale="1.0"/>
+            </geometry>
+            <material name="pink">
+                <color rgba="0.9 0.2 0.6 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="mesh/link3.obj" scale="1.0"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint3" type="revolute">
+        <parent link="link2"/>
+        <child link="link3"/>
+        <origin xyz="0.3315 0.0 0.0"/>
+        <axis xyz="0.0 1.0 0.0"/>
+        <limit lower="0" upper="3.1415926" effort="49.9" velocity="16.4" />
+    </joint>
+
+    <link name="link4">
+        <inertial>
+            <mass value="0.687665"/>
+            <origin xyz="0.231585 0.019429 -0.000001"/>
+            <inertia ixx="0.000403" iyy="0.005758" izz="0.005807" ixy="0.000609" ixz="-0.000001" iyz="-0.000001"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="mesh/link4.obj" scale="1.0"/>
+            </geometry>
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.020" length="0.283"/>
+                <origin xyz="0.1415 0 0" rpy="0 0 1.5707653"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint4" type="revolute">
+        <parent link="link3"/>
+        <child link="link4"/>
+        <origin xyz="0.1121 0 0.065"/>
+        <axis xyz="1.0 0.0 0.0"/>
+        <limit lower="-2.6180" upper="2.6180" effort="8" velocity="66" />
+    </joint>
+
+    <link name="link5">
+        <inertial>
+            <mass value="0.520227"/>
+            <origin xyz="0.076999 -0.004672 -0.002614"/>
+            <inertia ixx="0.000292" iyy="0.000386" izz="0.000381" ixy="0.000002" ixz="-0.000004" iyz="0.000001"/>
+        </inertial>
+        <visual>
+            <geometry>
+                <mesh filename="/mesh/link5.obj"/>
+            </geometry>
+            <material name="pink">
+                <color rgba="0.9 0.2 0.6 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="mesh/link5.obj"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint5" type="revolute">
+        <parent link="link4"/>
+        <child link="link5"/>
+        <origin xyz="0.283 0.00805 0.0"/>
+        <axis xyz="0.0 1.0 0.0"/>
+        <limit lower="-1.7453" upper="1.7453" effort="8" velocity="66"/>
+    </joint>
+
+    <link name="end-effector">
+    </link>
+
+    <joint name="joint6" type="revolute">
+        <parent link="link5"/>
+        <child link="end-effector"/>
+        <origin xyz="0.10424 0.00406 0.00366"/>
+        <axis xyz="1.0 0.0 0.0"/>
+        <limit lower="-3.1415926" upper="3.1415926" effort="8" velocity="66" />
+    </joint>
+</robot>

@@ -12,7 +12,7 @@
 #include "gazebo_msgs/ModelStates.h"
 #include "ocs2_msgs/mpc_wbc_conversion.h"
 #include <gazebo_msgs/ContactsState.h>
-#include <geometry_msgs/PointStamped.h>
+#include <fstream>
 
 // Global Variables
 conversionData mpcData;
@@ -44,32 +44,59 @@ enum ControlFlag {
     kWBCBaseMotion = 3,
 	kWBCMPC = 4,
 	kSafeState = 5,
+    kWBCSwingFoot_1 = 7,
+    kWBCSwingFoot_2 = 8,
+    kWBCSwingFoot_3 = 9,
+    kWBCSwingFoot_4 = 10,
 };
 int robotState = 0;
-const double timePDWaitForStanding(1.0);
-const double timePDStandUpMotion(1.0);
+const double timePDWaitForStanding(2.0);
+const double timePDStandUpMotion(2.0);
 const double timeWBCBaseMotion(4.0);
+const double timeWBCSwingFoot_1(2.0);
+const double timeWBCSwingFoot_2(2.0);
+const double timeWBCSwingFoot_3(2.0);
+const double timeWBCSwingFoot_4(2.0);
 
 const double haa_PDWaitForStanding(0);
 const double hfe_PDWaitForStanding(-1.23);
 const double kfe_PDWaitForStanding(2.79);
 
 const double haa_PDStandUpMotion(0);
-const double hfe_PDStandUpMotion(-0.95);
+const double hfe_PDStandUpMotion(-0.8);
 const double kfe_PDStandUpMotion(1.7);
 
 const double xBase(0.0);
-const double yBase(-0.05);
+const double yBase(0.0);
 const double zBase(0.0);
 const double rollBase(0.);
 const double pitchBase(0.);
 const double yawBase(0.);
+
+const double xSwingFoot_1(0);
+const double ySwingFoot_1(0);
+const double zSwingFoot_1(0.1);
+
+const double xSwingFoot_2(0.);
+const double ySwingFoot_2(0.05);
+const double zSwingFoot_2(0);
+
+const double xSwingFoot_3(0);
+const double ySwingFoot_3(0);
+const double zSwingFoot_3(-0.1);
+
+const size_t foot_id(0);
 
 bool isSetUp_PDWaitForStanding(false);
 bool isSetUp_PDStandUpMotion(false);
 bool isSetUp_SafeState(false);
 bool isStandUp(false);
 bool isSetUp_WBCBaseMotion(false);
+bool isSetUp_WBCSwingFoot_1(false);
+bool isSetUp_WBCSwingFoot_2(false);
+bool isSetUp_WBCSwingFoot_3(false);
+bool isSetUp_WBCSwingFoot_4(false);
+
 const bool debug(true);
 // isSafe
 bool isSafe(true);
@@ -78,10 +105,13 @@ int Num_of_Contactpoint = 4;
 int dofOfRobot = 18;
 
 Vec41<int> contact_flag_real;
+
+// Record Data
+ofstream in_pose;
+
+
 // Functions
 void mpcComunicacion();
-void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos, 
-                        std::vector<Vec31<float>>& feet_point_pos);
 void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg);
 void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg);
@@ -101,21 +131,6 @@ int main(int argc, char**argv) {
     ros::Publisher lh_haa_pub, lh_hfe_pub, lh_kfe_pub;
     ros::Publisher rf_haa_pub, rf_hfe_pub, rf_kfe_pub;
     ros::Publisher rh_haa_pub, rh_hfe_pub, rh_kfe_pub;
-
-    ros::Publisher lf_foot_pub, lh_foot_pub, rf_foot_pub, rh_foot_pub;
-
-    
-    lf_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/lf_foot_pos", 1);
-    lh_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
-    rf_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
-    rh_foot_pub = nh.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
-
-    std::vector<Vec31<float>> feet_point_pos;
-
-    // geometry_msgs::PointStamped lf_foot_pos, lh_foot_pos, rf_foot_pos, rh_foot_pos;
-    std::vector<geometry_msgs::PointStamped> feet_pos;
-    feet_pos.resize(4);
-
     
 
     std_msgs::Float64 lf_haa_tau, lf_hfe_tau, lf_kfe_tau;
@@ -125,29 +140,30 @@ int main(int argc, char**argv) {
 
     ros::Rate rate(400);
 
-    jointStatesSub = nh.subscribe("/JYPro/joint_states", 1, &jointStatesCallback);
+    jointStatesSub = nh.subscribe("/X20/joint_states", 1, &jointStatesCallback);
     mpcSub = nh.subscribe("/mpc_wbcPublisher", 1, &mpcCallback);
-    gazeboLinkStatesSub = nh.subscribe("/gazebo/model_states", 1,&gazeboLinkStatesCallback);
+    gazeboLinkStatesSub = nh.subscribe("/gazebo/link_states", 1,&gazeboLinkStatesCallback);
     lf_contactState = nh.subscribe("/LF_contact", 1, &lf_bumper_callback); 
     rf_contactState = nh.subscribe("/RF_contact", 1, &rf_bumper_callback); 
     lh_contactState = nh.subscribe("/LH_contact", 1, &lh_bumper_callback); 
     rh_contactState = nh.subscribe("/RH_contact", 1, &rh_bumper_callback); 
 
-    lf_haa_pub = nh.advertise<std_msgs::Float64>("/JYPro/LF_HAA_controller/command",1);
-    lf_hfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/LF_HFE_controller/command",1);
-    lf_kfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/LF_KFE_controller/command",1);
-    lh_haa_pub = nh.advertise<std_msgs::Float64>("/JYPro/LH_HAA_controller/command",1);
-    lh_hfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/LH_HFE_controller/command",1);
-    lh_kfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/LH_KFE_controller/command",1);
-    rf_haa_pub = nh.advertise<std_msgs::Float64>("/JYPro/RF_HAA_controller/command",1);
-    rf_hfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/RF_HFE_controller/command",1);
-    rf_kfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/RF_KFE_controller/command",1);
-    rh_haa_pub = nh.advertise<std_msgs::Float64>("/JYPro/RH_HAA_controller/command",1);
-    rh_hfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/RH_HFE_controller/command",1);
-    rh_kfe_pub = nh.advertise<std_msgs::Float64>("/JYPro/RH_KFE_controller/command",1);
+    lf_haa_pub = nh.advertise<std_msgs::Float64>("/X20/LF_HAA_controller/command",1);
+    lf_hfe_pub = nh.advertise<std_msgs::Float64>("/X20/LF_HFE_controller/command",1);
+    lf_kfe_pub = nh.advertise<std_msgs::Float64>("/X20/LF_KFE_controller/command",1);
+    lh_haa_pub = nh.advertise<std_msgs::Float64>("/X20/LH_HAA_controller/command",1);
+    lh_hfe_pub = nh.advertise<std_msgs::Float64>("/X20/LH_HFE_controller/command",1);
+    lh_kfe_pub = nh.advertise<std_msgs::Float64>("/X20/LH_KFE_controller/command",1);
+    rf_haa_pub = nh.advertise<std_msgs::Float64>("/X20/RF_HAA_controller/command",1);
+    rf_hfe_pub = nh.advertise<std_msgs::Float64>("/X20/RF_HFE_controller/command",1);
+    rf_kfe_pub = nh.advertise<std_msgs::Float64>("/X20/RF_KFE_controller/command",1);
+    rh_haa_pub = nh.advertise<std_msgs::Float64>("/X20/RH_HAA_controller/command",1);
+    rh_hfe_pub = nh.advertise<std_msgs::Float64>("/X20/RH_HFE_controller/command",1);
+    rh_kfe_pub = nh.advertise<std_msgs::Float64>("/X20/RH_KFE_controller/command",1);
 	
 	// Simple Motion Control
 	simpleMotion.reset(new SimpleMotion(verbose));
+    in_pose.open("/home/dqwang/pose.txt", ios::trunc);
 
     while(nh.ok()){
         // Estimator
@@ -162,10 +178,10 @@ int main(int argc, char**argv) {
         Eigen::Vector3d baseRpyWorldCur = quaternionTOrpy(baseOriWorldCur);
         // estStatesOutput.frame_c_rpy_in_world << 0, 0, baseRpyWorldCur[2];
         // estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(0., 0., baseRpyWorldCur[2]);
-        estStatesOutput.frame_c_rpy_in_world = baseRpyWorldCur;
-        estStatesOutput.frame_c_quat_in_world = baseOriWorldCur; //yjy：先试试都转
+        // estStatesOutput.frame_c_xyz_in_world = basePosWorldCur;
 
-
+        estStatesOutput.frame_c_rpy_in_world << baseRpyWorldCur[0], baseRpyWorldCur[1], baseRpyWorldCur[2];
+        estStatesOutput.frame_c_quat_in_world = rpyTOquaternion(baseRpyWorldCur[0], baseRpyWorldCur[1], baseRpyWorldCur[2]);
         estStatesOutput.frame_c_xyz_in_world = basePosWorldCur;
 
 
@@ -235,28 +251,80 @@ int main(int argc, char**argv) {
 		    		isSetUp_WBCBaseMotion = true;
 		    	}
 		    	simpleMotion->WBCMotionRun(command, isSafe);
-                feet_point_pos = simpleMotion->RecordData();
-                sendFeetPointData(feet_pos,feet_point_pos);
 		    	if(simpleMotion->isWBCMotionFinished() && isMPC) {
 		    		robotState = kWBCMPC;
 		    	}
+                // if(simpleMotion->isWBCMotionFinished()) {
+                //     robotState = kWBCSwingFoot_1;
+                // }
 		    	else if(!isSafe) {
 		    		// robotState = kSafeState;
 		    	}
 		    	break;
 		    }
+
+
+
+		    case kWBCSwingFoot_1: {
+		    	if(!isSetUp_WBCSwingFoot_1) {
+		    		simpleMotion->WBCSetUpSwingFootMotion(0, 0, 0, 0, 0, 0, foot_id, xSwingFoot_1, ySwingFoot_1, zSwingFoot_1, timeWBCSwingFoot_1);
+                    simpleMotion->UpdateControlFrame(estStatesOutput);
+		    		isSetUp_WBCSwingFoot_1 = true;
+		    	}
+		    	if(simpleMotion->isWBCMotionFinished()) {
+		    		robotState = kWBCSwingFoot_2;
+		    	}
+		    	simpleMotion->WBCMotionRun(command, isSafe);
+		    	break;
+		    }
+
+		    case kWBCSwingFoot_2: {
+		    	if(!isSetUp_WBCSwingFoot_2) {
+		    		simpleMotion->WBCSetUpSwingFootMotion(0, 0, 0, 0, 0, 0, foot_id, xSwingFoot_2, ySwingFoot_2, zSwingFoot_2, timeWBCSwingFoot_2);
+                    simpleMotion->UpdateControlFrame(estStatesOutput);
+		    		isSetUp_WBCSwingFoot_2 = true;
+		    	}
+		    	if(simpleMotion->isWBCMotionFinished()) {
+		    		robotState = kWBCSwingFoot_3;
+		    	}
+		    	simpleMotion->WBCMotionRun(command, isSafe);
+		    	break;
+		    }
+
+		    case kWBCSwingFoot_3: {
+		    	if(!isSetUp_WBCSwingFoot_3) {
+		    		simpleMotion->WBCSetUpSwingFootMotion(0, 0, 0, 0, 0, 0, foot_id, xSwingFoot_3, ySwingFoot_3, zSwingFoot_3, timeWBCSwingFoot_3);
+                    simpleMotion->UpdateControlFrame(estStatesOutput);
+		    		isSetUp_WBCSwingFoot_3 = true;
+		    	}
+		    	if(simpleMotion->isWBCMotionFinished()) {
+		    		robotState = kWBCSwingFoot_4;
+		    	}
+		    	simpleMotion->WBCMotionRun(command, isSafe);
+		    	break;
+		    }
+
+		    case kWBCSwingFoot_4: {
+		    	if(!isSetUp_WBCSwingFoot_4) {
+		    		simpleMotion->WBCSetUpBaseMotion(0, 0, 0, 0, 0, 0, timeWBCSwingFoot_4);
+                    simpleMotion->UpdateControlFrame(estStatesOutput);
+		    		isSetUp_WBCSwingFoot_4 = true;
+		    	}
+		    	simpleMotion->WBCMotionRun(command, isSafe);
+		    	break;
+            }
+
 		    case kWBCMPC: {
 		    	if(isMPCMsgUpdate) {
 		    		// ReadMPCMsg
-		    		simpleMotion->UpdateMPCMsg(&mpcData, estStatesOutput.time_stamp);
+		    		simpleMotion->UpdateMPCMsg(mpcData, estStatesOutput.time_stamp);
                     simpleMotion->UpdateControlFrame(estStatesOutput);
 		    		isMPCMsgUpdate = false;
 		    	}
-                std::cout << "contact_flag_real: " << contact_flag_real << std::endl;
                 simpleMotion->TerrainEst(contact_flag_real);
 		    	simpleMotion->MPCWBCRun(estStatesOutput.time_stamp, command, isSafe);
-                feet_point_pos = simpleMotion->RecordData();
-                sendFeetPointData(feet_pos,feet_point_pos);
+                in_pose << ros::Time::now().toSec() << " " << basePosWorldCur[0] << " " << basePosWorldCur[1] << " " << basePosWorldCur[2] << " "
+                        << baseOriWorldCur.x() << " " << baseOriWorldCur.y() << " " << baseOriWorldCur.z() << " " << baseOriWorldCur.w() << "\n";
 		    	if(!isSafe) {
 		    		// robotState = kSafeState;
 		    	}
@@ -305,35 +373,13 @@ int main(int argc, char**argv) {
         rh_hfe_pub.publish(rh_hfe_tau);
         rh_kfe_pub.publish(rh_kfe_tau);
 
-        lf_foot_pub.publish(feet_pos[0]);
-        lh_foot_pub.publish(feet_pos[1]);
-        rf_foot_pub.publish(feet_pos[2]);
-        rh_foot_pub.publish(feet_pos[3]);
-
         ros::spinOnce();
 
         bool rate_bool = rate.sleep();
     }
 
+    in_pose.close();
     return 0;
-}
-
-void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos, 
-                        std::vector<Vec31<float>>& feet_point_pos){
-    size_t leg = 0;
-    std::cout << feet_point_pos.size() << "\n";
-    for(auto& foot_pos:feet_pos){
-        foot_pos.header.stamp = ros::Time::now();
-        foot_pos.header.seq = (uint32_t)leg;
-        foot_pos.header.frame_id = "odom";
-
-        // std::cout << "leg: " << leg << std::endl;
-
-        foot_pos.point.x = feet_point_pos[leg][0];
-        foot_pos.point.y = feet_point_pos[leg][1];
-        foot_pos.point.z = feet_point_pos[leg][2];
-        leg++;
-    }
 }
 
 void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg) {
@@ -354,7 +400,7 @@ void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg) {
 void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     int index = 0;
     for(auto& modelName:msg->name){
-        if(modelName == "JYPro")
+        if(modelName == "X20")
             break;
         ++index;
     }
@@ -367,7 +413,6 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseLinearVelWorldCur[1] = msg->twist[index].linear.y; 
     baseLinearVelWorldCur[2] = msg->twist[index].linear.z; 
 
-
     baseOriWorldCur.w() = msg->pose[index].orientation.w;
     baseOriWorldCur.x() = msg->pose[index].orientation.x;
     baseOriWorldCur.y() = msg->pose[index].orientation.y;
@@ -378,7 +423,7 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
     baseAngularVelWorldCur[2] = msg->twist[index].angular.z;
 
     baseLinearVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseLinearVelWorldCur;
-    
+
     baseAngularVelBodyCur = baseOriWorldCur.toRotationMatrix().transpose() * baseAngularVelWorldCur; 
 
     isGazeboMsg = true;
@@ -386,7 +431,7 @@ void gazeboLinkStatesCallback(const gazebo_msgs::ModelStates::ConstPtr& msg) {
 
 void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     const int N_times = msg->stateTime.size();
-    // std::cerr << "N_times: " << N_times << "\n";
+    std::cerr << "N_times: " << N_times << "\n";
 
     mpcData.stateTime.resize(N_times);
     mpcData.baseAcceleration.clear();
@@ -402,6 +447,11 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
     mpcData.swingFeetVelocity.clear();
     mpcData.swingFeetVelocity.resize(N_times);
     mpcData.switchTime.Zero();
+
+    mpcData.actJointPos.clear();
+    mpcData.actJointPos.resize(N_times);
+    mpcData.actJointVel.clear();
+    mpcData.actJointVel.resize(N_times);
 
     for (int i = 0; i < N_times; i++) {
         // State Times
@@ -456,11 +506,20 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
             mpcData.basePosition[i].resize(6);
             mpcData.baseVelocity[i].resize(6);
             mpcData.baseAcceleration[i].resize(6);
+            mpcData.actJointPos[i].resize(12);
+            mpcData.actJointVel[i].resize(12);
+
+
             for (uint8_t j = 0; j < 6; j++){
                 // x y z r p y
                 mpcData.basePosition[i][j]     = msg->wbcTraj[i].basePos[j];
                 mpcData.baseVelocity[i][j]     = msg->wbcTraj[i].baseVel[j];
                 mpcData.baseAcceleration[i][j] = msg->wbcTraj[i].baseAcc[j];
+            }
+
+            for (uint8_t j = 0; j < 12; j++) {
+                mpcData.actJointPos[i][j] = msg->wbcTraj[i].actJointPos[j];
+                mpcData.actJointVel[i][j] = msg->wbcTraj[i].actJointVel[j];
             }
         }
     }

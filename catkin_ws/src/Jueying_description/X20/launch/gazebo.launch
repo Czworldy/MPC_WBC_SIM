@@ -1,0 +1,38 @@
+<launch>
+  <!-- We resume the logic in gazebo_ros package empty_world.launch, -->
+  <!-- changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find X20)/world/X20_world"/>
+    <arg name="paused" default="true"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description"
+     command="$(find xacro)/xacro --inorder '$(find X20)/urdf/X20.xacro'" />
+
+ <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="true" output="screen">
+    <remap from="/joint_states" to="/X20/joint_states" />
+  </node>
+
+
+  <!-- Spawn jaco into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+     args="-param robot_description -urdf -model X20"/>
+
+
+ <!-- Load joint controller configurations from YAML file to parameter server -->
+
+
+  <!-- load the controllers -->
+
+
+
+
+</launch>

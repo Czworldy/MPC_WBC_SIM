@@ -116,13 +116,18 @@ int main(int argc, char **argv)
     KinematicDynamicSetup(urdf::parseURDF(urdfString));
     std::cerr << "____________________________dqwang______________________________________" << std::endl;
     
-    std::queue<ocs2_msgs::mpc_wbc_conversion> wbcMsgQueue;
-    // spin
     // spin
     while (ros::ok() && ros::master::check()) {
         ros::spinOnce();
         if(wbcMsgisdone){
             mpc_wbcPublisher.publish(wbcMsg);
+
+            // std::cerr << "LF FootPosition: " << wbcInterfaceData.swingFeetPosition[0][0][0] << " " << wbcInterfaceData.swingFeetPosition[0][0][1] << " " << wbcInterfaceData.swingFeetPosition[0][0][2] << "\n";
+            // std::cerr << "RF FootPosition: " << wbcInterfaceData.swingFeetPosition[0][1][0] << " " << wbcInterfaceData.swingFeetPosition[0][1][1] << " " << wbcInterfaceData.swingFeetPosition[0][1][2] << "\n";
+            // std::cerr << "LH FootPosition: " << wbcInterfaceData.swingFeetPosition[0][2][0] << " " << wbcInterfaceData.swingFeetPosition[0][2][1] << " " << wbcInterfaceData.swingFeetPosition[0][2][2] << "\n";
+            // std::cerr << "RH FootPosition: " << wbcInterfaceData.swingFeetPosition[0][3][0] << " " << wbcInterfaceData.swingFeetPosition[0][3][1] << " " << wbcInterfaceData.swingFeetPosition[0][3][2] << "\n";
+            // std::cerr << "Gait(LF RF LH RH): " << wbcInterfaceData.stanceFeet[0][0] << " " << wbcInterfaceData.stanceFeet[0][1] << " " << wbcInterfaceData.stanceFeet[0][2] << " " << wbcInterfaceData.stanceFeet[0][3] << "\n";
+
             wbcMsgisdone = false;
         }
     }
@@ -269,6 +274,13 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
             wbcMsg.wbcTraj[i].swingAcc.push_back(wbcInterfaceData.swingFeetAcceleration[i][k][2]);
         }
         wbcMsg.stateTime[i] = mpcData.timeTrajectory_[i];
+
+        wbcMsg.wbcTraj[i].actJointPos.resize(12);
+        wbcMsg.wbcTraj[i].actJointVel.resize(12);
+        for (int j(0); j < 12; j++) {
+          wbcMsg.wbcTraj[i].actJointPos[j] = q[i][6 + j];
+          wbcMsg.wbcTraj[i].actJointVel[j] = v[i][6 + j];
+        }
         
     }
     for (uint8_t i = 0; i < 4; i++){ // LF RF LH RH
