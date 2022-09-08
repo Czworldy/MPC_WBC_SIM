@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="X20" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Transmissions for ros_control -->
+  <xacro:macro name="transmission_block" params="joint_name">
+    <transmission name="${joint_name}_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${joint_name}">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${joint_name}_actuator">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:transmission_block joint_name="A_LF_HAA"/>
+  <xacro:transmission_block joint_name="A_LF_HFE"/>
+  <xacro:transmission_block joint_name="A_LF_KFE"/>
+  <xacro:transmission_block joint_name="A_RF_HAA"/>
+  <xacro:transmission_block joint_name="A_RF_HFE"/>
+  <xacro:transmission_block joint_name="A_RF_KFE"/>
+  <xacro:transmission_block joint_name="B_LH_HAA"/>
+  <xacro:transmission_block joint_name="B_LH_HFE"/>
+  <xacro:transmission_block joint_name="B_LH_KFE"/>
+  <xacro:transmission_block joint_name="B_RH_HAA"/>
+  <xacro:transmission_block joint_name="B_RH_HFE"/>
+  <xacro:transmission_block joint_name="B_RH_KFE"/>
+  
+</robot>

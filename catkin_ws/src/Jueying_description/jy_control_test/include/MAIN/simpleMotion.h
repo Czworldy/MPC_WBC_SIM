@@ -71,9 +71,9 @@ public:
                                  size_t foot_id, float foot_x, float foot_y, float foot_z,
                                  float timeGoal);
     void KeepSwingFootStates(); 
-    void UpdateMPCMsg(conversionData* mpcMsg, float time_stamp);
+    void UpdateMPCMsg(const conversionData mpcMsg, float time_stamp);
     void UpdateControlFrame(const EstimatorOutput& input);
-    const std::vector<Vec31<float>> RecordData();                 
+    void RecordData();                 
 
     // SafeGuard
     void PDSafeGuardSetUpMotion();
@@ -131,7 +131,7 @@ private:
     ControlFSMData<float> currentStatesWBC_; 
 
     // mpc
-    conversionData* mpcMsgPtr_ = nullptr;
+    conversionData mpcMsg_;
     size_t indexMPCStateTime_;
     size_t indexMPCSwitchTime_;
     float timeUpdateMPC_;
@@ -147,8 +147,6 @@ private:
     ofstream in_foot_rh_x, in_foot_rh_y, in_foot_rh_z;
 
     ofstream in_tor_haa, in_tor_hfe, in_tor_kfe;
-
-    std::vector<Vec31<float>> feet_result;
 
     //print
     bool verbose_;

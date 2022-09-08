@@ -245,6 +245,63 @@ WBC
         [2]                 2000 
     }
 
+    Kd_joint_lf
+    {
+        [0]                 0.1
+        [1]                 0.1
+        [2]                 0.1
+    }
+
+    Kp_joint_lf
+    {
+        [0]                 1
+        [1]                 1
+        [2]                 1
+    }
+
+    Kd_joint_rf
+    {
+        [0]                 0.1
+        [1]                 0.1
+        [2]                 0.1
+    }
+
+    Kp_joint_rf
+    {
+        [0]                 1
+        [1]                 1
+        [2]                 1
+    }
+
+    Kd_joint_lh
+    {
+        [0]                 0.1
+        [1]                 0.1
+        [2]                 0.1
+    }
+
+    Kp_joint_lh
+    {
+        [0]                 1
+        [1]                 1
+        [2]                 1
+    }
+
+    Kd_joint_rh
+    {
+        [0]                 0.1
+        [1]                 0.1
+        [2]                 0.1
+    }
+
+    Kp_joint_rh
+    {
+        [0]                 1
+        [1]                 1
+        [2]                 1
+    }
+
+
     NContact
     {
         [0]                 0
@@ -271,7 +328,6 @@ WBC
     {
         [0]                 4
         [1]                 3
-        [2]                 1
     }
 
     weight
@@ -280,10 +336,9 @@ WBC
         [1]                  1
         [2]                  1
         [3]                  1
-        [4]                  5
+        [4]                  1
         [5]                  3
         [6]                  1
-        [7]                  1
     }
 
 
@@ -291,32 +346,32 @@ WBC
 
 PD 
 {
-    Kd_lf_haa_pd             10
-    Kp_lf_haa_pd             800
-    Kd_lf_hfe_pd             10
-    Kp_lf_hfe_pd             800
-    Kd_lf_kfe_pd             10
+    Kd_lf_haa_pd             1
+    Kp_lf_haa_pd             100
+    Kd_lf_hfe_pd             4
+    Kp_lf_hfe_pd             400
+    Kd_lf_kfe_pd             8
     Kp_lf_kfe_pd             800
 
-    Kd_rf_haa_pd             10
-    Kp_rf_haa_pd             800
-    Kd_rf_hfe_pd             10
-    Kp_rf_hfe_pd             800
-    Kd_rf_kfe_pd             10
+    Kd_rf_haa_pd             1
+    Kp_rf_haa_pd             100
+    Kd_rf_hfe_pd             4
+    Kp_rf_hfe_pd             400
+    Kd_rf_kfe_pd             8
     Kp_rf_kfe_pd             800
 
-    Kd_lh_haa_pd             10
+    Kd_lh_haa_pd             1
     Kp_lh_haa_pd             100
-    Kd_lh_hfe_pd             10
-    Kp_lh_hfe_pd             450
-    Kd_lh_kfe_pd             10
+    Kd_lh_hfe_pd             4
+    Kp_lh_hfe_pd             400
+    Kd_lh_kfe_pd             8
     Kp_lh_kfe_pd             800
 
-    Kd_rh_haa_pd             10
-    Kp_rh_haa_pd             800
-    Kd_rh_hfe_pd             10
-    Kp_rh_hfe_pd             800
-    Kd_rh_kfe_pd             10
+    Kd_rh_haa_pd             1
+    Kp_rh_haa_pd             100
+    Kd_rh_hfe_pd             4
+    Kp_rh_hfe_pd             400
+    Kd_rh_kfe_pd             8
     Kp_rh_kfe_pd             800
 }
 

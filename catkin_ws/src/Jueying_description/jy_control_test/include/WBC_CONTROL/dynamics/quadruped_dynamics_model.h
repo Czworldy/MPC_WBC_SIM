@@ -95,12 +95,11 @@ public:
     Vec31<double> get_Base_Velocity_from_CoM(const Vector3d& CoM_vel);
     Vec31<double> get_Base_Position_from_CoM(const Vector3d& CoM_Pos);
  
-    // VectorNd Q;
-    Eigen::Matrix<double,19,1> Q;
-    Eigen::Matrix<double,19,1> Q_c_frame;
+    VectorNd Q;
+    VectorNd Q_c_frame;
     Vector3d angularTwist;
-    Eigen::Matrix<double,18,1> QDot;
-    Eigen::Matrix<double,18,1> QDot_c_frame;
+    VectorNd QDot;
+    VectorNd QDot_c_frame;
     size_t num_contact;
     double duration;
     Vec41<float> contact_state;

@@ -55,7 +55,7 @@
     </collision>
   </link>
 
-    <link name="imu_link">
+  <link name="imu_link">
     <inertial>
       <mass value="0.0000001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -79,6 +79,61 @@
     <origin xyz="0 0 0"/>
     <parent link="BASE"/>
     <child link="imu_link"/>
+  </joint>
+
+  <link name="velodyne">
+    <inertial>
+      <mass value="0.0000001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0000000001" ixy="0" ixz="0" iyy="0.00000000001" iyz="0" izz="0.000000001"/>
+    </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+    </geometry>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size=".001 .001 .001"/>
+    </geometry>
+  </collision>
+ </link>
+ <joint name="velodyne_joint" type="fixed">
+    <axis xyz="0 0 0"/> 
+    <origin xyz="0 0.4 0.2"/>
+    <parent link="BASE"/>
+    <child link="velodyne"/>
+  </joint>
+
+    <link name="camera_link">
+    <inertial>
+      <mass value="0.0000001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0000000001" ixy="0" ixz="0" iyy="0.00000000001" iyz="0" izz="0.000000001"/>
+    </inertial>
+    <visual>
+      <origin  xyz="0 0 0"  rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://JYPro/meshes/camera_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.250980392156863 0.250980392156863 0.250980392156863 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://JYPro/meshes/camera_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="camera_to_velodyne" type="fixed">
+    <origin xyz="0.013274 -0.035092 0.0245" rpy="0 0 0" />
+    <parent link="velodyne" />
+    <child link="camera_link" />
+    <axis xyz="0 0 1" />
   </joint>
 
   <link
@@ -858,7 +913,7 @@
     </plugin>
   </gazebo>
 
-    <gazebo reference="imu_link">
+  <gazebo reference="imu_link">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
@@ -875,6 +930,86 @@
         <frameName>imu_link</frameName>
       </plugin>
       <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+
+<gazebo reference="camera_link">
+    <sensor type="camera" name="camera_node">
+      <update_rate>15.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.0467</horizontal_fov>
+        <image>
+          <width>720</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>100</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="gazebo_camera" filename="libgazebo_ros_camera.so">
+        <cameraName>camera</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <baseline>0.1</baseline>
+        <distortion_k1>0.0</distortion_k1>
+        <distortion_k2>0.0</distortion_k2>
+        <distortion_k3>0.0</distortion_k3>
+        <distortion_t1>0.0</distortion_t1>
+        <distortion_t2>0.0</distortion_t2>
+      </plugin>
+      <pose>0 0 0 0 -0 0</pose>
+    </sensor>
+  </gazebo>
+  <!-- Gazebo requires the velodyne_gazebo_plugins package -->
+  <gazebo reference="velodyne">
+    <sensor name="velodyne-VLP16" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1024</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159265359</min_angle>
+            <max_angle>3.14159265359</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>16</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.261799387799</min_angle>
+            <max_angle> 0.261799387799</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.3</min>
+          <max>101</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.0</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_velodyne_laser.so" name="gazebo_ros_laser_controller">
+        <topicName>velodyne_points</topicName>
+        <frameName>velodyne</frameName>
+        <min_range>0.9</min_range>
+        <max_range>100</max_range>
+        <gaussianNoise>0.008</gaussianNoise>
+      </plugin>
     </sensor>
   </gazebo>
 
