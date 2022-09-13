@@ -15,6 +15,7 @@
 #include <gazebo_msgs/ContactsState.h>
 #include <fstream>
 #include "pronto_msgs/QuadrupedStance.h"
+#include "geometry_msgs/PointStamped.h"
 
 // Global Variables
 conversionData mpcData;
@@ -348,7 +349,7 @@ int main(int argc, char**argv) {
 void sendFeetPointData(std::vector<geometry_msgs::PointStamped>& feet_pos, 
                         std::vector<Vec31<float>>& feet_point_pos){
     size_t leg = 0;
-    std::cout << feet_point_pos.size() << "\n";
+    // std::cout << feet_point_pos.size() << "\n";
     for(auto& foot_pos:feet_pos){
         foot_pos.header.stamp = ros::Time::now();
         foot_pos.header.seq = (uint32_t)leg;
