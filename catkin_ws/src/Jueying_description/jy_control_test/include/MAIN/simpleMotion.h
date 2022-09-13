@@ -74,7 +74,7 @@ public:
     void UpdateMPCMsg(float time_stamp);
     void setMPCMsgPtr(conversionData* mpcMsgPtr){mpcMsgPtr_ = mpcMsgPtr;}
     void UpdateControlFrame(const EstimatorOutput& input);
-    void RecordData();                 
+    const std::vector<Vec31<float>> RecordData();                 
 
     // SafeGuard
     void PDSafeGuardSetUpMotion();
@@ -148,6 +148,8 @@ private:
     ofstream in_foot_rh_x, in_foot_rh_y, in_foot_rh_z;
 
     ofstream in_tor_haa, in_tor_hfe, in_tor_kfe;
+
+    std::vector<Vec31<float>> feet_result;
 
     //print
     bool verbose_;

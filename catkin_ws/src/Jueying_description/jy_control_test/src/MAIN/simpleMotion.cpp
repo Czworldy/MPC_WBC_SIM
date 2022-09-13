@@ -521,7 +521,47 @@ void SimpleMotion::KeepSwingFootStates() {
     planedFootStates_.z[2] = 0;
 }
 
-void SimpleMotion::RecordData() {
+const std::vector<Vec31<float>> SimpleMotion::RecordData() {
+    Eigen::Quaternion<float> quat = currentStatesWBC_.bodyStateEst.base_orientation_world;
+    
+    
+    Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
+    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << quat.x(), quat.y(), quat.z();
+    // Q_.head(3) << 0, 0, 0;
+    // Q_.segment(3, 3)  << 0, 0, 0;
+    Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
+    Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
+    Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
+    Q_.segment(15, 3) << currentStatesWBC_.legStateEst[legID::RB].q;
+    Q_[18] = quat.w();
+    feet_result.clear();
+    feet_result.reserve(4);
+    Vec31<float> foot_position = jueying_.swingFootPosition(legID::LF, Q_.cast<double>()).cast<float>();
+    feet_result.emplace_back(foot_position);
+    // in_foot_lf_x << desiredDataWBC_.pFoot_des[legID::LF][0] << "\t" << foot_position[0] << "\n";
+    // in_foot_lf_y << desiredDataWBC_.pFoot_des[legID::LF][1] << "\t" << foot_position[1] << "\n";
+    // in_foot_lf_z << desiredDataWBC_.pFoot_des[legID::LF][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::LF] << "\n";
+
+    foot_position = jueying_.swingFootPosition(legID::LB, Q_.cast<double>()).cast<float>();
+    feet_result.emplace_back(foot_position);
+    // in_foot_lh_x << desiredDataWBC_.pFoot_des[legID::LB][0] << "\t" << foot_position[0] << "\n";
+    // in_foot_lh_y << desiredDataWBC_.pFoot_des[legID::LB][1] << "\t" << foot_position[1] << "\n";
+    // in_foot_lh_z << desiredDataWBC_.pFoot_des[legID::LB][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::LB] << "\n";
+
+    foot_position = jueying_.swingFootPosition(legID::RF, Q_.cast<double>()).cast<float>();
+    feet_result.emplace_back(foot_position);
+    // in_foot_rf_x << desiredDataWBC_.pFoot_des[legID::RF][0] << "\t" << foot_position[0] << "\n";
+    // in_foot_rf_y << desiredDataWBC_.pFoot_des[legID::RF][1] << "\t" << foot_position[1] << "\n";
+    // in_foot_rf_z << desiredDataWBC_.pFoot_des[legID::RF][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::RF] << "\n";
+
+    foot_position = jueying_.swingFootPosition(legID::RB, Q_.cast<double>()).cast<float>();
+    feet_result.emplace_back(foot_position);
+    // in_foot_rh_x << desiredDataWBC_.pFoot_des[legID::RB][0] << "\t" << foot_position[0] << "\n";
+    // in_foot_rh_y << desiredDataWBC_.pFoot_des[legID::RB][1] << "\t" << foot_position[1] << "\n";
+    // in_foot_rh_z << desiredDataWBC_.pFoot_des[legID::RB][2] << "\t" << foot_position[2] << "\t" << currentStatesWBC_.bodyStateEst.contactEstimate[legID::RB] << "\n";
+    // std::cout << "feet_result: " << feet_result.size() << std::endl;
+    return feet_result;
     // in_x << desiredDataWBC_.pBody_des[0] << "\t" << currentStatesWBC_.bodyStateEst.base_pos_world[0] << "\n";
     // in_y << desiredDataWBC_.pBody_des[1] << "\t" << currentStatesWBC_.bodyStateEst.base_pos_world[1] << "\n";
     // in_z << desiredDataWBC_.pBody_des[2] << "\t" << currentStatesWBC_.bodyStateEst.base_pos_world[2] << "\n";
