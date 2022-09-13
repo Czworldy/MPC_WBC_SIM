@@ -5,9 +5,10 @@ state_estimator_pronto :
   twist_topic : "twist"
   twist_frame_id : "BASE"
   filter_state_topic : "filter_state"
-  publish_filter_state : true
-  publish_pose : true
-  publish_tf : true
+  # //TWILIGHT DEBUG
+  publish_filter_state : false
+  publish_pose : false
+  publish_tf : false
   tf_child_frame_id : "base_pronto"
   republish_sensors : false
   init_sensors : [ins] 
