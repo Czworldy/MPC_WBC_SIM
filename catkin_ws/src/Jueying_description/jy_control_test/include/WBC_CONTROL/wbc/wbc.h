@@ -7,6 +7,7 @@
 #include "cppTypes.h"
 #include <vector>
 #include "UserParameter.h"
+#include "OsqpEigen/OsqpEigen.h"
 
 #define WB WBC<T>
 
