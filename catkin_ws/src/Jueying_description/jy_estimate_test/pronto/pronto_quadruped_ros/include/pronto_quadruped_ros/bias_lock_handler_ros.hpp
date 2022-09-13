@@ -88,26 +88,26 @@ ImuBiasLockBaseROS<JointStateT>::ImuBiasLockBaseROS(ros::NodeHandle& nh) : nh_(n
   nh_.getParam(ins_param_prefix + "frame", imu_frame);
   std::string base_frame = "BASE";
   Eigen::Isometry3d ins_to_body = Eigen::Isometry3d::Identity();
-  ins_to_body.translation() << 0.038, 0.062, 0.184;
-  ins_to_body.rotate(Eigen::Quaterniond(0,0,1,0));
+  // ins_to_body.translation() << 0.038, 0.062, 0.184; //TWILIGHT DEBUG
+  // ins_to_body.rotate(Eigen::Quaterniond(0,0,1,0)); //TWILIGHT DEBUG
 
   ROS_INFO_STREAM("________________IMU_FRAME____________"<<imu_frame);
   ROS_INFO_STREAM("IMU_FRAME____________"<<base_frame);
+//TWILIGHT DEBUG 
+  // while(nh_.ok()){    
+  //     try{
+  //           geometry_msgs::TransformStamped temp_transform = tfBuffer.lookupTransform(imu_frame,base_frame,
+  //                                    ros::Time(0));
 
-  while(nh_.ok()){    
-      try{
-            geometry_msgs::TransformStamped temp_transform = tfBuffer.lookupTransform(imu_frame,base_frame,
-                                     ros::Time(0));
-
-            tf::transformMsgToEigen(temp_transform.transform, ins_to_body);
-            break;
-          }
-          catch (tf2::TransformException ex){
-            ROS_ERROR("%s",ex.what());
-            ROS_INFO("THE ERROR IS HERE");
-            ros::Duration(1.0).sleep();
-          }
-  }
+  //           tf::transformMsgToEigen(temp_transform.transform, ins_to_body);
+  //           break;
+  //         }
+  //         catch (tf2::TransformException ex){
+  //           ROS_ERROR("%s",ex.what());
+  //           ROS_INFO("THE ERROR IS HERE");
+  //           ros::Duration(1.0).sleep();
+  //         }
+  // }
 
 
 
