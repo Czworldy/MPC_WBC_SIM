@@ -6,11 +6,14 @@
   <!-- Joint state topic name -->
   <arg name="joint_states_topic"       default="/joint_states"/>
 
+  <arg name="rviz"    default="false" />
+  <arg name="urdf_tf_publish"    default="false" />
+
     <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <arg name="world_name" value="$(find jueying_gazebo)/worlds/flatfloor.world"/>
   <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/wall.world"/> -->
   <!-- <arg name="world_name" value="/home/dqwang/MPC_WBC_sim/catkin_ws/src/Jueying_description/X20/world/jypro_world"/> -->
-  <arg name="paused" default="false"/>
+  <arg name="paused" default="true"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
@@ -69,7 +72,12 @@
 <remap from="joint_states"      to="$(arg joint_states_topic)"/>
 </node>
 
+  <node if="$(arg urdf_tf_publish)" name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  <param name="publish_frequency" type="double" value="50.0" />
+  </node>
 
+  <arg name="rvizconfig" default="$(find jy_control_test)/rviz/load_robot.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/> 
 
 </launch>
 
