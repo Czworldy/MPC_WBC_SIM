@@ -78,7 +78,6 @@ Settings loadSettings(const std::string& filename, const std::string& fieldName,
   loadData::loadPtreeValue(pt, settings.displayShortSummary_, fieldName + ".displayShortSummary", verbose);
   loadData::loadPtreeValue(pt, settings.checkNumericalStability_, fieldName + ".checkNumericalStability", verbose);
   loadData::loadPtreeValue(pt, settings.debugPrintRollout_, fieldName + ".debugPrintRollout", verbose);
-  loadData::loadPtreeValue(pt, settings.debugCaching_, fieldName + ".debugCaching", verbose);
 
   loadData::loadPtreeValue(pt, settings.absTolODE_, fieldName + ".AbsTolODE", verbose);
   loadData::loadPtreeValue(pt, settings.relTolODE_, fieldName + ".RelTolODE", verbose);
@@ -90,11 +89,8 @@ Settings loadSettings(const std::string& filename, const std::string& fieldName,
 
   loadData::loadPtreeValue(pt, settings.constraintPenaltyInitialValue_, fieldName + ".constraintPenaltyInitialValue", verbose);
   loadData::loadPtreeValue(pt, settings.constraintPenaltyIncreaseRate_, fieldName + ".constraintPenaltyIncreaseRate", verbose);
-  loadData::loadPtreeValue(pt, settings.inequalityConstraintMu_, fieldName + ".inequalityConstraintMu", verbose);
-  loadData::loadPtreeValue(pt, settings.inequalityConstraintDelta_, fieldName + ".inequalityConstraintDelta", verbose);
 
   loadData::loadPtreeValue(pt, settings.preComputeRiccatiTerms_, fieldName + ".preComputeRiccatiTerms", verbose);
-  loadData::loadPtreeValue(pt, settings.useNominalTimeForBackwardPass_, fieldName + ".useNominalTimeForBackwardPass", verbose);
 
   loadData::loadPtreeValue(pt, settings.useFeedbackPolicy_, fieldName + ".useFeedbackPolicy", verbose);
 

@@ -41,9 +41,9 @@ ReferenceManager::ReferenceManager(TargetTrajectories initialTargetTrajectories,
 /******************************************************************************************************/
 /******************************************************************************************************/
 void ReferenceManager::preSolverRun(scalar_t initTime, scalar_t finalTime, const vector_t& initState) {
-  targetTrajectories_.updateFromBuffer(); //dqwang: Update targetTrajectories 
-  modeSchedule_.updateFromBuffer(); // dqwang: Update Gait
-  modifyReferences(initTime, finalTime, initState, targetTrajectories_.get(), modeSchedule_.get()); // dqwang: Update Swing Trajectories
-} 
+  targetTrajectories_.updateFromBuffer();
+  modeSchedule_.updateFromBuffer();
+  modifyReferences(initTime, finalTime, initState, targetTrajectories_.get(), modeSchedule_.get());
+}
 
 }  // namespace ocs2

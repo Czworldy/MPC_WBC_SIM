@@ -78,7 +78,7 @@ bool wbcMsgisdone = false;
 
 // Functions
 void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg);
-void KinematicDynamicSetup(const ::urdf::ModelInterfaceSharedPtr& urdfTree);
+void KinematicDynamicSetup(const std::string& urdfFilePath);
 void FiniteDifferencesActuatedJointAcc();
 void getGeneralizedCoordinates();
 void getGeneralizedVelocities();
@@ -109,11 +109,11 @@ int main(int argc, char **argv)
     mpcPolicySubscriber = nh.subscribe("/legged_robot_mpc_policy", 3, &mpcPolicyCallback);
 
     // URDF Model -> Pinocchio Model
-    std::string urdfString;
-    if (!ros::param::get("/legged_robot_description", urdfString)) {
+    std::string urdfFilePath;
+    if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
       std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
     }
-    KinematicDynamicSetup(urdf::parseURDF(urdfString));
+    KinematicDynamicSetup(urdfFilePath);
     std::cerr << "____________________________dqwang______________________________________" << std::endl;
     
     std::queue<ocs2_msgs::mpc_wbc_conversion> wbcMsgQueue;
@@ -286,10 +286,10 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
 
 }
 
-void KinematicDynamicSetup(const ::urdf::ModelInterfaceSharedPtr& urdfTree){
+void KinematicDynamicSetup(const std::string& urdfFilePath){
 
     // PinocchioInterface
-    pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfTree, modelSettings.jointNames)));
+    pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFilePath, modelSettings.jointNames)));
 }
 
 void FiniteDifferencesActuatedJointAcc(){

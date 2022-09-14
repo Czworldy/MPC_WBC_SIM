@@ -46,24 +46,27 @@ SolverBase::SolverBase() : referenceManagerPtr_(new ReferenceManager) {}
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void SolverBase::run(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const scalar_array_t& partitioningTimes) {
-  // std::cout << "SolverBase::run() 1" << std::endl;
+void SolverBase::run(scalar_t initTime, const vector_t& initState, scalar_t finalTime) {
   preRun(initTime, initState, finalTime);
-  // std::cout << "SolverBase::run() 2" << std::endl;
-
-  runImpl(initTime, initState, finalTime, partitioningTimes);
-  // std::cout << "SolverBase::run() 3" << std::endl;
-
+  runImpl(initTime, initState, finalTime);
   postRun();
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void SolverBase::run(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const scalar_array_t& partitioningTimes,
-                     const std::vector<ControllerBase*>& controllersPtrStock) {
+void SolverBase::run(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const ControllerBase* externalControllerPtr) {
   preRun(initTime, initState, finalTime);
-  runImpl(initTime, initState, finalTime, partitioningTimes, controllersPtrStock);
+  runImpl(initTime, initState, finalTime, externalControllerPtr);
+  postRun();
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void SolverBase::run(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const PrimalSolution& primalSolution) {
+  preRun(initTime, initState, finalTime);
+  runImpl(initTime, initState, finalTime, primalSolution);
   postRun();
 }
 
@@ -99,10 +102,14 @@ void SolverBase::preRun(scalar_t initTime, const vector_t& initState, scalar_t f
 /******************************************************************************************************/
 /******************************************************************************************************/
 void SolverBase::postRun() {
-  if (!synchronizedModules_.empty()) {
+  if (!synchronizedModules_.empty() || !augmentedLagrangianObservers_.empty()) {
     const auto solution = primalSolution(getFinalTime());
     for (auto& module : synchronizedModules_) {
       module->postSolverRun(solution);
+    }
+    for (auto& observer : augmentedLagrangianObservers_) {
+      observer->extractTermMetrics(getOptimalControlProblem(), solution, getSolutionMetrics());
+      observer->extractTermMultipliers(getOptimalControlProblem(), getDualSolution());
     }
   }
 }

@@ -84,8 +84,6 @@ class TargetTrajectoriesKeyboardPublisher final {
   ::ros::Subscriber observationSubscriber_;
   mutable std::mutex latestObservationMutex_;
   SystemObservation latestObservation_;
-
-  bool isMpcPolicyCome = false;
 };
 
 }  // namespace ocs2

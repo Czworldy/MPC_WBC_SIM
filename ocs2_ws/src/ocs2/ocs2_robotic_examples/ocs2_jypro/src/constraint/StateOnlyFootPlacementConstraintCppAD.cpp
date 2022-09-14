@@ -102,7 +102,7 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   tapedTimeState << time, state;
 
   vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
-  vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, getParameters(time)) + b;
+  vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + b;
 
 
 
@@ -129,7 +129,7 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   VectorFunctionLinearApproximation constraint;
 
   const size_t stateDim = state.rows();
-  const vector_t params = getParameters(time);
+  const vector_t params = vector_t(0);
   vector_t tapedTimeState(1 + stateDim);
   vector_t state_ = state;
   vector_t y = vector_t::Zero(6);
@@ -178,7 +178,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   VectorFunctionQuadraticApproximation constraint;
 
   const size_t stateDim = state.rows();
-  const vector_t params = getParameters(time);
+  const vector_t params = vector_t(0);
   vector_t tapedTimeState(1 + stateDim);
   vector_t state_ = state;
   vector_t y = vector_t::Zero(6);
