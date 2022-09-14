@@ -84,8 +84,6 @@ struct Settings {
   bool checkNumericalStability_ = true;
   /** Printing rollout trajectory for debugging. */
   bool debugPrintRollout_ = false;
-  /** Debugs the cached nominal trajectories. */
-  bool debugCaching_ = false;
 
   /** This value determines the absolute tolerance error for ode solvers. */
   scalar_t absTolODE_ = 1e-9;
@@ -94,24 +92,17 @@ struct Settings {
   /** This value determines the maximum number of integration points per a second for ode solvers. */
   size_t maxNumStepsPerSecond_ = 10000;
   /** The integration time step for Riccati equation which is used for fixed timestep integration scheme. */
-  scalar_t timeStep_ = 1e-3;
+  scalar_t timeStep_ = 1e-2;
   /** The backward pass integrator type: SLQ uses it for solving Riccati equation and ILQR uses it for discretizing LQ approximation. */
   IntegratorType backwardPassIntegratorType_ = IntegratorType::ODE45;
 
-  /** The initial coefficient of the quadratic penalty function in augmented Lagrangian method. It should be greater than one. */
+  /** The initial coefficient of the quadratic penalty function in the merit function. It should be greater than one. */
   scalar_t constraintPenaltyInitialValue_ = 2.0;
-  /** The rate that the coefficient of the quadratic penalty function in augmented Lagrangian method grows. It should be greater than
-   * one. */
+  /** The rate that the coefficient of the quadratic penalty function in the merit function grows. It should be greater than one. */
   scalar_t constraintPenaltyIncreaseRate_ = 2.0;
-  /** Scaling factor, \f$\mu\f$,  for the inequality constraints barrier */
-  scalar_t inequalityConstraintMu_ = 0.0;
-  /** Threshold parameter, \f$\delta\f$, where the relaxed log barrier function changes from log to quadratic */
-  scalar_t inequalityConstraintDelta_ = 1e-6;
 
-  /** If true, terms of the Riccati equation will be precomputed before interpolation in the flow-map */
+  /** If true, terms of the Riccati equation will be pre-computed before interpolation in the flow-map */
   bool preComputeRiccatiTerms_ = true;
-  /** If true, SLQ solves the backward path over the nominal time trajectory. */
-  bool useNominalTimeForBackwardPass_ = false;
 
   /** Use either the optimized control policy (true) or the optimized state-input trajectory (false). */
   bool useFeedbackPolicy_ = false;

@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <ocs2_mpc/MPC_DDP.h>
+#include <ocs2_ddp/GaussNewtonDDP_MPC.h>
 #include <ocs2_python_interface/PythonInterface.h>
 
 #include "ocs2_jypro/LeggedRobotInterface.h"
@@ -59,26 +59,26 @@ class LeggedRobotPyBindings final : public PythonInterface {
    * @param [in] libraryFolder: The absolute path to the directory to generate CppAD library into.
    * @param [in] urdfFile: The absolute path to the URDF of the robot. This is not used for ballbot.
    */
-  LeggedRobotPyBindings(const std::string& taskFile, const std::string& libraryFolder, const std::string urdfFile) {
+  LeggedRobotPyBindings(const std::string& taskFile, const std::string& urdfFile, const std::string& referenceFile) {
 
     
-    // Robot interface
-    std::ifstream urdfStringFile(urdfFile);
-    if (!urdfStringFile.is_open())
-      throw std::runtime_error("urdfStringFile open failed. Aborting.");
-    // std::string urdfString((std::istreambuf_iterator<char>(urdfStringFile)), std::istreambuf_iterator<char>());
-    std::stringstream ss;
-    ss << urdfStringFile.rdbuf();
-    const std::string urdfString = ss.str();
+    // // Robot interface
+    // std::ifstream urdfStringFile(urdfFile);
+    // if (!urdfStringFile.is_open())
+    //   throw std::runtime_error("urdfStringFile open failed. Aborting.");
+    // // std::string urdfString((std::istreambuf_iterator<char>(urdfStringFile)), std::istreambuf_iterator<char>());
+    // std::stringstream ss;
+    // ss << urdfStringFile.rdbuf();
+    // const std::string urdfString = ss.str();
 
-    leggedRobotInterfacePtr_.reset(new LeggedRobotInterface(taskFile, libraryFolder, urdf::parseURDF(urdfString)));
+    leggedRobotInterfacePtr_.reset(new ocs2::legged_robot::LeggedRobotInterface(taskFile, urdfFile, referenceFile));
 
     // System dimensions
     // stateDim_ = leggedRobotInterface.getCentroidalModelInfo().stateDim;
     // inputDim_ = leggedRobotInterface.getCentroidalModelInfo().inputDim;
 
     // MPC
-    std::unique_ptr<MPC_DDP> mpcPtr(new MPC_DDP(leggedRobotInterfacePtr_->mpcSettings(), leggedRobotInterfacePtr_->ddpSettings(),
+    std::unique_ptr<GaussNewtonDDP_MPC> mpcPtr(new GaussNewtonDDP_MPC(leggedRobotInterfacePtr_->mpcSettings(), leggedRobotInterfacePtr_->ddpSettings(),
                                                 leggedRobotInterfacePtr_->getRollout(), leggedRobotInterfacePtr_->getOptimalControlProblem(),
                                                 leggedRobotInterfacePtr_->getInitializer()));
     

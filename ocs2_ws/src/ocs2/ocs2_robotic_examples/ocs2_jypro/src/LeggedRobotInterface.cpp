@@ -57,7 +57,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
 
-#include <ros/package.h>
+// Boost
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 
 namespace ocs2 {
 namespace legged_robot {
@@ -65,25 +68,41 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-LeggedRobotInterface::LeggedRobotInterface(const std::string& taskFileFolderName, const std::string& targetCommandFile,
-                                           const ::urdf::ModelInterfaceSharedPtr& urdfTree) {
-  // Load the task file
-  const std::string taskFolder = ros::package::getPath("ocs2_jypro") + "/config/" + taskFileFolderName;
-  const std::string taskFile = taskFolder + "/task.info";
-  std::cerr << "Loading task file: " << taskFile << std::endl;
+LeggedRobotInterface::LeggedRobotInterface(const std::string& taskFile, const std::string& urdfFile, const std::string& referenceFile) {
+  // check that task file exists
+  boost::filesystem::path taskFilePath(taskFile);
+  if (boost::filesystem::exists(taskFilePath)) {
+    std::cerr << "[LeggedRobotInterface] Loading task file: " << taskFilePath << std::endl;
+  } else {
+    throw std::invalid_argument("[LeggedRobotInterface] Task file not found: " + taskFilePath.string());
+  }
+  // check that urdf file exists
+  boost::filesystem::path urdfFilePath(urdfFile);
+  if (boost::filesystem::exists(urdfFilePath)) {
+    std::cerr << "[LeggedRobotInterface] Loading Pinocchio model from: " << urdfFilePath << std::endl;
+  } else {
+    throw std::invalid_argument("[LeggedRobotInterface] URDF file not found: " + urdfFilePath.string());
+  }
+  // check that targetCommand file exists
+  boost::filesystem::path referenceFilePath(referenceFile);
+  if (boost::filesystem::exists(referenceFilePath)) {
+    std::cerr << "[LeggedRobotInterface] Loading target command settings from: " << referenceFilePath << std::endl;
+  } else {
+    throw std::invalid_argument("[LeggedRobotInterface] targetCommand file not found: " + referenceFilePath.string());
+  }
 
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_info(taskFile, pt);
-  loadData::loadPtreeValue(pt, display_, "legged_robot_interface.display", true);
+  bool verbose;
+  loadData::loadCppDataType(taskFile, "legged_robot_interface.verbose", verbose);
 
   // load setting from loading file
-  modelSettings_ = loadModelSettings(taskFile);
-  ddpSettings_ = ddp::loadSettings(taskFile);
-  mpcSettings_ = mpc::loadSettings(taskFile);
-  rolloutSettings_ = rollout::loadSettings(taskFile, "rollout");
+  modelSettings_ = loadModelSettings(taskFile, "model_settings", verbose);
+  ddpSettings_ = ddp::loadSettings(taskFile, "ddp", verbose);
+  mpcSettings_ = mpc::loadSettings(taskFile, "mpc", verbose);
+  rolloutSettings_ = rollout::loadSettings(taskFile, "rollout", verbose);
+  sqpSettings_ = multiple_shooting::loadSettings(taskFile, "multiple_shooting", verbose);
 
   // OptimalConrolProblem
-  setupOptimalConrolProblem(taskFile, targetCommandFile, urdfTree);
+  setupOptimalConrolProblem(taskFile, urdfFile, referenceFile, verbose);
 
   // initial state
   initialState_.setZero(centroidalModelInfo_.stateDim);
@@ -118,16 +137,16 @@ std::shared_ptr<GaitSchedule> LeggedRobotInterface::loadGaitSchedule(const std::
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile, const std::string& targetCommandFile,
-                                                     const ::urdf::ModelInterfaceSharedPtr& urdfTree) {
+void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile, const std::string& urdfFile,
+                                                     const std::string& referenceFile, bool verbose) {
   // PinocchioInterface
-  pinocchioInterfacePtr_.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfTree, modelSettings_.jointNames))); //DQWANG:URDF MODEL -> PINOCCHIO MODEL
+  pinocchioInterfacePtr_.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFile, modelSettings_.jointNames))); //DQWANG:URDF MODEL -> PINOCCHIO MODEL
 
   // CentroidalModelInfo
   centroidalModelInfo_ = centroidal_model::createCentroidalModelInfo(
       *pinocchioInterfacePtr_, centroidal_model::loadCentroidalType(taskFile),
-      centroidal_model::loadDefaultJointState(12, targetCommandFile), modelSettings_.contactNames3DoF, modelSettings_.contactNames6DoF); //DQWANG:CENTROIDAL MODEL
-
+      centroidal_model::loadDefaultJointState(pinocchioInterfacePtr_->getModel().nq - 6, referenceFile), modelSettings_.contactNames3DoF,
+      modelSettings_.contactNames6DoF);
   // Swing trajectory planner
   std::unique_ptr<SwingTrajectoryPlanner> swingTrajectoryPlanner(
       new SwingTrajectoryPlanner(loadSwingTrajectorySettings(taskFile, "swing_trajectory_config"), 4));

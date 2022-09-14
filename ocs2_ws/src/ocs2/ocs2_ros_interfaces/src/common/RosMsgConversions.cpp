@@ -122,16 +122,15 @@ ModeSchedule readModeScheduleMsg(const ocs2_msgs::mode_schedule& modeScheduleMsg
 /******************************************************************************************************/
 ocs2_msgs::mpc_performance_indices createPerformanceIndicesMsg(scalar_t initTime, const PerformanceIndex& performanceIndices) {
   ocs2_msgs::mpc_performance_indices performanceIndicesMsg;
+
   performanceIndicesMsg.initTime = initTime;
   performanceIndicesMsg.merit = performanceIndices.merit;
-  performanceIndicesMsg.totalCost = performanceIndices.totalCost;
-  performanceIndicesMsg.stateEqConstraintISE = performanceIndices.stateEqConstraintISE;
-  performanceIndicesMsg.stateEqConstraintPenalty = 0.0;
-  performanceIndicesMsg.stateEqFinalConstraintSSE = performanceIndices.stateEqFinalConstraintSSE;
-  performanceIndicesMsg.stateEqFinalConstraintPenalty = 0.0;
-  performanceIndicesMsg.stateInputEqConstraintISE = performanceIndices.stateInputEqConstraintISE;
-  performanceIndicesMsg.inequalityConstraintISE = performanceIndices.inequalityConstraintISE;
-  performanceIndicesMsg.inequalityConstraintPenalty = performanceIndices.inequalityConstraintPenalty;
+  performanceIndicesMsg.cost = performanceIndices.cost;
+  performanceIndicesMsg.dynamicsViolationSSE = performanceIndices.dynamicsViolationSSE;
+  performanceIndicesMsg.equalityConstraintsSSE = performanceIndices.equalityConstraintsSSE;
+  performanceIndicesMsg.equalityLagrangian = performanceIndices.equalityLagrangian;
+  performanceIndicesMsg.inequalityLagrangian = performanceIndices.inequalityLagrangian;
+
   return performanceIndicesMsg;
 }
 
@@ -142,14 +141,11 @@ PerformanceIndex readPerformanceIndicesMsg(const ocs2_msgs::mpc_performance_indi
   PerformanceIndex performanceIndices;
 
   performanceIndices.merit = performanceIndicesMsg.merit;
-  performanceIndices.totalCost = performanceIndicesMsg.totalCost;
-  performanceIndices.stateEqConstraintISE = performanceIndicesMsg.stateEqConstraintISE;
-  //  performanceIndices.stateEqConstraintPenalty = performanceIndicesMsg.stateEqConstraintPenalty;
-  performanceIndices.stateEqFinalConstraintSSE = performanceIndicesMsg.stateEqFinalConstraintSSE;
-  //  performanceIndices.stateEqFinalConstraintPenalty = performanceIndicesMsg.stateEqFinalConstraintPenalty;
-  performanceIndices.stateInputEqConstraintISE = performanceIndicesMsg.stateInputEqConstraintISE;
-  performanceIndices.inequalityConstraintISE = performanceIndicesMsg.inequalityConstraintISE;
-  performanceIndices.inequalityConstraintPenalty = performanceIndicesMsg.inequalityConstraintPenalty;
+  performanceIndices.cost = performanceIndicesMsg.cost;
+  performanceIndices.dynamicsViolationSSE = performanceIndicesMsg.dynamicsViolationSSE;
+  performanceIndices.equalityConstraintsSSE = performanceIndicesMsg.equalityConstraintsSSE;
+  performanceIndices.equalityLagrangian = performanceIndicesMsg.equalityLagrangian;
+  performanceIndices.inequalityLagrangian = performanceIndicesMsg.inequalityLagrangian;
 
   return performanceIndices;
 }
@@ -194,8 +190,6 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
     throw std::runtime_error("An empty target trajectories message is received.");
   }
 
-  std::cout << "Target trajectories message size N: " << N << "\n";
-
   // state and time
   scalar_array_t desiredTimeTrajectory(N);
   vector_array_t desiredStateTrajectory(N);
@@ -217,6 +211,40 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
   }  // end of i loop
 
   return {desiredTimeTrajectory, desiredStateTrajectory, desiredInputTrajectory};
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ocs2_msgs::lagrangian_metrics createMetricsMsg(scalar_t time, LagrangianMetricsConstRef metrics) {
+  ocs2_msgs::lagrangian_metrics metricsMsg;
+
+  metricsMsg.time = time;
+  metricsMsg.penalty = metrics.penalty;
+
+  metricsMsg.constraint.resize(metrics.constraint.size());
+  for (size_t i = 0; i < metrics.constraint.size(); i++) {
+    metricsMsg.constraint[i] = metrics.constraint(i);
+  }  // end of i loop
+
+  return metricsMsg;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ocs2_msgs::multiplier createMultiplierMsg(scalar_t time, MultiplierConstRef multiplier) {
+  ocs2_msgs::multiplier multiplierMsg;
+
+  multiplierMsg.time = time;
+  multiplierMsg.penalty = multiplier.penalty;
+
+  multiplierMsg.lagrangian.resize(multiplier.lagrangian.size());
+  for (size_t i = 0; i < multiplier.lagrangian.size(); i++) {
+    multiplierMsg.lagrangian[i] = multiplier.lagrangian(i);
+  }  // end of i loop
+
+  return multiplierMsg;
 }
 
 TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg){

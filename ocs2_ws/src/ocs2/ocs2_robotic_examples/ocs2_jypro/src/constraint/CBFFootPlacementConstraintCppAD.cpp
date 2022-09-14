@@ -124,7 +124,7 @@ vector_t CBFFootPlacementConstraint::getValue(scalar_t time, const vector_t& sta
   tapedTimeStateInput << time, state_, input;
 
   vector_t b = B.col(contactPointIndex_);
-  vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeStateInput, getParameters(time));
+  vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeStateInput, vector_t(0));
   // std::cout << "cppad:" << f.transpose() << "\n";
 
   scalar_t s_t(0.);
@@ -147,7 +147,7 @@ VectorFunctionLinearApproximation CBFFootPlacementConstraint::getLinearApproxima
 
   const size_t stateDim = state.rows();
   const size_t inputDim = input.rows();
-  const vector_t params = getParameters(time);
+  const vector_t params = vector_t(0);
   vector_t tapedTimeStateInput(1 + stateDim + inputDim);
 
   vector_t state_ = state;
@@ -177,7 +177,7 @@ VectorFunctionQuadraticApproximation CBFFootPlacementConstraint::getQuadraticApp
 
   const size_t stateDim = state.rows();
   const size_t inputDim = input.rows();
-  const vector_t params = getParameters(time);
+  const vector_t params = vector_t(0);
   vector_t tapedTimeStateInput(1 + stateDim + inputDim);
   
   vector_t state_ = state;

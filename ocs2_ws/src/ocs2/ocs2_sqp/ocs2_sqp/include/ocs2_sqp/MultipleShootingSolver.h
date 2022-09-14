@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <hpipm_catkin/HpipmInterface.h>
 
 #include "ocs2_sqp/MultipleShootingSettings.h"
+#include "ocs2_sqp/MultipleShootingSolverStatus.h"
 #include "ocs2_sqp/TimeDiscretization.h"
 
 namespace ocs2 {
@@ -65,33 +66,55 @@ class MultipleShootingSolver : public SolverBase {
 
   void getPrimalSolution(scalar_t finalTime, PrimalSolution* primalSolutionPtr) const override { *primalSolutionPtr = primalSolution_; }
 
+  const DualSolution& getDualSolution() const override {
+    throw std::runtime_error("[MultipleShootingSolver] getDualSolution() not available yet.");
+  }
+
+  const ProblemMetrics& getSolutionMetrics() const override {
+    throw std::runtime_error("[MultipleShootingSolver] getSolutionMetrics() not available yet.");
+  }
+
   size_t getNumIterations() const override { return totalNumIterations_; }
+
+  const OptimalControlProblem& getOptimalControlProblem() const override { return ocpDefinitions_.front(); }
 
   const PerformanceIndex& getPerformanceIndeces() const override { return getIterationsLog().back(); };
 
   const std::vector<PerformanceIndex>& getIterationsLog() const override;
 
-  ScalarFunctionQuadraticApproximation getValueFunction(scalar_t time, const vector_t& state) const override {
-    throw std::runtime_error("[MultipleShootingSolver] getValueFunction() not available yet.");
-  };
+  ScalarFunctionQuadraticApproximation getValueFunction(scalar_t time, const vector_t& state) const override;
+
+  ScalarFunctionQuadraticApproximation getHamiltonian(scalar_t time, const vector_t& state, const vector_t& input) override {
+    throw std::runtime_error("[MultipleShootingSolver] getHamiltonian() not available yet.");
+  }
 
   vector_t getStateInputEqualityConstraintLagrangian(scalar_t time, const vector_t& state) const override {
     throw std::runtime_error("[MultipleShootingSolver] getStateInputEqualityConstraintLagrangian() not available yet.");
   }
 
-  // Irrelevant baseclass stuff
-  void rewindOptimizer(size_t firstIndex) override{};
-  const unsigned long long int& getRewindCounter() const override {
-    throw std::runtime_error("[MultipleShootingSolver] no rewind counter");
-  };
-  const scalar_array_t& getPartitioningTimes() const override { return partitionTime_; };
+  MultiplierCollection getIntermediateDualSolution(scalar_t time) const override {
+    throw std::runtime_error("[MultipleShootingSolver] getIntermediateDualSolution() not available yet.");
+  }
 
  private:
-  void runImpl(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const scalar_array_t& partitioningTimes) override;
+  void runImpl(scalar_t initTime, const vector_t& initState, scalar_t finalTime) override;
 
-  void runImpl(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const scalar_array_t& partitioningTimes,
-               const std::vector<ControllerBase*>& controllersPtrStock) override {
-    runImpl(initTime, initState, finalTime, partitioningTimes);
+  void runImpl(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const ControllerBase* externalControllerPtr) override {
+    if (externalControllerPtr == nullptr) {
+      runImpl(initTime, initState, finalTime);
+    } else {
+      throw std::runtime_error("[MultipleShootingSolver::run] This solver does not support external controller!");
+    }
+  }
+
+  void runImpl(scalar_t initTime, const vector_t& initState, scalar_t finalTime, const PrimalSolution& primalSolution) override {
+    // Copy all except the controller
+    primalSolution_.timeTrajectory_ = primalSolution.timeTrajectory_;
+    primalSolution_.stateTrajectory_ = primalSolution.stateTrajectory_;
+    primalSolution_.inputTrajectory_ = primalSolution.inputTrajectory_;
+    primalSolution_.postEventIndices_ = primalSolution.postEventIndices_;
+    primalSolution_.modeSchedule_ = primalSolution.modeSchedule_;
+    runImpl(initTime, initState, finalTime);
   }
 
   /** Run a task in parallel with settings.nThreads */
@@ -120,16 +143,26 @@ class MultipleShootingSolver : public SolverBase {
   };
   OcpSubproblemSolution getOCPSolution(const vector_t& delta_x0);
 
+  /** Extract the value function based on the last solved QP */
+  void extractValueFunction(const std::vector<AnnotatedTime>& time, const vector_array_t& x);
+
   /** Set up the primal solution based on the optimized state and input trajectories */
   void setPrimalSolution(const std::vector<AnnotatedTime>& time, vector_array_t&& x, vector_array_t&& u);
 
   /** Compute 2-norm of the trajectory: sqrt(sum_i v[i]^2)  */
   static scalar_t trajectoryNorm(const vector_array_t& v);
 
+  /** Compute total constraint violation */
+  scalar_t totalConstraintViolation(const PerformanceIndex& performance) const;
+
   /** Decides on the step to take and overrides given trajectories {x(t), u(t)} <- {x(t) + a*dx(t), u(t) + a*du(t)} */
-  std::pair<bool, PerformanceIndex> takeStep(const PerformanceIndex& baseline, const std::vector<AnnotatedTime>& timeDiscretization,
-                                             const vector_t& initState, const OcpSubproblemSolution& subproblemSolution, vector_array_t& x,
-                                             vector_array_t& u);
+  multiple_shooting::StepInfo takeStep(const PerformanceIndex& baseline, const std::vector<AnnotatedTime>& timeDiscretization,
+                                       const vector_t& initState, const OcpSubproblemSolution& subproblemSolution, vector_array_t& x,
+                                       vector_array_t& u);
+
+  /** Determine convergence after a step */
+  multiple_shooting::Convergence checkConvergence(int iteration, const PerformanceIndex& baseline,
+                                                  const multiple_shooting::StepInfo& stepInfo) const;
 
   // Problem definition
   Settings settings_;
@@ -144,6 +177,9 @@ class MultipleShootingSolver : public SolverBase {
   // Solution
   PrimalSolution primalSolution_;
 
+  // Value function in absolute state coordinates (without the constant value)
+  std::vector<ScalarFunctionQuadraticApproximation> valueFunction_;
+
   // Solver interface
   HpipmInterface hpipmInterface_;
 
@@ -157,14 +193,13 @@ class MultipleShootingSolver : public SolverBase {
   std::vector<PerformanceIndex> performanceIndeces_;
 
   // Benchmarking
+  size_t numProblems_{0};
   size_t totalNumIterations_{0};
   benchmark::RepeatedTimer initializationTimer_;
   benchmark::RepeatedTimer linearQuadraticApproximationTimer_;
   benchmark::RepeatedTimer solveQpTimer_;
   benchmark::RepeatedTimer linesearchTimer_;
   benchmark::RepeatedTimer computeControllerTimer_;
-
-  scalar_array_t partitionTime_ = {};
 };
 
 }  // namespace ocs2
