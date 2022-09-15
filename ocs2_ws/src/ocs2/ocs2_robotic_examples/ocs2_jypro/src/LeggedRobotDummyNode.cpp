@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   const std::string robotName = "legged_robot";
 
   // Initialize ros node
-  ros::init(argc, argv, robotName + "_mpc");
+  ros::init(argc, argv, robotName + "_mrt");
   ros::NodeHandle nodeHandle;
   // Get node parameters
   std::string taskFile, urdfFile, referenceFile;

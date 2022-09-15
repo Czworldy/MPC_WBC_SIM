@@ -136,9 +136,10 @@ int main(int argc, char **argv)
 
     // URDF Model -> Pinocchio Model
     std::string urdfFilePath;
-    if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
-      std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
-    }
+    // if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
+    //   std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
+    // }
+    nh.getParam("/urdfFile", urdfFilePath);
     KinematicDynamicSetup(urdfFilePath);
     // MPC Policy Subscriber
     mpcPolicySubscriber = nh.subscribe("/legged_robot_mpc_policy", 1, &mpcPolicyCallback);
