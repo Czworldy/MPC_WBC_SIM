@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/gait/GaitReceiver.h"
 #include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
 
+#include <ocs2_sqp/MultipleShootingMpc.h>
+
 int main(int argc, char** argv) {
   const std::string robotName = "legged_robot";
 
@@ -51,10 +53,7 @@ int main(int argc, char** argv) {
   nodeHandle.getParam("/urdfFile", urdfFile);
 
   // Robot interface
-  std::cout << "[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]\n";
   ocs2::legged_robot::LeggedRobotInterface interface(taskFile, urdfFile, referenceFile);
-  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
 
 
   // Gait receiver
@@ -70,8 +69,10 @@ int main(int argc, char** argv) {
       interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
 
   // MPC
-  ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
-                    interface.getInitializer());
+  // ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
+  //                   interface.getInitializer());
+  ocs2::MultipleShootingMpc mpc(interface.mpcSettings(), interface.sqpSettings(), interface.getOptimalControlProblem(),
+                        interface.getInitializer());
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun

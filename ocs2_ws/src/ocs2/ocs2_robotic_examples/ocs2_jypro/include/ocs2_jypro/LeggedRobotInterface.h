@@ -73,6 +73,7 @@ class LeggedRobotInterface final : public RobotInterface {
   const ddp::Settings& ddpSettings() const { return ddpSettings_; }
   const mpc::Settings& mpcSettings() const { return mpcSettings_; }
   const rollout::Settings& rolloutSettings() const { return rolloutSettings_; }
+  const multiple_shooting::Settings& sqpSettings() { return sqpSettings_; }
 
   const vector_t& getInitialState() const { return initialState_; }
   const RolloutBase& getRollout() const { return *rolloutPtr_; }
