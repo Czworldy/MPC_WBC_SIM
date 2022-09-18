@@ -71,7 +71,7 @@ void LeggedRobotRosReferenceManager::subscribe(ros::NodeHandle& nodeHandle) {
     referenceManagerPtr_->setTargetFeetPlacement(std::move(targetFeetPlacement));
   };
   targetFeetPlacementSubscriber_ =
-      nodeHandle.subscribe<ocs2_msgs::FootholdRegionGroup>(topicPrefix_ + "_target_feet_placement", 1, targetFeetPlacementCallback);
+      nodeHandle.subscribe<ocs2_msgs::FootholdRegionGroup>("/foothold_planner/FootholdRegionGroup", 1, targetFeetPlacementCallback);
 }
 
 }  // namespace ocs2
