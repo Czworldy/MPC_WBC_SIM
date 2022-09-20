@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ros/init.h>
 #include <urdf_parser/urdf_parser.h>
 
-#include <ocs2_mpc/MPC_DDP.h>
+#include <ocs2_ddp/GaussNewtonDDP_MPC.h>
 #include <ocs2_ros_interfaces/mpc/MPC_ROS_Interface.h>
 
 #include <ocs2_jypro/synchronized_module/LeggedRobotRosReferenceManager.h>
@@ -38,32 +38,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/gait/GaitReceiver.h"
 #include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
 
+#include <ocs2_sqp/MultipleShootingMpc.h>
+
 int main(int argc, char** argv) {
-  std::vector<std::string> programArgs{};
-  for(int i=0;i<argc; i++){
-    std::cout<< argv[i] << "\n";
-    std::cout << i << "\n";
-  }
-  ::ros::removeROSArgs(argc, argv, programArgs);
-  if (programArgs.size() < 5) {
-    throw std::runtime_error("No robot name, config folder, target command file, or description name specified. Aborting.");
-  }
-  const std::string robotName(programArgs[1]);
-  const std::string configName(programArgs[2]);
-  const std::string targetCommandFile(programArgs[3]);
-  const std::string descriptionName("/" + programArgs[4]);
+  const std::string robotName = "legged_robot";
 
   // Initialize ros node
   ros::init(argc, argv, robotName + "_mpc");
   ros::NodeHandle nodeHandle;
 
-  std::string urdfString;
-  if (!ros::param::get(descriptionName, urdfString)) {
-    std::cerr << "Param " << descriptionName << " not found; unable to generate urdf" << std::endl;
-  }
+  std::string taskFile, urdfFile, referenceFile;
+  nodeHandle.getParam("/taskFile", taskFile);
+  nodeHandle.getParam("/referenceFile", referenceFile);
+  nodeHandle.getParam("/urdfFile", urdfFile);
 
   // Robot interface
-  ocs2::legged_robot::LeggedRobotInterface interface(configName, targetCommandFile, urdf::parseURDF(urdfString));
+  ocs2::legged_robot::LeggedRobotInterface interface(taskFile, urdfFile, referenceFile);
+
 
   // Gait receiver
   auto gaitReceiverPtr = std::make_shared<ocs2::legged_robot::GaitReceiver>(
@@ -78,8 +69,10 @@ int main(int argc, char** argv) {
       interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
 
   // MPC
-  ocs2::MPC_DDP mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
-                    interface.getInitializer());
+  // ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
+  //                   interface.getInitializer());
+  ocs2::MultipleShootingMpc mpc(interface.mpcSettings(), interface.sqpSettings(), interface.getOptimalControlProblem(),
+                        interface.getInitializer());
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun

@@ -16,12 +16,11 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   ocs2_centroidal_model
   ocs2_ros_interfaces
   ocs2_python_interface
+  ocs2_sqp
   tf
   urdf
   kdl_parser
   robot_state_publisher
-  anymal_c_simple_description
-  
   pronto_msgs
 )
 

@@ -33,8 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 
 #include <ocs2_core/Types.h>
-#include <ocs2_core/automatic_differentiation/Types.h>
-
 
 namespace ocs2 {
 
@@ -126,5 +124,4 @@ const Derived& cast(const EndEffectorKinematics<SCALAR_T>& eeKinematics) {
   assert(dynamic_cast<const Derived*>(&eeKinematics) != nullptr);
   return static_cast<const Derived&>(eeKinematics);
 }
-
 }  // namespace ocs2

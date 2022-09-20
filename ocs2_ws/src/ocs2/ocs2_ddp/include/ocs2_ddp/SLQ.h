@@ -32,8 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/integration/Integrator.h>
 #include <ocs2_core/integration/SystemEventHandler.h>
 
-#include "GaussNewtonDDP.h"
-#include "riccati_equations/ContinuousTimeRiccatiEquations.h"
+#include "ocs2_ddp/GaussNewtonDDP.h"
+#include "ocs2_ddp/riccati_equations/ContinuousTimeRiccatiEquations.h"
 
 namespace ocs2 {
 
@@ -42,8 +42,6 @@ namespace ocs2 {
  */
 class SLQ final : public GaussNewtonDDP {
  public:
-  using BASE = GaussNewtonDDP;
-
   /**
    * Constructor
    *
@@ -63,16 +61,15 @@ class SLQ final : public GaussNewtonDDP {
  protected:
   matrix_t computeHamiltonianHessian(const ModelData& modelData, const matrix_t& Sm) const override;
 
-  void approximateIntermediateLQ(const scalar_array_t& timeTrajectory, const size_array_t& postEventIndices,
-                                 const vector_array_t& stateTrajectory, const vector_array_t& inputTrajectory,
-                                 std::vector<ModelData>& modelDataTrajectory) override;
+  void approximateIntermediateLQ(const DualSolution& dualSolution, PrimalDataContainer& primalData) override;
 
-  void calculateControllerWorker(size_t workerIndex, size_t partitionIndex, size_t timeIndex) override;
+  void calculateControllerWorker(size_t timeIndex, const PrimalDataContainer& primalData, const DualDataContainer& dualData,
+                                 LinearController& dstController) override;
 
-  scalar_t solveSequentialRiccatiEquations(const matrix_t& SmFinal, const vector_t& SvFinal, const scalar_t& sFinal) override;
+  scalar_t solveSequentialRiccatiEquations(const ScalarFunctionQuadraticApproximation& finalValueFunction) override;
 
-  void riccatiEquationsWorker(size_t workerIndex, size_t partitionIndex, const matrix_t& SmFinal, const vector_t& SvFinal,
-                              const scalar_t& sFinal) override;
+  void riccatiEquationsWorker(size_t workerIndex, const std::pair<int, int>& partitionInterval,
+                              const ScalarFunctionQuadraticApproximation& finalValueFunction) override;
 
   /**
    * Integrates the riccati equation and generates the value function at the times set in nominal Time Trajectory.
@@ -87,32 +84,19 @@ class SLQ final : public GaussNewtonDDP {
    * @param allSsTrajectory [out] : Value function in vector format.
    */
   void integrateRiccatiEquationNominalTime(IntegratorBase& riccatiIntegrator, ContinuousTimeRiccatiEquations& riccatiEquation,
-                                           const scalar_array_t& nominalTimeTrajectory, const size_array_t& nominalEventsPastTheEndIndices,
-                                           vector_t allSsFinal, scalar_array_t& SsNormalizedTime,
-                                           size_array_t& SsNormalizedPostEventIndices, vector_array_t& allSsTrajectory);
-
-  /**
-   * Integrates the riccati equation and freely selects the time nodes for the value function.
-   *
-   * @param riccatiIntegrator [in] : Riccati integrator object
-   * @param riccatiEquation [in] : Riccati equation object
-   * @param nominalTimeTrajectory [in] : time trajectory produced in the forward rollout.
-   * @param nominalEventsPastTheEndIndices [in] : Indices into nominalTimeTrajectory to point to times right after event times
-   * @param allSsFinal [in] : Final value of the value function.
-   * @param SsNormalizedTime [out] : Time trajectory of the value function.
-   * @param SsNormalizedPostEventIndices [out] : Indices into SsNormalizedTime to point to times right after event times
-   * @param allSsTrajectory [out] : Value function in vector format.
-   */
-  void integrateRiccatiEquationAdaptiveTime(IntegratorBase& riccatiIntegrator, ContinuousTimeRiccatiEquations& riccatiEquation,
-                                            const scalar_array_t& nominalTimeTrajectory, const size_array_t& nominalEventsPastTheEndIndices,
-                                            vector_t allSsFinal, scalar_array_t& SsNormalizedTime,
-                                            size_array_t& SsNormalizedPostEventIndices, vector_array_t& allSsTrajectory);
+                                           const std::pair<int, int>& partitionInterval, const scalar_array_t& nominalTimeTrajectory,
+                                           const size_array_t& nominalEventsPastTheEndIndices, vector_t allSsFinal,
+                                           scalar_array_t& SsNormalizedTime, size_array_t& SsNormalizedPostEventIndices,
+                                           vector_array_t& allSsTrajectory);
 
   /****************
    *** Variables **
    ****************/
   std::vector<std::shared_ptr<ContinuousTimeRiccatiEquations>> riccatiEquationsPtrStock_;
   std::vector<std::unique_ptr<IntegratorBase>> riccatiIntegratorPtrStock_;
+  vector_array2_t allSsTrajectoryStock_;
+  scalar_array2_t SsNormalizedTimeTrajectoryStock_;
+  size_array2_t SsNormalizedEventsPastTheEndIndecesStock_;
 };
 
 }  // namespace ocs2

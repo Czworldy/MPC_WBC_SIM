@@ -29,12 +29,101 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_core/Types.h>
 
+#include <ocs2_core/misc/LinearAlgebra.h>
+
 namespace ocs2 {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-ScalarFunctionQuadraticApproximation::ScalarFunctionQuadraticApproximation(size_t nx, size_t nu) {
+ScalarFunctionLinearApproximation::ScalarFunctionLinearApproximation(int nx, int nu) {
+  resize(nx, nu);
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionLinearApproximation& ScalarFunctionLinearApproximation::operator+=(const ScalarFunctionLinearApproximation& rhs) {
+  f += rhs.f;
+  dfdx += rhs.dfdx;
+  dfdu += rhs.dfdu;
+  return *this;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionLinearApproximation& ScalarFunctionLinearApproximation::operator*=(scalar_t scalar) {
+  f *= scalar;
+  dfdx *= scalar;
+  dfdu *= scalar;
+  return *this;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionLinearApproximation& ScalarFunctionLinearApproximation::resize(int nx, int nu) {
+  dfdx.resize(nx);
+  if (nu >= 0) {
+    dfdu.resize(nu);
+  } else {
+    dfdu = vector_t();
+  }
+  return *this;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionLinearApproximation& ScalarFunctionLinearApproximation::setZero(int nx, int nu) {
+  f = 0.0;
+  dfdx.setZero(nx);
+  if (nu >= 0) {
+    dfdu.setZero(nu);
+  } else {
+    dfdu = vector_t();
+  }
+  return *this;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionLinearApproximation ScalarFunctionLinearApproximation::Zero(int nx, int nu) {
+  ScalarFunctionLinearApproximation f;
+  f.setZero(nx, nu);
+  return f;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::string checkSize(int stateDim, int inputDim, const ScalarFunctionLinearApproximation& data, const std::string& dataName) {
+  std::stringstream errorDescription;
+  if (data.dfdx.size() != stateDim) {
+    errorDescription << dataName << ".dfdx.size() != " << stateDim << "\n";
+  }
+  if (data.dfdu.size() != inputDim) {
+    errorDescription << dataName << ".dfdu.size() != " << inputDim << "\n";
+  }
+  return errorDescription.str();
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::ostream& operator<<(std::ostream& out, const ScalarFunctionLinearApproximation& f) {
+  out << "f: " << f.f << '\n';
+  out << "dfdx: " << f.dfdx.transpose() << '\n';
+  out << "dfdu: " << f.dfdu.transpose() << '\n';
+  return out;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionQuadraticApproximation::ScalarFunctionQuadraticApproximation(int nx, int nu) {
   resize(nx, nu);
 }
 
@@ -54,35 +143,157 @@ ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::oper
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::resize(size_t nx, size_t nu) {
-  dfdx.resize(nx);
-  dfdu.resize(nu);
-  dfdxx.resize(nx, nx);
-  dfdux.resize(nu, nx);
-  dfduu.resize(nu, nu);
+ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::operator*=(scalar_t scalar) {
+  f *= scalar;
+  dfdx *= scalar;
+  dfdu *= scalar;
+  dfdxx *= scalar;
+  dfdux *= scalar;
+  dfduu *= scalar;
   return *this;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::setZero(size_t nx, size_t nu) {
+ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::resize(int nx, int nu) {
+  dfdx.resize(nx);
+  dfdxx.resize(nx, nx);
+  if (nu >= 0) {
+    dfdu.resize(nu);
+    dfdux.resize(nu, nx);
+    dfduu.resize(nu, nu);
+  } else {
+    dfdu = vector_t();
+    dfdux = matrix_t();
+    dfduu = matrix_t();
+  }
+  return *this;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionQuadraticApproximation& ScalarFunctionQuadraticApproximation::setZero(int nx, int nu) {
   f = 0.0;
   dfdx.setZero(nx);
-  dfdu.setZero(nu);
   dfdxx.setZero(nx, nx);
-  dfdux.setZero(nu, nx);
-  dfduu.setZero(nu, nu);
+  if (nu >= 0) {
+    dfdu.setZero(nu);
+    dfdux.setZero(nu, nx);
+    dfduu.setZero(nu, nu);
+  } else {
+    dfdu = vector_t();
+    dfdux = matrix_t();
+    dfduu = matrix_t();
+  }
+
   return *this;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-ScalarFunctionQuadraticApproximation ScalarFunctionQuadraticApproximation::Zero(size_t nx, size_t nu) {
+ScalarFunctionQuadraticApproximation ScalarFunctionQuadraticApproximation::Zero(int nx, int nu) {
   ScalarFunctionQuadraticApproximation f;
   f.setZero(nx, nu);
   return f;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::string checkBeingPSD(const matrix_t& data, const std::string& dataName) {
+  if (data.size() == 0) {
+    return std::string{};
+  }
+
+  std::stringstream errorDescription;
+
+  // check if it has valid values
+  if (!data.allFinite()) {
+    errorDescription << dataName << " is not finite.\n";
+  }
+
+  // check for being square
+  if (data.rows() != data.cols()) {
+    errorDescription << dataName << " is not a square matrix.\n";
+
+  } else {
+    // check for being self-adjoint
+    if (!data.isApprox(data.transpose(), 1e-6)) {
+      errorDescription << dataName << " is not self-adjoint.\n";
+    }
+
+    // check for being psd
+    const auto minEigenvalue = LinearAlgebra::symmetricEigenvalues(data).minCoeff();
+    if (minEigenvalue < -Eigen::NumTraits<scalar_t>::epsilon()) {
+      errorDescription << dataName << " is not PSD. It's smallest eigenvalue is " + std::to_string(minEigenvalue) + ".\n";
+    }
+  }
+
+  return errorDescription.str();
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::string checkBeingPSD(const ScalarFunctionQuadraticApproximation& data, const std::string& dataName) {
+  std::stringstream errorDescription;
+
+  // check if they are valid values
+  if (data.f != data.f) {
+    errorDescription << dataName << " is not finite.\n";
+  }
+  if (data.dfdx.size() > 0 && !data.dfdx.allFinite()) {
+    errorDescription << dataName << " first derivative w.r.t. state is not finite.\n";
+  }
+  if (data.dfdu.size() > 0 && !data.dfdu.allFinite()) {
+    errorDescription << dataName << " first derivative w.r.t. input is not finite.\n";
+  }
+  if (data.dfdux.size() > 0 && !data.dfdux.allFinite()) {
+    errorDescription << dataName << " second derivative w.r.t. input-state is not finite.\n";
+  }
+
+  // check for being psd
+  errorDescription << checkBeingPSD(data.dfdxx, dataName + " second derivative w.r.t. state");
+  errorDescription << checkBeingPSD(data.dfduu, dataName + " second derivative w.r.t. input");
+
+  return errorDescription.str();
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+std::string checkSize(int stateDim, int inputDim, const ScalarFunctionQuadraticApproximation& data, const std::string& dataName) {
+  std::stringstream errorDescription;
+
+  if (data.dfdx.size() != stateDim) {
+    errorDescription << dataName << ".dfdx.size() != " << stateDim << "\n";
+  }
+  if (data.dfdxx.rows() != stateDim) {
+    errorDescription << dataName << ".dfdxx.rows() != " << stateDim << "\n";
+  }
+  if (data.dfdxx.cols() != stateDim) {
+    errorDescription << dataName << ".dfdxx.cols() != " << stateDim << "\n";
+  }
+  if (data.dfdu.size() != inputDim) {
+    errorDescription << dataName << ".dfdu.size() != " << inputDim << "\n";
+  }
+  if (data.dfduu.rows() != inputDim) {
+    errorDescription << dataName << ".dfduu.rows() != " << inputDim << "\n";
+  }
+  if (data.dfduu.cols() != inputDim) {
+    errorDescription << dataName << ".dfduu.cols() != " << inputDim << "\n";
+  }
+  if (data.dfdux.rows() != inputDim) {
+    errorDescription << dataName << ".dfdux.rows() != " << inputDim << "\n";
+  }
+  if (data.dfdux.cols() != stateDim && inputDim > 0) {
+    errorDescription << dataName << ".dfdux.cols() != " << stateDim << "\n";
+  }
+
+  return errorDescription.str();
 }
 
 /******************************************************************************************************/
@@ -101,34 +312,42 @@ std::ostream& operator<<(std::ostream& out, const ScalarFunctionQuadraticApproxi
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionLinearApproximation::VectorFunctionLinearApproximation(size_t nv, size_t nx, size_t nu) {
+VectorFunctionLinearApproximation::VectorFunctionLinearApproximation(int nv, int nx, int nu) {
   resize(nv, nx, nu);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionLinearApproximation& VectorFunctionLinearApproximation::resize(size_t nv, size_t nx, size_t nu) {
+VectorFunctionLinearApproximation& VectorFunctionLinearApproximation::resize(int nv, int nx, int nu) {
   f.resize(nv);
   dfdx.resize(nv, nx);
-  dfdu.resize(nv, nu);
+  if (nu >= 0) {
+    dfdu.resize(nv, nu);
+  } else {
+    dfdu = matrix_t();
+  }
   return *this;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionLinearApproximation& VectorFunctionLinearApproximation::setZero(size_t nv, size_t nx, size_t nu) {
+VectorFunctionLinearApproximation& VectorFunctionLinearApproximation::setZero(int nv, int nx, int nu) {
   f.setZero(nv);
   dfdx.setZero(nv, nx);
-  dfdu.setZero(nv, nu);
+  if (nu >= 0) {
+    dfdu.setZero(nv, nu);
+  } else {
+    dfdu = matrix_t();
+  }
   return *this;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionLinearApproximation VectorFunctionLinearApproximation::Zero(size_t nv, size_t nx, size_t nu) {
+VectorFunctionLinearApproximation VectorFunctionLinearApproximation::Zero(int nv, int nx, int nu) {
   VectorFunctionLinearApproximation f;
   f.setZero(nv, nx, nu);
   return f;
@@ -147,24 +366,61 @@ std::ostream& operator<<(std::ostream& out, const VectorFunctionLinearApproximat
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionQuadraticApproximation::VectorFunctionQuadraticApproximation(size_t nv, size_t nx, size_t nu) {
+std::string checkSize(int vectorDim, int stateDim, int inputDim, const VectorFunctionLinearApproximation& data,
+                      const std::string& dataName) {
+  std::stringstream errorDescription;
+
+  if (data.f.size() != vectorDim) {
+    errorDescription << dataName << ".f.size() != " << vectorDim << "\n";
+  }
+  if (vectorDim > 0 && data.dfdx.rows() != vectorDim) {
+    errorDescription << dataName << ".dfdx.rows() != " << vectorDim << "\n";
+  }
+  if (vectorDim > 0 && data.dfdx.cols() != stateDim) {
+    errorDescription << dataName << ".dfdx.cols() != " << stateDim << "\n";
+  }
+  if (vectorDim > 0 && inputDim > 0 && data.dfdu.rows() != vectorDim) {
+    errorDescription << dataName << ".dfdu.rows() != " << vectorDim << "\n";
+  }
+  if (vectorDim > 0 && inputDim > 0 && data.dfdu.cols() != inputDim) {
+    errorDescription << dataName << ".dfdu.cols() != " << inputDim << "\n";
+  }
+
+  return errorDescription.str();
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+VectorFunctionQuadraticApproximation::VectorFunctionQuadraticApproximation(int nv, int nx, int nu) {
   resize(nv, nx, nu);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::resize(size_t nv, size_t nx, size_t nu) {
+VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::resize(int nv, int nx, int nu) {
   f.resize(nv);
   dfdx.resize(nv, nx);
-  dfdu.resize(nv, nu);
   dfdxx.resize(nv);
   dfdux.resize(nv);
   dfduu.resize(nv);
   for (size_t i = 0; i < nv; i++) {
     dfdxx[i].resize(nx, nx);
-    dfdux[i].resize(nu, nx);
-    dfduu[i].resize(nu, nu);
+  }
+
+  if (nu >= 0) {
+    dfdu.resize(nv, nu);
+    for (size_t i = 0; i < nv; i++) {
+      dfdux[i].resize(nu, nx);
+      dfduu[i].resize(nu, nu);
+    }
+  } else {
+    dfdu = matrix_t();
+    for (size_t i = 0; i < nv; i++) {
+      dfdux[i] = matrix_t();
+      dfduu[i] = matrix_t();
+    }
   }
   return *this;
 }
@@ -172,17 +428,30 @@ VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::resi
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::setZero(size_t nv, size_t nx, size_t nu) {
+VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::setZero(int nv, int nx, int nu) {
   f.setZero(nv);
   dfdx.setZero(nv, nx);
-  dfdu.setZero(nv, nu);
   dfdxx.resize(nv);
-  dfdux.resize(nv);
-  dfduu.resize(nv);
   for (size_t i = 0; i < nv; i++) {
     dfdxx[i].setZero(nx, nx);
-    dfdux[i].setZero(nu, nx);
-    dfduu[i].setZero(nu, nu);
+  }
+
+  if (nu >= 0) {
+    dfdu.setZero(nv, nu);
+    dfdux.resize(nv);
+    dfduu.resize(nv);
+    for (size_t i = 0; i < nv; i++) {
+      dfdux[i].setZero(nu, nx);
+      dfduu[i].setZero(nu, nu);
+    }
+  } else {
+    dfdu = matrix_t();
+    dfdux.resize(nv);
+    dfduu.resize(nv);
+    for (size_t i = 0; i < nv; i++) {
+      dfdux[i] = matrix_t();
+      dfduu[i] = matrix_t();
+    }
   }
   return *this;
 }
@@ -190,7 +459,7 @@ VectorFunctionQuadraticApproximation& VectorFunctionQuadraticApproximation::setZ
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-VectorFunctionQuadraticApproximation VectorFunctionQuadraticApproximation::Zero(size_t nv, size_t nx, size_t nu) {
+VectorFunctionQuadraticApproximation VectorFunctionQuadraticApproximation::Zero(int nv, int nx, int nu) {
   VectorFunctionQuadraticApproximation f;
   f.setZero(nv, nx, nu);
   return f;

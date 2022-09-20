@@ -3,7 +3,6 @@ project(ocs2_sqp)
 
 set(CATKIN_PACKAGE_DEPENDENCIES
   ocs2_core
-  ocs2_ddp
   ocs2_mpc
   ocs2_oc
   ocs2_qp_solver
@@ -13,6 +12,11 @@ set(CATKIN_PACKAGE_DEPENDENCIES
 
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
+)
+
+find_package(Boost REQUIRED COMPONENTS
+  system
+  filesystem
 )
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -29,6 +33,8 @@ catkin_package(
     ${CATKIN_PACKAGE_DEPENDENCIES}
   LIBRARIES
     ${PROJECT_NAME}
+  DEPENDS
+    Boost
 )
 
 ###########
@@ -39,6 +45,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 # Multiple shooting solver library
@@ -47,14 +54,16 @@ add_library(${PROJECT_NAME}
   src/MultipleShootingInitialization.cpp
   src/MultipleShootingSettings.cpp
   src/MultipleShootingSolver.cpp
+  src/MultipleShootingSolverStatus.cpp
   src/MultipleShootingTranscription.cpp
   src/TimeDiscretization.cpp
-  )
+)
 add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 target_compile_options(${PROJECT_NAME} PUBLIC ${OCS2_CXX_FLAGS})
 
@@ -97,6 +106,7 @@ catkin_add_gtest(test_${PROJECT_NAME}
   test/testSwitchedProblem.cpp
   test/testTranscription.cpp
   test/testUnconstrained.cpp
+  test/testValuefunction.cpp
 )
 add_dependencies(test_${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_${PROJECT_NAME}

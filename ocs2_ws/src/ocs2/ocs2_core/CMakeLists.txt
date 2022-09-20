@@ -67,6 +67,11 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/Types.cpp
+  src/augmented_lagrangian/AugmentedLagrangian.cpp
+  src/augmented_lagrangian/StateAugmentedLagrangian.cpp
+  src/augmented_lagrangian/StateInputAugmentedLagrangian.cpp
+  src/augmented_lagrangian/StateAugmentedLagrangianCollection.cpp
+  src/augmented_lagrangian/StateInputAugmentedLagrangianCollection.cpp
   src/automatic_differentation/CppAdInterface.cpp
   src/automatic_differentation/CppAdSparsity.cpp
   src/automatic_differentation/FiniteDifferenceMethods.cpp
@@ -79,7 +84,6 @@ add_library(${PROJECT_NAME}
   src/control/FeedforwardController.cpp
   src/control/LinearController.cpp
   src/control/StateBasedLinearController.cpp
-  src/control/TrajectorySpreadingControllerAdjustment.cpp
   src/cost/QuadraticStateCost.cpp
   src/cost/QuadraticStateInputCost.cpp
   src/cost/StateCostCollection.cpp
@@ -104,6 +108,7 @@ add_library(${PROJECT_NAME}
   src/integration/SystemEventHandler.cpp
   src/reference/ModeSchedule.cpp
   src/reference/TargetTrajectories.cpp
+  src/loopshaping/LoopshapingDefinition.cpp
   src/loopshaping/LoopshapingPropertyTree.cpp
   src/loopshaping/LoopshapingFilter.cpp
   src/loopshaping/LoopshapingPreComputation.cpp
@@ -111,37 +116,38 @@ add_library(${PROJECT_NAME}
   src/loopshaping/cost/LoopshapingStateCost.cpp
   src/loopshaping/cost/LoopshapingStateInputCost.cpp
   src/loopshaping/cost/LoopshapingCostEliminatePattern.cpp
-  src/loopshaping/cost/LoopshapingCostInputPattern.cpp
   src/loopshaping/cost/LoopshapingCostOutputPattern.cpp
   src/loopshaping/soft_constraint/LoopshapingSoftConstraint.cpp
   src/loopshaping/soft_constraint/LoopshapingStateInputSoftConstraint.cpp
   src/loopshaping/soft_constraint/LoopshapingSoftConstraintEliminatePattern.cpp
-  src/loopshaping/soft_constraint/LoopshapingSoftConstraintInputPattern.cpp
   src/loopshaping/soft_constraint/LoopshapingSoftConstraintOutputPattern.cpp
+  src/loopshaping/augmented_lagrangian/LoopshapingAugmentedLagrangian.cpp
+  src/loopshaping/augmented_lagrangian/LoopshapingStateAugmentedLagrangian.cpp
+  src/loopshaping/augmented_lagrangian/LoopshapingStateInputAugmentedLagrangian.cpp
+  src/loopshaping/augmented_lagrangian/LoopshapingAugmentedLagrangianEliminatePattern.cpp
+  src/loopshaping/augmented_lagrangian/LoopshapingAugmentedLagrangianOutputPattern.cpp
   src/loopshaping/constraint/LoopshapingConstraint.cpp
-  src/loopshaping/constraint/LoopshapingFilterConstraint.cpp
   src/loopshaping/constraint/LoopshapingStateConstraint.cpp
   src/loopshaping/constraint/LoopshapingStateInputConstraint.cpp
   src/loopshaping/constraint/LoopshapingConstraintEliminatePattern.cpp
-  src/loopshaping/constraint/LoopshapingConstraintInputPattern.cpp
   src/loopshaping/constraint/LoopshapingConstraintOutputPattern.cpp
   src/loopshaping/dynamics/LoopshapingDynamics.cpp
   src/loopshaping/dynamics/LoopshapingDynamicsEliminatePattern.cpp
-  src/loopshaping/dynamics/LoopshapingDynamicsInputPattern.cpp
   src/loopshaping/dynamics/LoopshapingDynamicsOutputPattern.cpp
   src/loopshaping/dynamics/LoopshapingFilterDynamics.cpp
   src/loopshaping/initialization/LoopshapingInitializer.cpp
   src/model_data/ModelData.cpp
+  src/model_data/Metrics.cpp
+  src/model_data/Multiplier.cpp
   src/misc/LinearAlgebra.cpp
   src/misc/Log.cpp
-  src/soft_constraint/SoftConstraintPenalty.cpp
   src/soft_constraint/StateSoftConstraint.cpp
   src/soft_constraint/StateInputSoftConstraint.cpp
-  src/soft_constraint/penalties/DoubleSidedPenalty.cpp
-  src/soft_constraint/penalties/QuadraticPenalty.cpp
-  src/soft_constraint/penalties/SmoothAbsolutePenalty.cpp
-  src/soft_constraint/penalties/RelaxedBarrierPenalty.cpp
-  src/soft_constraint/penalties/SquaredHingePenalty.cpp
+  src/soft_constraint/StateInputSoftBoxConstraint.cpp
+  src/penalties/MultidimensionalPenalty.cpp
+  src/penalties/Penalties.cpp
+  src/penalties/penalties/RelaxedBarrierPenalty.cpp
+  src/penalties/penalties/SquaredHingePenalty.cpp
   src/thread_support/ThreadPool.cpp
 )
 target_link_libraries(${PROJECT_NAME}
@@ -270,6 +276,7 @@ target_link_libraries(test_transferfunctionbase
 
 catkin_add_gtest(${PROJECT_NAME}_loopshaping
   test/loopshaping/testLoopshapingConfiguration.cpp
+  test/loopshaping/testLoopshapingAugmentedLagrangian.cpp
   test/loopshaping/testLoopshapingConstraint.cpp
   test/loopshaping/testLoopshapingCost.cpp
   test/loopshaping/testLoopshapingSoftConstraint.cpp
@@ -289,6 +296,8 @@ target_link_libraries(${PROJECT_NAME}_loopshaping
 catkin_add_gtest(${PROJECT_NAME}_test_misc
   test/misc/testInterpolation.cpp
   test/misc/testLinearAlgebra.cpp
+  test/misc/testLogging.cpp
+  test/misc/testLoadData.cpp
   test/misc/testLookup.cpp
 )
 target_link_libraries(${PROJECT_NAME}_test_misc
@@ -332,6 +341,24 @@ target_link_libraries(test_constraint
   gtest_main
 )
 
+catkin_add_gtest(test_metrics
+  test/model_data/testMetrics.cpp
+)
+target_link_libraries(test_metrics
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  gtest_main
+)
+
+catkin_add_gtest(test_multiplier
+  test/model_data/testMultiplier.cpp
+)
+target_link_libraries(test_multiplier
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  gtest_main
+)
+
 catkin_add_gtest(test_ModelData
   test/model_data/testModelData.cpp
 )
@@ -341,12 +368,11 @@ target_link_libraries(test_ModelData
   gtest_main
 )
 
-catkin_add_gtest(test_Logging
-  test/misc/testLogging.cpp
+catkin_add_gtest(test_ModeSchedule
+  test/reference/testModeSchedule.cpp
 )
-target_link_libraries(test_Logging
+target_link_libraries(test_ModeSchedule
   ${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   gtest_main
 )
@@ -374,10 +400,11 @@ target_link_libraries(${PROJECT_NAME}_test_thread_support
   gtest_main
 )
 
-catkin_add_gtest(${PROJECT_NAME}_test_precomputation
+catkin_add_gtest(${PROJECT_NAME}_test_core
   test/testPrecomputation.cpp
-)
-target_link_libraries(${PROJECT_NAME}_test_precomputation
+  test/testTypes.cpp
+  )
+target_link_libraries(${PROJECT_NAME}_test_core
   ${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
