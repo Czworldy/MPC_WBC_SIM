@@ -45,7 +45,7 @@ bool isValidGait(const Gait& gait) {
   bool validGait = true;
   validGait &= gait.duration > 0.0;
   validGait &= std::all_of(gait.eventPhases.begin(), gait.eventPhases.end(), [](scalar_t phase) { return 0.0 < phase && phase < 1.0; });
-  validGait &= std::is_sorted(gait.eventPhases.begin(), gait.eventPhases.end()); //dqwang: 检查元素是否按照升序排列
+  validGait &= std::is_sorted(gait.eventPhases.begin(), gait.eventPhases.end());
   validGait &= gait.eventPhases.size() + 1 == gait.modeSequence.size();
   return validGait;
 }
@@ -74,7 +74,7 @@ scalar_t wrapPhase(scalar_t phase) {
 int getModeIndexFromPhase(scalar_t phase, const Gait& gait) {
   assert(isValidPhase(phase));
   assert(isValidGait(gait));
-  auto firstLargerValueIterator = std::upper_bound(gait.eventPhases.begin(), gait.eventPhases.end(), phase); //dqwang: 选择出第一个大于phase的迭代器
+  auto firstLargerValueIterator = std::upper_bound(gait.eventPhases.begin(), gait.eventPhases.end(), phase);
   return static_cast<int>(firstLargerValueIterator - gait.eventPhases.begin());
 }
 

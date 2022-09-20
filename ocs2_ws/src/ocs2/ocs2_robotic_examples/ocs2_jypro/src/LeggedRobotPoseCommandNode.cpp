@@ -96,13 +96,13 @@ TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTar
 }
 
 int main(int argc, char* argv[]) {
-  std::vector<std::string> programArgs{};
-  ::ros::removeROSArgs(argc, argv, programArgs);
-  if (programArgs.size() < 3) {
-    throw std::runtime_error("No robot name or target command file specified. Aborting.");
-  }
-  const std::string robotName(programArgs[1]);
-  const std::string targetCommandFile(programArgs[2]);
+  // ros node handle
+  const std::string robotName = "legged_robot";
+
+  ::ros::init(argc, argv, robotName + "_target_joy");
+  ::ros::NodeHandle nodeHandle;
+  std::string targetCommandFile;
+  nodeHandle.getParam("/referenceFile", targetCommandFile);
 
   boost::property_tree::ptree pt;
   boost::property_tree::read_info(targetCommandFile, pt);
@@ -112,9 +112,6 @@ int main(int argc, char* argv[]) {
   ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
   std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
-  // ros node handle
-  ::ros::init(argc, argv, robotName + "_target");
-  ::ros::NodeHandle nodeHandle;
 
   // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
   const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};

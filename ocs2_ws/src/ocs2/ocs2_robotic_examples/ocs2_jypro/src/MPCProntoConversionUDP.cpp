@@ -203,11 +203,10 @@ int main(int argc, char **argv) {
     mpcInputData.stance_.resize(numOfContactPoint);
 
     // URDF Model -> Pinocchio Model
-    std::string urdfString;
-    if (!ros::param::get("/legged_robot_description", urdfString)) {
-      std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
-    }
-    pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdf::parseURDF(urdfString), modelSettings.jointNames)));
+    std::string urdfFilePath;
+
+    nh.getParam("/urdfFile", urdfFilePath);
+    pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFilePath, modelSettings.jointNames)));
 
     // Target
     // vector_t defaultJointState(12);

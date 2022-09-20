@@ -22,11 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
-find_package(Boost REQUIRED COMPONENTS
-  system
-  filesystem
-)
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(pinocchio REQUIRED pinocchio)
 pkg_check_modules(hpp-fcl REQUIRED hpp-fcl)
@@ -46,7 +41,6 @@ catkin_package(
   CATKIN_DEPENDS
     ${CATKIN_PACKAGE_DEPENDENCIES}
   DEPENDS
-    Boost
     pinocchio
 )
 
@@ -54,13 +48,19 @@ catkin_package(
 ## Build ##
 ###########
 
-set(FLAGS ${OCS2_CXX_FLAGS} ${pinocchio_CFLAGS_OTHER} -Wno-ignored-attributes -Wno-invalid-partial-specialization -DPINOCCHIO_URDFDOM_TYPEDEF_SHARED_PTR -DPINOCCHIO_URDFDOM_USE_STD_SHARED_PTR)
+set(FLAGS
+  ${OCS2_CXX_FLAGS}
+  ${pinocchio_CFLAGS_OTHER}
+  -Wno-ignored-attributes
+  -Wno-invalid-partial-specialization   # to silence warning with unsupported Eigen Tensor
+  -DPINOCCHIO_URDFDOM_TYPEDEF_SHARED_PTR
+  -DPINOCCHIO_URDFDOM_USE_STD_SHARED_PTR
+)
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
   ${pinocchio_INCLUDE_DIRS}
   ${hpp-fcl_INCLUDE_DIRS}
 )
@@ -77,7 +77,6 @@ add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
 )

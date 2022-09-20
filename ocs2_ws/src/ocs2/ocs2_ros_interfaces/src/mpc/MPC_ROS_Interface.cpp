@@ -127,11 +127,18 @@ ocs2_msgs::mpc_flattened_controller MPC_ROS_Interface::createMpcPolicyMsg(const 
   mpcPolicyMsg.stateTrajectory.reserve(N);
   mpcPolicyMsg.data.clear();
   mpcPolicyMsg.data.reserve(N);
+  mpcPolicyMsg.postEventIndices.clear();
+  mpcPolicyMsg.postEventIndices.reserve(primalSolution.postEventIndices_.size());
 
   // time
   for (auto t : primalSolution.timeTrajectory_) {
     mpcPolicyMsg.timeTrajectory.emplace_back(t);
-  }  // end of k loop
+  }
+
+  // post-event indices
+  for (auto ind : primalSolution.postEventIndices_) {
+    mpcPolicyMsg.postEventIndices.emplace_back(static_cast<uint16_t>(ind));
+  }
 
   // state
   for (size_t k = 0; k < N; k++) {
@@ -140,8 +147,6 @@ ocs2_msgs::mpc_flattened_controller MPC_ROS_Interface::createMpcPolicyMsg(const 
     for (size_t j = 0; j < primalSolution.stateTrajectory_[k].rows(); j++) {
       mpcState.value[j] = primalSolution.stateTrajectory_[k](j);
     }
-
-    //std::cout << "state_dqwang: " << k << " time" << primalSolution.timeTrajectory_[k] << "\n" << primalSolution.stateTrajectory_[k] << std::endl;
     mpcPolicyMsg.stateTrajectory.emplace_back(mpcState);
   }  // end of k loop
 
@@ -152,8 +157,6 @@ ocs2_msgs::mpc_flattened_controller MPC_ROS_Interface::createMpcPolicyMsg(const 
     for (size_t j = 0; j < primalSolution.inputTrajectory_[k].rows(); j++) {
       mpcInput.value[j] = primalSolution.inputTrajectory_[k](j);
     }
-
-    //std::cout << "input_dqwang: " << k << " time" << primalSolution.timeTrajectory_[k] << "\n" << primalSolution.inputTrajectory_[k] << std::endl;
     mpcPolicyMsg.inputTrajectory.emplace_back(mpcInput);
   }  // end of k loop
 
@@ -231,8 +234,6 @@ void MPC_ROS_Interface::copyToBuffer(const SystemObservation& mpcInitObservation
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-// std::chrono::steady_clock::time_point mpc_finishtime;
-// std::chrono::steady_clock::time_point mpc_lastfinishtime = std::chrono::steady_clock::now();
 void MPC_ROS_Interface::mpcObservationCallback(const ocs2_msgs::mpc_observation::ConstPtr& msg) {
   std::lock_guard<std::mutex> resetLock(resetMutex_);
 
@@ -244,50 +245,18 @@ void MPC_ROS_Interface::mpcObservationCallback(const ocs2_msgs::mpc_observation:
   // current time, state, input, and subsystem
   const auto currentObservation = ros_msg_conversions::readObservationMsg(*msg);
 
-  //dqwang__obervation
-  // std::cout << "publish msg done!" << std::endl;
-  // std::cout << "____________MPC Input Massage:________OCS2_____" << std::endl;
-  // std::cout << "MPC State:____________ " << std::endl;
-  // std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
-  // for(uint i = 0; i < 6; i++){
-  //     std::cout << msg->state.value[i] << std::endl;
-  // }
-  // std::cout << "Body Pose: x y z yaw pitch roll" << std::endl;
-  // for(uint i = 0; i < 6; i++){
-  //     std::cout << msg->state.value[i + 6] << std::endl;
-  // }
-  // std::cout << "Actuated Joints:" << std::endl;
-  // for(uint i = 0; i < 12; i++){
-  //     std::cout << msg->state.value[i + 12] << std::endl;
-  // }
-  // std::cout << "MPC Input:___________ " << std::endl;
-  // std::cout << "Contact Point Forces: " << std::endl;
-  // for(uint i = 0; i < msg->input.value.size() - 12; i++){
-  //     std::cout << msg->input.value[i] << std::endl;
-  // }
-  // std::cout << "Actuated Joints: " << std::endl;  
-  // for(uint i = 0; i < 12; i++){
-  //     std::cout << msg->input.value[msg->input.value.size() - 12 + i] << std::endl;
-  // }
-
   // measure the delay in running MPC
-  try{
-    mpcTimer_.startTimer();
+  mpcTimer_.startTimer();
 
-    // run MPC
-    bool controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
-    if (!controllerIsUpdated) {
-      return;
-    }
-    copyToBuffer(currentObservation);
-
-    // measure the delay for sending ROS messages
-    mpcTimer_.endTimer();
-  }
-  catch(std::exception& e){
-    std::cout << "Exception YJY: " << e.what() << std::endl;
+  // run MPC
+  bool controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
+  if (!controllerIsUpdated) {
     return;
   }
+  copyToBuffer(currentObservation);
+
+  // measure the delay for sending ROS messages
+  mpcTimer_.endTimer();
 
   // check MPC delay and solution window compatibility
   scalar_t timeWindow = mpc_.settings().solutionTimeWindow_;
@@ -307,9 +276,6 @@ void MPC_ROS_Interface::mpcObservationCallback(const ocs2_msgs::mpc_observation:
     std::cerr << "\n###   Latest  : " << mpcTimer_.getLastIntervalInMilliseconds() << "[ms]." << std::endl;
   }
 
-  // std::chrono::steady_clock::time_point mpc_finishtime = std::chrono::steady_clock::now();
-  // std::cerr << "time:" << (std::chrono::duration_cast<std::chrono::microseconds>(mpc_finishtime - mpc_lastfinishtime).count() )/1000.0<< "ms" << std::endl;
-  // std::chrono::steady_clock::time_point mpc_lastfinishtime = mpc_finishtime;
 #ifdef PUBLISH_THREAD
   std::unique_lock<std::mutex> lk(publisherMutex_);
   readyToPublish_ = true;

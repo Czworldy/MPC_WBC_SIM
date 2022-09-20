@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/reference/TargetTrajectories.h>
 #include <ocs2_core/reference/TargetFeetPlacement.h>
 
-
 namespace ocs2 {
 
 /**

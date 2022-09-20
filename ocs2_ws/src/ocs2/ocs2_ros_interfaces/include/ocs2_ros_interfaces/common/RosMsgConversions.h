@@ -30,19 +30,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <ocs2_core/Types.h>
+#include <ocs2_core/model_data/Metrics.h>
+#include <ocs2_core/model_data/Multiplier.h>
 #include <ocs2_core/reference/ModeSchedule.h>
 #include <ocs2_core/reference/TargetTrajectories.h>
+#include "ocs2_core/reference/TargetFeetPlacement.h"
 #include <ocs2_mpc/SystemObservation.h>
-#include <ocs2_oc/oc_solver/PerformanceIndex.h>
+#include <ocs2_oc/oc_data/PerformanceIndex.h>
 
 // MPC messages
+#include <ocs2_msgs/lagrangian_metrics.h>
 #include <ocs2_msgs/mode_schedule.h>
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_msgs/mpc_performance_indices.h>
 #include <ocs2_msgs/mpc_target_trajectories.h>
+#include <ocs2_msgs/multiplier.h>
 #include <ocs2_msgs/FootholdRegionGroup.h>
-#include "ocs2_core/reference/TargetFeetPlacement.h"
-
 
 namespace ocs2 {
 namespace ros_msg_conversions {
@@ -66,6 +69,7 @@ ocs2_msgs::mpc_target_trajectories createTargetTrajectoriesMsg(const TargetTraje
 TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_trajectories& targetTrajectoriesMsg);
 
 TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg);
+
 /**
  * Creates the performance indices message.
  *
@@ -77,6 +81,12 @@ ocs2_msgs::mpc_performance_indices createPerformanceIndicesMsg(scalar_t initTime
 
 /** Reads the performance indices message. */
 PerformanceIndex readPerformanceIndicesMsg(const ocs2_msgs::mpc_performance_indices& performanceIndicesMsg);
+
+/** Creates lagrangian_metrics message. */
+ocs2_msgs::lagrangian_metrics createMetricsMsg(scalar_t time, LagrangianMetricsConstRef metrics);
+
+/** Creates multiplier message. */
+ocs2_msgs::multiplier createMultiplierMsg(scalar_t time, MultiplierConstRef multiplier);
 
 }  // namespace ros_msg_conversions
 }  // namespace ocs2

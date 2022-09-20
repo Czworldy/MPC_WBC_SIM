@@ -2,7 +2,6 @@
 #include "wbc.h"
 #include "ros/ros.h"
 #include <chrono>   
-#include "OsqpEigen/OsqpEigen.h"
 
 using namespace std;
 using namespace chrono;
@@ -57,7 +56,7 @@ Eigen::VectorXd WBC<T>::OsqpEigenSolve()
 
     // settings
     //solver.settings()->setVerbosity(false);
-    // solver.settings()->setWarmStart(true);
+    solver.settings()->setWarmStart(true);
 
     // set the initial data of the QP solver
     solver.data()->setNumberOfVariables(dim_opt_);
@@ -83,7 +82,7 @@ Eigen::VectorXd WBC<T>::OsqpEigenSolve()
     if(!solver.initSolver()) 
         ROS_INFO("________OSQP_Failed_in_6_____________________________________");
 
-    if (!solver.solve()){
+    if (solver.solveProblem() != OsqpEigen::ErrorExitFlag::NoError){
         ROS_INFO("________OSQP_Failed_in_7_____________________________________");
         QPSolution = QPSolution_pre;
     }

@@ -84,5 +84,6 @@ class CBFFootPlacementConstraint  : public StateInputConstraintCppAd {
 
 };
 
+
 } // namespace legged_robot
 } // namespace ocs2

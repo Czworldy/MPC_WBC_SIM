@@ -82,12 +82,9 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
     y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
   };
 
-  positionFunc = positionFunc_;
-  ad_vector_t x=ad_vector_t::Zero(24),y=ad_vector_t::Zero(3);
-    // positionFunc(x,y); 
+  positionFunc = positionFunc_; 
   positionCppAdInterfacePtr_.reset(new CppAdInterface(positionFunc_, stateDim, modelName + "_position", modelFolder));
   // velocity function
-  // positionFunc(x,y); 
   auto velocityFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
     const ad_vector_t state = x.head(stateDim);
     const ad_vector_t input = x.tail(inputDim);
