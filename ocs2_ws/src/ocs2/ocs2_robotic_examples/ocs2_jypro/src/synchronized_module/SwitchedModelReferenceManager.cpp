@@ -123,12 +123,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // std::cout << "targetFeetPlacement R size:" << targetFeetPlacement.targetFeetPlacemetRight_.size() << "\n";
   const auto& left = targetFeetPlacement.targetFeetPlacemetLeft_;
   const auto& right = targetFeetPlacement.targetFeetPlacemetRight_;
-  // for(const auto& left_i : left) {
-  //   std::cout << "left_i:" << left_i.transpose() << "\n";
-  // }
-  // for(const auto& right_i : right) {
-  //   std::cout << "right_i:" << right_i.transpose() << "\n";
-  // }
+  for(const auto& left_i : left) {
+    std::cout << "left_i:" << left_i.transpose() << "\n";
+  }
+  for(const auto& right_i : right) {
+    std::cout << "right_i:" << right_i.transpose() << "\n";
+  }
   footPlacementPlannerPtr_->setTargetPoints(left, right);
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
