@@ -32,7 +32,7 @@ class WBC{
         void _SetOptimizationSize(size_t p1_);
         void _NullSpaceCal(const DMat<T>& A, DMat<T>& Anull );
         void pseudoInverse(DMat<T> const& matrix, double sigmaThreshold, DMat<T>& invMatrix);
-        Eigen::VectorXd OsqpEigenSolve();
+        DVec<T> OsqpEigenSolve();
 
 
         // void _SetOptimizationSizeTEST(size_t p1_);
