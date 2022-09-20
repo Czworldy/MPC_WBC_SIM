@@ -16,13 +16,20 @@ struct TargetFeetPlacement {
  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
 
   TargetFeetPlacement() : TargetFeetPlacement(
-    std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}}, 
-    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}) {}
-  TargetFeetPlacement(std::vector<vector3_t> Left, std::vector<vector3_t> Right)
-    : targetFeetPlacemetLeft_(std::move(Left)), targetFeetPlacemetRight_(std::move(Right)) {}
+    std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__}},
+    std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}}, 
+    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}},
+    std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}) {}
+  TargetFeetPlacement(std::vector<vector3_t> leftFront, std::vector<vector3_t> rightFront,
+  std::vector<vector3_t> leftBack, std::vector<vector3_t> rightBack)
+    : targetFeetPlacemetLeftFront_(std::move(leftFront)), targetFeetPlacemetRightFront_(std::move(rightFront)),
+    targetFeetPlacemetLeftBack_(std::move(leftBack)), targetFeetPlacemetRightBack_(std::move(rightBack))
+     {}
 
-  std::vector<vector3_t> targetFeetPlacemetLeft_;
-  std::vector<vector3_t> targetFeetPlacemetRight_;
+  std::vector<vector3_t> targetFeetPlacemetLeftFront_;
+  std::vector<vector3_t> targetFeetPlacemetRightFront_;
+  std::vector<vector3_t> targetFeetPlacemetLeftBack_;
+  std::vector<vector3_t> targetFeetPlacemetRightBack_;
 };         
 // void swap(TargetFeetPlacement& lh, TargetFeetPlacement& rh){
 //   lh.targetFeetPlacemetLeft_.swap(rh.targetFeetPlacemetLeft_);

@@ -222,12 +222,15 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
 TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg){
   using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
 
-  int leftSize = footholdRegionGroupMsg.footholdRegion_LF.size() + footholdRegionGroupMsg.footholdRegion_LH.size();
-  int rightSize = footholdRegionGroupMsg.footholdRegion_RF.size() + footholdRegionGroupMsg.footholdRegion_RH.size();
-
-  std::vector<vector3_t> leftPoints, rightPoints;
-  leftPoints.reserve(leftSize);
-  rightPoints.reserve(rightSize);
+  int leftFrontSize = footholdRegionGroupMsg.footholdRegion_LF.size();
+  int righFronttSize = footholdRegionGroupMsg.footholdRegion_RF.size();
+  int leftBackSize = footholdRegionGroupMsg.footholdRegion_LH.size();
+  int rightBackSize = footholdRegionGroupMsg.footholdRegion_RH.size();
+  std::vector<vector3_t> leftFrontPoints, rightFrontPoints, leftBackPoints, rightBackPonits;
+  leftFrontPoints.reserve(leftFrontSize);
+  rightFrontPoints.reserve(righFronttSize);
+  leftBackPoints.reserve(leftBackSize);
+  rightBackPonits.reserve(rightBackSize);
 
 
   for(auto& LF:footholdRegionGroupMsg.footholdRegion_LF){
@@ -235,7 +238,7 @@ TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGr
     point.x() = LF.rectCenter_Position.x;
     point.y() = LF.rectCenter_Position.y;
     point.z() = LF.rectCenter_Position.z;
-    leftPoints.emplace_back(point);
+    leftFrontPoints.emplace_back(point);
   }
 
   for(auto& LH:footholdRegionGroupMsg.footholdRegion_LH){
@@ -243,7 +246,7 @@ TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGr
     point.x() = LH.rectCenter_Position.x;
     point.y() = LH.rectCenter_Position.y;
     point.z() = LH.rectCenter_Position.z;
-    leftPoints.emplace_back(point);
+    leftBackPoints.emplace_back(point);
   }
 
   for(auto& RF:footholdRegionGroupMsg.footholdRegion_RF){
@@ -251,7 +254,7 @@ TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGr
     point.x() = RF.rectCenter_Position.x;
     point.y() = RF.rectCenter_Position.y;
     point.z() = RF.rectCenter_Position.z;
-    rightPoints.emplace_back(point);
+    rightFrontPoints.emplace_back(point);
   }
 
   for(auto& RH:footholdRegionGroupMsg.footholdRegion_RH){
@@ -259,10 +262,10 @@ TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGr
     point.x() = RH.rectCenter_Position.x;
     point.y() = RH.rectCenter_Position.y;
     point.z() = RH.rectCenter_Position.z;
-    rightPoints.emplace_back(point);
+    rightBackPonits.emplace_back(point);
   }
 
-  TargetFeetPlacement targetFeetPlacement(leftPoints, rightPoints);
+  TargetFeetPlacement targetFeetPlacement(leftFrontPoints, rightFrontPoints, leftBackPoints, rightBackPonits);
 
   return targetFeetPlacement;
 

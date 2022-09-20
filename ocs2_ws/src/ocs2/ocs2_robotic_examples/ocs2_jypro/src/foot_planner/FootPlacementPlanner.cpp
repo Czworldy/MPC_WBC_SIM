@@ -36,33 +36,33 @@ FootPlacementPlanner::FootPlacementPlanner(PinocchioInterface& pinocchioInterfac
 
       std::normal_distribution<scalar_t> n(0,0.05);
 
-      for(size_t i = 0; i < 10; ++i) {
-        Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
-        Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
-        if(i < 3){
-          leftpoint[1] = 0.25*i - 0.338;
-          rightpoint[1] = 0.25*i - 0.338;
-          leftpoint[0] += n(e);
-          rightpoint[0] += n(e);
-        }
-        else{
-          leftpoint[1] = 0.25*(i - 3) + 0.338;
-          rightpoint[1] = 0.25*(i - 3) + 0.338;
-          // leftpoint[2] = 0.03+0.06*(i-3);
-          // rightpoint[2] = 0.03+0.06*(i-3);
-          leftpoint[0] += n(e);
-          rightpoint[0] += n(e);
-        }
+      // for(size_t i = 0; i < 10; ++i) {
+      //   Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
+      //   Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
+      //   if(i < 3){
+      //     leftpoint[1] = 0.25*i - 0.338;
+      //     rightpoint[1] = 0.25*i - 0.338;
+      //     leftpoint[0] += n(e);
+      //     rightpoint[0] += n(e);
+      //   }
+      //   else{
+      //     leftpoint[1] = 0.25*(i - 3) + 0.338;
+      //     rightpoint[1] = 0.25*(i - 3) + 0.338;
+      //     // leftpoint[2] = 0.03+0.06*(i-3);
+      //     // rightpoint[2] = 0.03+0.06*(i-3);
+      //     leftpoint[0] += n(e);
+      //     rightpoint[0] += n(e);
+      //   }
 
-        if (i == 0 || i == 3)
-        {
-          leftpoint[0] = -0.177;
-          rightpoint[0] = 0.177;
-        }
+      //   if (i == 0 || i == 3)
+      //   {
+      //     leftpoint[0] = -0.177;
+      //     rightpoint[0] = 0.177;
+      //   }
         
-        leftPoints.emplace_back(leftpoint);
-        rightPoints.emplace_back(rightpoint);
-      }
+      //   leftPoints.emplace_back(leftpoint);
+      //   rightPoints.emplace_back(rightpoint);
+      // }
     }
 
 vector3_t FootPlacementPlanner::getFootPlacementConstraint(size_t leg,  scalar_t time) const {
@@ -208,26 +208,74 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
 
 vector3_t FootPlacementPlanner::choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position){
   scalar_t minDistance = 100;
-  const scalar_t distanceThreshold = 0.12;
+  // const scalar_t distanceThreshold = 0.12;
   vector3_t minPoint;
+  // 0 1 2 3 - >"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"
+  // if(footNum == 0||footNum == 2){// for left feet
+  //   for(const auto& leftpoint:leftFrontPoints){
+  //     scalar_t distance = (leftpoint - position).norm();
+  //     if(distance < minDistance){
+  //       minDistance = distance;
+  //       minPoint = leftpoint;
+  //     }
+  //   }
+  // }
+  // else{// for right feet
+  //   for(const auto& rightpoint:rightPoints){
+  //     scalar_t distance = (rightpoint - position).norm();
+  //     if(distance < minDistance){
+  //       minDistance = distance;
+  //       minPoint = rightpoint;
+  //     }
+  //   }
+  // }
 
-  if(footNum == 0||footNum == 2){// for left feet
-    for(const auto& leftpoint:leftPoints){
-      scalar_t distance = (leftpoint - position).norm();
-      if(distance < minDistance){
-        minDistance = distance;
-        minPoint = leftpoint;
+  switch (footNum)
+  {
+    case 0:{ //LF
+      for(const auto& point:leftFrontPoints_){
+        scalar_t distance = (point - position).norm();
+        if(distance < minDistance){
+          minDistance = distance;
+          minPoint = point;
+        }
       }
+      break;
     }
-  }
-  else{// for right feet
-    for(const auto& rightpoint:rightPoints){
-      scalar_t distance = (rightpoint - position).norm();
-      if(distance < minDistance){
-        minDistance = distance;
-        minPoint = rightpoint;
+    case 1:{ //RF
+      for(const auto& point:rightFrontPoints_){
+        scalar_t distance = (point - position).norm();
+        if(distance < minDistance){
+          minDistance = distance;
+          minPoint = point;
+        }
       }
+      break;
     }
+    case 2:{ //LH
+      for(const auto& point:leftBackPoints_){
+        scalar_t distance = (point - position).norm();
+        if(distance < minDistance){
+          minDistance = distance;
+          minPoint = point;
+        }
+      }
+      break;
+    }
+    case 3:{ //RH
+      for(const auto& point:rightBackPoints_){
+        scalar_t distance = (point - position).norm();
+        if(distance < minDistance){
+          minDistance = distance;
+          minPoint = point;
+        }
+      }
+      break;
+    }
+  
+    default:
+      throw std::runtime_error("No such footNum!.");
+      break;
   }
 
   return minPoint;
