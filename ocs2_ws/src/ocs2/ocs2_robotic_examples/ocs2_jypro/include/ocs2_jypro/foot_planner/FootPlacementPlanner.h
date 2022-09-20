@@ -29,9 +29,12 @@ class FootPlacementPlanner{
    const feet_array_t<scalar_array_t>& getliftOffHeightSequence() const{ return liftOffHeightSequence_; }
    const feet_array_t<scalar_array_t>& gettouchDownHeightSequence() const{ return touchDownHeightSequence_; }
    const feet_array_t<scalar_array_t>& getfeetPlacementEvents() const{ return feetPlacementEvents_; }
-   void setTargetPoints(const std::vector<vector3_t>& leftPoints_, const std::vector<vector3_t>& rightPoints_){
-    leftPoints = leftPoints_;
-    rightPoints = rightPoints_;
+   void setTargetPoints(const std::vector<vector3_t>& leftFrontPoints, const std::vector<vector3_t>& rightFrontPoints,
+                  const std::vector<vector3_t>& leftBackPoints, const std::vector<vector3_t>& rightBackPoints){
+    leftFrontPoints_  = leftFrontPoints ;  
+    rightFrontPoints_ = rightFrontPoints; 
+    leftBackPoints_   = leftBackPoints  ;
+    rightBackPoints_  = rightBackPoints ;
    }
 
  private:
@@ -74,8 +77,10 @@ class FootPlacementPlanner{
    const CentroidalModelInfo& centroidalModelInfo_;
 
    const size_t numFeet_; 
-   std::vector<vector3_t> leftPoints;
-   std::vector<vector3_t> rightPoints;
+   std::vector<vector3_t> leftFrontPoints_;
+   std::vector<vector3_t> rightFrontPoints_;
+   std::vector<vector3_t> leftBackPoints_;
+   std::vector<vector3_t> rightBackPoints_;
 
    feet_array_t<std::vector<vector3_t>> feetPlacement_;
    feet_array_t<std::vector<scalar_t>> feetPlacementEvents_;
