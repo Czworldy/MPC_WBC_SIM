@@ -142,5 +142,5 @@ void WBC_Ctrl<T>::_ClearUp(){
     taskList.clear();
 }
 
-template class WBC_Ctrl<double>;
+// template class WBC_Ctrl<double>;
 template class WBC_Ctrl<float>;
