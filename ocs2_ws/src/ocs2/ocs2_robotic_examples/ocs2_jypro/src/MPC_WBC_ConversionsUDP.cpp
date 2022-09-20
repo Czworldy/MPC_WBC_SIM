@@ -145,9 +145,12 @@ int main(int argc, char **argv)
     mpcPolicySubscriber = nh.subscribe("/legged_robot_mpc_policy", 1, &mpcPolicyCallback);
 
     //FOR ROS
-    while(nh.ok()){
-        ros::spinOnce();
-    }
+    // while(nh.ok()){
+    //     ros::spinOnce();
+    // }
+
+    ros::MultiThreadedSpinner spinner(4);
+    spinner.spin();
 
     close(send_fd);
 
