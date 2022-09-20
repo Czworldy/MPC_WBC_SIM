@@ -17,8 +17,8 @@ struct TargetFeetPlacement {
 
   TargetFeetPlacement() : TargetFeetPlacement(
     std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__}},
-    std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}}, 
-    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}},
+    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}, 
+    std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}},
     std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}) {}
   TargetFeetPlacement(std::vector<vector3_t> leftFront, std::vector<vector3_t> rightFront,
   std::vector<vector3_t> leftBack, std::vector<vector3_t> rightBack)
