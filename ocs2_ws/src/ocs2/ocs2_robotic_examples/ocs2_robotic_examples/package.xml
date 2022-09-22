@@ -12,6 +12,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>ocs2_jypro</run_depend>
   <run_depend>ocs2_ballbot</run_depend>
   <run_depend>ocs2_ballbot_ros</run_depend>
   <run_depend>ocs2_cartpole</run_depend>

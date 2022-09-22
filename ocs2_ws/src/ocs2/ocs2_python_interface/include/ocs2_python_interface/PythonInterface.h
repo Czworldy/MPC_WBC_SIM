@@ -189,13 +189,13 @@ class PythonInterface {
     throw std::runtime_error("PythonInterface::getInitState must be implemented by robot-specific derived class.");
   }
 
-  virtual int getStateDim() {
-    throw std::runtime_error("PythonInterface::getStateDim must be implemented by robot-specific derived class.");
-  }
+  // virtual int getStateDim() {
+  //   throw std::runtime_error("PythonInterface::getStateDim must be implemented by robot-specific derived class.");
+  // }
 
-  virtual int getInputDim() {
-    throw std::runtime_error("PythonInterface::getInputDim must be implemented by robot-specific derived class.");
-  }
+  // virtual int getInputDim() {
+  //   throw std::runtime_error("PythonInterface::getInputDim must be implemented by robot-specific derived class.");
+  // }
 
  protected:
   int stateDim_ = -1;  // -1 indicates that it is not initialized

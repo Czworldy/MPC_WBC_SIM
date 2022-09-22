@@ -42,13 +42,13 @@
     <node pkg="ocs2_jypro" type="legged_robot_mpc" name="legged_robot_mpc"
           output="screen" launch-prefix=""/>
 
-    <node pkg="ocs2_jypro" type="MPC_WBC_Conversions" name="MPC_WBC_Conversions"
+    <node pkg="ocs2_jypro" type="MPC_WBC_ConversionsUDP" name="MPC_WBC_ConversionsUDP"
           output="screen" launch-prefix="gnome-terminal --"/>
 
     <node pkg="ocs2_jypro" type="legged_robot_dummy" name="legged_robot_dummy"
           output="screen" launch-prefix="gnome-terminal --"/>
 
-    <node pkg="ocs2_jypro" type="legged_robot_target" name="legged_robot_target"
+    <node pkg="ocs2_jypro" type="legged_robot_target_joy" name="legged_robot_target_joy"
           output="screen" launch-prefix="gnome-terminal --"/>
 
     <node pkg="ocs2_jypro" type="legged_robot_gait_command" name="legged_robot_gait_command"

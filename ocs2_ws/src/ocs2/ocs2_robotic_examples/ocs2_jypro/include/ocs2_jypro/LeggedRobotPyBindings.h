@@ -107,11 +107,11 @@ class LeggedRobotPyBindings final : public PythonInterface {
     return leggedRobotInterfacePtr_->getInitialState();
   }
 
-  int getStateDim() override {
+  int getStateDim()  {
     return leggedRobotInterfacePtr_->getCentroidalModelInfo().stateDim;
   }
 
-  int getInputDim() override {
+  int getInputDim()  {
     return leggedRobotInterfacePtr_->getCentroidalModelInfo().inputDim;
   }
 

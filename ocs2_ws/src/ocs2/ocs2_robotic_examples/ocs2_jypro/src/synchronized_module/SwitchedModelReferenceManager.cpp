@@ -109,10 +109,10 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
       stateTrajectory(11) = terrainRPY[0]; //roll
     }
 
-    std::cout << "######## modify target state ########\n"; 
+    // std::cout << "######## modify target state ########\n"; 
   }
 
-  std::cout << "targetTrajectories:" << targetTrajectories.stateTrajectory.back().segment(6,6).transpose() << std::endl;
+  // std::cout << "targetTrajectories:" << targetTrajectories.stateTrajectory.back().segment(6,6).transpose() << std::endl;
  
   // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   // std::cout << modeSchedule << std::endl;
