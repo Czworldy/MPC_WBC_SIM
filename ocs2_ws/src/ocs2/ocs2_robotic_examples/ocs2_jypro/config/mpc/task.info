@@ -13,7 +13,7 @@ model_settings
   phaseTransitionStanceTime     0.0
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       true
+  recompileLibrariesCppAd       false
   modelFolderCppAd              /tmp/ocs2
 }
 
@@ -21,7 +21,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.2     ;-0.2
-  swingHeight                   0.12
+  swingHeight                   0.25
   touchdownAfterHorizon         0.2
   swingTimeScale                0.05
 }
