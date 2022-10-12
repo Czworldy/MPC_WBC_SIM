@@ -2,7 +2,7 @@
 #define SYSTEMPARAMETER_H
 
 #include "cppTypes.h"
-
+namespace ocs2 {
 namespace legID{
     constexpr size_t LF = 0;
     constexpr size_t LB = 1;
@@ -50,4 +50,5 @@ class SystemParameter{
         SystemParameter();
         ~SystemParameter();
 };
+}
 #endif

@@ -14,11 +14,11 @@ from LeggedRobotPyBindings import (
 
 packageDir = rospkg.RosPack().get_path('ocs2_jypro')
 
-taskFile = "mpc"
+taskFile = os.path.join(packageDir, 'config/mpc/task.info')
 targetFile = os.path.join(packageDir, 'config/command/targetTrajectories.info')
-urdfFile = os.path.join(rospkg.RosPack().get_path('JYPro'), 'urdf/JYPro_ocs2.urdf')
+urdfFile = os.path.join(rospkg.RosPack().get_path('X20'), 'urdf/X20_rsm.urdf')
 print(targetFile)
-mpc = mpc_interface(taskFile, targetFile, urdfFile)
+mpc = mpc_interface(taskFile, urdfFile, targetFile)
 init_x = mpc.getInitState()
 desiredTimeTraj = scalar_array()
 desiredTimeTraj.push_back(3.0)
@@ -55,6 +55,7 @@ for item in range(100):
     t += dt
     mpc.setObservation(t, x, u_result[0])
     print(len(t_result))
+    print(item)
     # print(t_result[0])
     # print(x_result[3])
     # print(u_result[0])

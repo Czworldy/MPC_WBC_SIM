@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_centroidal_model/CentroidalModelInfo.h>
 #include <ocs2_core/Types.h>
+#include <ocs2_jypro/common/Types.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_ros_interfaces/mrt/DummyObserver.h>
 #include <ocs2_ros_interfaces/visualization/VisualizationColors.h>
@@ -97,7 +98,6 @@ class LeggedRobotVisualizer : public DummyObserver {
   std::unique_ptr<robot_state_publisher::RobotStatePublisher> robotStatePublisherPtr_;
 
   ros::Publisher costDesiredBasePositionPublisher_;
-  ros::Publisher desiredFeetPlacmentPointPublisher_;
   std::vector<ros::Publisher> costDesiredFeetPositionPublishers_;
 
   ros::Publisher stateOptimizedPublisher_;

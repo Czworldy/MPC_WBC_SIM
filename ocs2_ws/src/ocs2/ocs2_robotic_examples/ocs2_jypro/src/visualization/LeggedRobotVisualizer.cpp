@@ -34,14 +34,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 
-// OCS2
-#include "ocs2_jypro/gait/MotionPhaseDefinition.h"
 #include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 
+// OCS2
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_core/misc/LinearInterpolation.h>
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
 #include <ocs2_ros_interfaces/visualization/VisualizationHelpers.h>
+#include "ocs2_jypro/gait/MotionPhaseDefinition.h"
 
 // Additional messages not in the helpers file
 #include <geometry_msgs/PoseArray.h>
@@ -81,7 +81,6 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
   costDesiredFeetPositionPublishers_[3] = nodeHandle.advertise<visualization_msgs::Marker>("/legged_robot/desiredFeetTrajectory/RH", 1);
   stateOptimizedPublisher_ = nodeHandle.advertise<visualization_msgs::MarkerArray>("/legged_robot/optimizedStateTrajectory", 1);
   currentStatePublisher_ = nodeHandle.advertise<visualization_msgs::MarkerArray>("/legged_robot/currentState", 1);
-  desiredFeetPlacmentPointPublisher_ = nodeHandle.advertise<visualization_msgs::Marker>("/legged_robot/desiredFeetPlacementPoint", 1);
 
   // Load URDF model
   urdf::Model urdfModel;
@@ -92,7 +91,7 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
     kdl_parser::treeFromUrdfModel(urdfModel, kdlTree);
 
     robotStatePublisherPtr_.reset(new robot_state_publisher::RobotStatePublisher(kdlTree));
-    robotStatePublisherPtr_->publishFixedTransforms(true); //TWILIGHT DEBUG
+    robotStatePublisherPtr_->publishFixedTransforms(true);
   }
 }
 
@@ -107,8 +106,8 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation, const P
     pinocchio::updateFramePlacements(model, data);
 
     const auto timeStamp = ros::Time::now();
-    // publishObservation(timeStamp, observation); //TWILIGHT DEBUG
-    // publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
+    publishObservation(timeStamp, observation);
+    publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
     publishOptimizedStateTrajectory(timeStamp, primalSolution.timeTrajectory_, primalSolution.stateTrajectory_,
                                     primalSolution.modeSchedule_);
     lastTime_ = observation.time;
@@ -131,9 +130,9 @@ void LeggedRobotVisualizer::publishObservation(ros::Time timeStamp, const System
   }
 
   // Publish
-  // publishJointTransforms(timeStamp, qJoints);
-  // publishBaseTransform(timeStamp, basePose);
-  // publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
+  publishJointTransforms(timeStamp, qJoints);
+  publishBaseTransform(timeStamp, basePose);
+  publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
 }
 
 /******************************************************************************************************/
@@ -317,7 +316,7 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
   // Convert feet msgs to Array message
   visualization_msgs::MarkerArray markerArray;
   markerArray.markers.reserve(centroidalModelInfo_.numThreeDofContacts +
-                              3);  // 1 trajectory per foot + 1 for the future footholds + 1 for the com trajectory
+                              2);  // 1 trajectory per foot + 1 for the future footholds + 1 for the com trajectory
   for (size_t i = 0; i < centroidalModelInfo_.numThreeDofContacts; i++) {
     markerArray.markers.emplace_back(getLineMsg(std::move(feetMsgs[i]), feetColorMap_[i], trajectoryLineWidth_));
     markerArray.markers.back().ns = "EE Trajectories";
@@ -358,60 +357,6 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
     }
   }
   markerArray.markers.push_back(std::move(sphereList));
-
-  static bool firstTime = true;
-  static visualization_msgs::Marker feetPlacement;
-  if(firstTime){
-  
-  feetPlacement.type = visualization_msgs::Marker::SPHERE_LIST;
-  feetPlacement.scale.x = footMarkerDiameter_;
-  feetPlacement.scale.y = footMarkerDiameter_;
-  feetPlacement.scale.z = footMarkerDiameter_;
-  feetPlacement.ns = "desired feet placement";
-  feetPlacement.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
-
-  static std::default_random_engine e(2);
-
-  static std::normal_distribution<scalar_t> n(0,0.05);
-
-  for(size_t i = 0; i < 10; ++i) {
-    Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
-    Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
-    if(i < 3){
-      leftpoint[1] = 0.25*i - 0.338;
-      rightpoint[1] = 0.25*i - 0.338;
-      // leftpoint[2] = 0.03+0.02*i;
-      // rightpoint[2] = 0.03+0.02*i;
-      leftpoint[0] += n(e);
-      rightpoint[0] += n(e);
-    }
-    else{
-      leftpoint[1] = 0.25*(i - 3) + 0.338;
-      rightpoint[1] = 0.25*(i - 3) + 0.338;
-      // leftpoint[2] = 0.03+0.06*(i-3);
-      // rightpoint[2] = 0.03+0.06*(i-3);
-      leftpoint[0] += n(e);
-      rightpoint[0] += n(e);
-    }
-
-    if (i == 0 || i == 3)
-    {
-      leftpoint[0] = -0.177;
-      rightpoint[0] = 0.177;
-    }
-    feetPlacement.points.emplace_back(getPointMsg(leftpoint));
-    feetPlacement.points.emplace_back(getPointMsg(rightpoint));
-    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
-    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
-
-        // leftPoints.emplace_back(leftpoint);
-        // rightPoints.emplace_back(rightpoint);
-  }
-  firstTime = false;
-  }
-
-  markerArray.markers.push_back(std::move(feetPlacement));
-
 
   // Add headers and Id
   assignHeader(markerArray.markers.begin(), markerArray.markers.end(), getHeaderMsg(frameId_, timeStamp));

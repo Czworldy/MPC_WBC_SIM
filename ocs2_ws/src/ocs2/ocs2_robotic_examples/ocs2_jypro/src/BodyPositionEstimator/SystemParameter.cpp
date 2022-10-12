@@ -1,5 +1,6 @@
 #include "SystemParameter.h"
 
+namespace ocs2 {
 template<typename T>
 SystemParameter<T>::SystemParameter(){
     hipLocation[0] << -0.135, 0.33, 0; //LF
@@ -343,3 +344,4 @@ Mat3<T> SystemParameter<T>::getFootJacobianRF(const Vec31<T>& q_RF){
 
 template class SystemParameter<double>;
 template class SystemParameter<float>;
+}

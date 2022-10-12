@@ -5,7 +5,7 @@
 #include<eigen3/Eigen/Dense>
 
 using namespace std;
-
+namespace ocs2{
 // Dynamically sized vector
 template <typename T>
 using DVec = typename Eigen::Matrix<T, Eigen::Dynamic, 1>;
@@ -97,5 +97,5 @@ using Mat4 = typename Eigen::Matrix<T, 4, 4>;
 // 1x3 Matrix
 template <typename T>
 using Mat13 = typename Eigen::Matrix<T, 1, 3>;
-
+}
 #endif
