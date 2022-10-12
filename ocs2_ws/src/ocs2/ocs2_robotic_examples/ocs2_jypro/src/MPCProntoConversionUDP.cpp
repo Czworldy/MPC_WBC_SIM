@@ -265,9 +265,9 @@ int main(int argc, char **argv) {
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
         // Omega
-        mpcInputData.v_[3] = buf.base_angular_vel_body[2];
-        mpcInputData.v_[4] = buf.base_angular_vel_body[1];
-        mpcInputData.v_[5] = buf.base_angular_vel_body[0]; 
+        mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
+        mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
+        mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world? 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
         // Terrain 
@@ -282,7 +282,9 @@ int main(int argc, char **argv) {
             vector_t state = vector_t::Zero(6 + dofOfRobot);
             vector_t input = vector_t::Zero(3 * numOfContactPoint + numOfActuatedJoint);
 
-            state.tail(dofOfRobot) = mpcInputData.q_;
+            // state.tail(dofOfRobot) = mpcInputData.q_;
+            state(8) = 0.51; //z = 0.48
+            state.tail(12) << -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
 
             // Initial command
             TargetTrajectories initTargetTrajectories({0.0}, {state}, {input});
@@ -439,30 +441,30 @@ int main(int argc, char **argv) {
             std::cout << "MPC State:____________ " << std::endl;
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i] << std::endl;
+                std::cout << mpc_input_msg.state.value[i] << " ";
             }
-            std::cout << "Body Pose: x y z yaw pitch roll" << std::endl;
+            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i + 6] << std::endl;
+                std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
-            std::cout << "Actuated Joints:" << std::endl;
+            std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.state.value[i + 12] << std::endl;
+                std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
-            std::cout << "MPC Input:___________ " << std::endl;
+            std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.input.value[i] << std::endl;
+                std::cout << mpc_input_msg.input.value[i] << " ";
             }
-            // std::cout << "Actuated Joints: " << std::endl;  
-            // for(uint i = 0; i < numOfActuatedJoint; i++){
-            //     std::cout << mpc_input_msg.input.value[mpc_input_msg.input.value.size() - 12 + i] << std::endl;
-            // }
-            std::cout << "Gait Mode:____________" << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[0]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[1]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[2]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[3]) << std::endl;
+            std::cout << "\nActuated Joints speed: " << std::endl;  
+            for(uint i = 0; i < numOfActuatedJoint; i++){
+                std::cout << mpc_input_msg.input.value[mpc_input_msg.input.value.size() - 12 + i] << " ";
+            }
+            std::cout << "\nGait Mode:____________" << std::endl;
+            std::cout << int(mpcInputData.stance_bool_[0]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[1]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[2]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[3]) << "\n";
             std::cout << double(mpc_input_msg.mode) << std::endl;
             std::cout << "terrain Parameters: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
             std::cout << "time: " << mpc_input_msg.time << std::endl;

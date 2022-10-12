@@ -410,8 +410,14 @@ void DesiredTrajectoriesForWBC(){
       // wbcInterfaceData.baseVelocity[k][3] = v[k][5]; // roll        
       // wbcInterfaceData.baseVelocity[k][4] = v[k][4]; // pitch      
       // wbcInterfaceData.baseVelocity[k][5] = v[k][3]; // yaw  
-      wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[0][3], q[0][4], q[0][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z
+      //这里的顺序不用换了
+      wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
+      
+      // Contact Point Position
+      for(size_t j = 0; j < N_contactPoint; j++){;
+          wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation().cast<float>();
+      }
       // Base Acceleration
       pinocchio::computeCentroidalMapTimeVariation(model, data, q[k], v[k]); //the time derivative of the Centroidal Momentum Matrix
       vector_t hDot = vector_t::Zero(6);
@@ -419,7 +425,7 @@ void DesiredTrajectoriesForWBC(){
           // XYZ centroidal dynamics
           hDot.head(3) += mpcData.inputTrajectory_[k].segment(3*j, 3);
           Eigen::Matrix<double, 3, 1> f = mpcData.inputTrajectory_[k].segment(3*j, 3);
-          Eigen::Matrix<double, 3, 1> r = wbcInterfaceData.swingFeetPosition[k][j].cast<double>() - q[k].head(3);
+          Eigen::Matrix<double, 3, 1> r = wbcInterfaceData.swingFeetPosition[k][j].cast<double>() - q[k].head(3); // bug??
           hDot.tail(3) += r.cross(f);
       }
       hDot[2] -= data.mass[0] * 9.81f;
@@ -429,14 +435,13 @@ void DesiredTrajectoriesForWBC(){
       wbcInterfaceData.baseAcceleration[k][0] = a[k][0]; //x
       wbcInterfaceData.baseAcceleration[k][1] = a[k][1]; //y
       wbcInterfaceData.baseAcceleration[k][2] = a[k][2]; //z
-      wbcInterfaceData.baseAcceleration[k][3] = a[k][5]; // roll   
-      wbcInterfaceData.baseAcceleration[k][4] = a[k][4]; // pitch   
-      wbcInterfaceData.baseAcceleration[k][5] = a[k][3]; // yaw 
+      // wbcInterfaceData.baseAcceleration[k][3] = a[k][5]; // roll   
+      // wbcInterfaceData.baseAcceleration[k][4] = a[k][4]; // pitch   
+      // wbcInterfaceData.baseAcceleration[k][5] = a[k][3]; // yaw 
+      wbcInterfaceData.baseAcceleration[k].tail(3) = 
+                    (rpyDotTOtwistDot(q[k][3], q[k][4], q[k][5], v[k][3], v[k][4], v[k][5]) * a[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
-      // Contact Point Position
-      for(size_t j = 0; j < N_contactPoint; j++){;
-          wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation().cast<float>();
-      }
+
       // Contact Point Velocity and Acceleration
       for(size_t j = 0; j < N_contactPoint; j++){
           matrix_t jacobianContactPoint = matrix_t::Zero(6, dofOfRobot);
