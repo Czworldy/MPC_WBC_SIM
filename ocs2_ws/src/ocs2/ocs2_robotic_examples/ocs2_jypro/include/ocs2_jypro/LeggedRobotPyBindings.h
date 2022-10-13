@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ocs2_jypro/LeggedRobotInterface.h"
 #include "ocs2_jypro/gait/GaitPythonInterface.h"
+#include "ocs2_jypro/synchronized_module/TerrainPythonInterface.h"
 // #include "ocs2_jypro/definitions.h"
 #include <urdf_parser/urdf_parser.h>
 
@@ -126,8 +127,12 @@ class LeggedRobotPyBindings final : public PythonInterface {
             leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), 
             "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info", true));
 
+    terrainReceiverPtr_.reset(new ocs2::legged_robot::TerrainPythonInterface(
+            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr()));
+
     mpcPtr->getSolverPtr()->setReferenceManager(leggedRobotInterfacePtr_->getReferenceManagerPtr());
     mpcPtr->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr_);       
+    mpcPtr->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr_);
 
     auto initState = leggedRobotInterfacePtr_->getInitialState();
     const ocs2::vector_t zeroInput = ocs2::vector_t::Zero(24);
@@ -142,6 +147,11 @@ class LeggedRobotPyBindings final : public PythonInterface {
   void setModule(const std::string& moduleName) override {
     std::cout << "setModule: " << moduleName << std::endl;
     gaitReceiverPtr_->setMpcModeSequence(moduleName);
+  }
+
+  void setTerrain(const TerrainEstData& terrainData){
+    // std::cout << "setTerrain: " << terrainData << std::endl;
+    terrainReceiverPtr_->setMpcTerrain(terrainData);
   }
 
   vector_t getInitState() override {
@@ -161,6 +171,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
   // for example, FootPlacementPlanner's centroidalModelInfo_
   std::shared_ptr<LeggedRobotInterface> leggedRobotInterfacePtr_ = nullptr; 
   std::shared_ptr<ocs2::legged_robot::GaitPythonInterface> gaitReceiverPtr_ = nullptr;
+  std::shared_ptr<ocs2::legged_robot::TerrainPythonInterface> terrainReceiverPtr_ = nullptr;
 };
 
 }  // namespace ballbot
