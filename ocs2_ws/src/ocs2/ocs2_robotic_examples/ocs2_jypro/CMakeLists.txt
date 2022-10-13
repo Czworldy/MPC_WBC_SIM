@@ -88,6 +88,7 @@ add_library(ocs2_jypro
   src/synchronized_module/SwitchedModelReferenceManager.cpp
   src/synchronized_module/LeggedRobotRosReferenceManager.cpp
   src/synchronized_module/TerrainReceiver.cpp
+  src/synchronized_module/TerrainPythonInterface.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
