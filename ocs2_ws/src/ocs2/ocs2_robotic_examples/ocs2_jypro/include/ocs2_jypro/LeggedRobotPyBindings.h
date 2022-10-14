@@ -154,6 +154,10 @@ class LeggedRobotPyBindings final : public PythonInterface {
     terrainReceiverPtr_->setMpcTerrain(terrainData);
   }
 
+  void setTargetFeetPlacement(const TargetFeetPlacement& targetFeetPlacement) {
+    leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->setTargetFeetPlacement(targetFeetPlacement);
+  }
+
   vector_t getInitState() override {
     return leggedRobotInterfacePtr_->getInitialState();
   }

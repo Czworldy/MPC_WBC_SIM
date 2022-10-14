@@ -415,7 +415,7 @@ void DesiredTrajectoriesForWBC(){
 
       
       // Contact Point Position
-      for(size_t j = 0; j < N_contactPoint; j++){;
+      for(size_t j = 0; j < N_contactPoint; j++){
           wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation().cast<float>();
       }
       // Base Acceleration
