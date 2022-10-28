@@ -1,22 +1,22 @@
-targetDisplacementVelocity          1.0;
-targetRotationVelocity              0.1;
+targetDisplacementVelocity          0.5;
+targetRotationVelocity              0.3;
 
-comHeight                           0.41
+comHeight                           0.0
 
 defaultJointState
 {
-   (0,0)  0.0   ; LF_HAA
-   (1,0)  -0.87 ; LF_HFE
-   (2,0)  1.855   ; LF_KFE
-   (3,0)  0.0   ; LH_HAA
-   (4,0) -0.87   ; LH_HFE
-   (5,0)  1.855   ; LH_KFE
-   (6,0)  0.0   ; RF_HAA
-   (7,0)  -0.87   ; RF_HFE
-   (8,0)  1.855   ; RF_KFE
-   (9,0)  0.0   ; RH_HAA
-   (10,0) -0.87   ; RH_HFE
-   (11,0)  1.855   ; RH_KFE
+   (0,0)  -0.007   ; LF_HAA
+   (1,0)  -0.84 ; LF_HFE
+   (2,0)  1.584   ; LF_KFE
+   (3,0)  -0.007   ; LH_HAA
+   (4,0) -0.84   ; LH_HFE
+   (5,0)  1.584   ; LH_KFE
+   (6,0)  -0.007  ; RF_HAA
+   (7,0)  -0.84   ; RF_HFE
+   (8,0)  1.584   ; RF_KFE
+   (9,0)  -0.007  ; RH_HAA
+   (10,0) -0.84   ; RH_HFE
+   (11,0)  1.584   ; RH_KFE
 }
 
 joyLinearVelocityGain               0.3;

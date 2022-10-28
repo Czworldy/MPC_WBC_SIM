@@ -93,6 +93,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
   std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
+  std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
 
   const scalar_t distance2Terrain = 0.4; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
@@ -103,11 +104,14 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     // targetState(8) = zReference;
     // targetState(10) = terrainRPY[1]; //pitch
     // targetState(11) = terrainRPY[0]; //roll
-    for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
-      stateTrajectory(8) = zReference;
-      stateTrajectory(10) = terrainRPY[1]; //pitch
-      stateTrajectory(11) = terrainRPY[0]; //roll
-    }
+    // for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
+    //   stateTrajectory(8) = zReference;
+    //   stateTrajectory(10) = terrainRPY[1]; //pitch
+    //   stateTrajectory(11) = terrainRPY[0]; //roll
+    // }
+    targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
+    targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
+    targetTrajectories.stateTrajectory[1][8] = zReference; // z
 
     // std::cout << "######## modify target state ########\n"; 
   }
@@ -136,7 +140,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
   
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
+  swingTrajectoryPtr_->update(modeSchedule, -0.4);
+  // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
 
 
   // std::cout << *terrainEstDataPtr_ << std::endl;

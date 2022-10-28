@@ -61,7 +61,7 @@ struct mpcPolicyData {
     ModeSchedule modeSchedule_;
 };
 // MPC OUTPUT FOR UDP
-#define LENGTH 15
+#define LENGTH 10
 size_t N_times = LENGTH;
 using vector_foot_t = Eigen::Matrix<Eigen::Matrix<Eigen::Matrix<float, 3, 1 >,4, 1>, LENGTH, 1>;
 using vector_base_t = Eigen::Matrix <Eigen::Matrix<float, 6, 1>, LENGTH, 1>;
@@ -82,6 +82,7 @@ public:
     vector_base_t baseAcceleration;
     vector_joint_t jointPos;
     vector_joint_t jointVel;
+    vector_joint_t jointAcc;
     Eigen::Matrix<float, LENGTH,1> stateTime;
 };
  
@@ -453,6 +454,7 @@ void DesiredTrajectoriesForWBC(){
       for (int j(0); j < 12; j++) {
         wbcInterfaceData.jointPos[k][j] = q[k][6 + j];
         wbcInterfaceData.jointVel[k][j] = v[k][6 + j];
+        wbcInterfaceData.jointAcc[k][j] = a[k][6 + j];
       }
     }
 }
