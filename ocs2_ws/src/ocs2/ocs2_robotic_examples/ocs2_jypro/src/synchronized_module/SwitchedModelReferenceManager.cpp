@@ -104,14 +104,14 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     // targetState(8) = zReference;
     // targetState(10) = terrainRPY[1]; //pitch
     // targetState(11) = terrainRPY[0]; //roll
-    // for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
-    //   stateTrajectory(8) = zReference;
-    //   stateTrajectory(10) = terrainRPY[1]; //pitch
-    //   stateTrajectory(11) = terrainRPY[0]; //roll
-    // }
-    targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
-    targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
-    targetTrajectories.stateTrajectory[1][8] = zReference; // z
+    for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
+      stateTrajectory(8) = zReference;
+      stateTrajectory(10) = terrainRPY[1]; //pitch
+      stateTrajectory(11) = terrainRPY[0]; //roll
+    }
+    // targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
+    // targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
+    // targetTrajectories.stateTrajectory[1][8] = zReference; // z
 
     // std::cout << "######## modify target state ########\n"; 
   }

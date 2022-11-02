@@ -162,6 +162,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         
         size_t N_modeSequence = msg->modeSchedule.modeSequence.size(); // Gait Mode Sequence
         //Resize MPC Policy Data 
+        std::cout << "traj length: " << msg->timeTrajectory.size() << "\n";
         if (msg->timeTrajectory.size() > LENGTH){
           N_times = LENGTH;
         }
