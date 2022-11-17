@@ -69,8 +69,8 @@ void GaitSchedule::insertModeSequenceTemplate(const ModeSequenceTemplate& modeSe
     modeSequence.push_back(ModeNumber::STANCE);
   }
 
-  std::cout<< "phaseTransitionStanceTime:" << phaseTransitionStanceTime << "\n";
-
+  // std::cout<< "phaseTransitionStanceTime:" << phaseTransitionStanceTime << "\n";
+  newModeSequenceStartTime_ = startTime + phaseTransitionStanceTime;
   // tile the mode sequence template from startTime+phaseTransitionStanceTime to finalTime.
   tileModeSequenceTemplate(startTime + phaseTransitionStanceTime, finalTime);
 }
@@ -83,6 +83,8 @@ ModeSchedule GaitSchedule::getModeSchedule(scalar_t lowerBoundTime, scalar_t upp
   auto& modeSequence = modeSchedule_.modeSequence;
   const size_t index = std::lower_bound(eventTimes.begin(), eventTimes.end(), lowerBoundTime) - eventTimes.begin();
 
+  // std::cout << "index:" << index << "\n";
+  // std::cout << "in get:" << modeSchedule_;
   if (index > 0) {
     // delete the old logic from index and set the default start phase to stance
     eventTimes.erase(eventTimes.begin(), eventTimes.begin() + index - 1);  // keep the one before the last to make it stance
@@ -101,6 +103,7 @@ ModeSchedule GaitSchedule::getModeSchedule(scalar_t lowerBoundTime, scalar_t upp
 
   // tile the template logic
   tileModeSequenceTemplate(tilingStartTime, upperBoundTime);
+  // std::cout << "after get:" << modeSchedule_;
   return modeSchedule_;
 }
 

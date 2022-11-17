@@ -85,7 +85,7 @@ void MPC_MRT_Interface::advanceMpc() {
     currentObservation = currentObservation_;
   }
 
-  bool controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
+  controllerIsUpdated = mpc_.run(currentObservation.time, currentObservation.state);
   if (!controllerIsUpdated) {
     return;
   }

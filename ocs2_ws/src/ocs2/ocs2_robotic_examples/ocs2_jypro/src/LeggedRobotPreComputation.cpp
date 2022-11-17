@@ -55,6 +55,7 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
   footPlacementConstraints_.resize(info_.numThreeDofContacts);
+  eeReference_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -92,10 +93,10 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   auto footPlacementPoint = [&](size_t footIndex) {
     vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
     // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
-    scalar_t tol = 0.07;
+    scalar_t tol = 0.05;
 
     Eigen::Matrix<scalar_t, 6, 1> constraint, b;
-     b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
+     b  << -point[0], point[0], -point[1], point[1], -point[2]+10., point[2]+10.;
     constraint = b.array() + tol;
     
     return constraint;
@@ -111,6 +112,27 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     }
     // Eigen::Map<Eigen::Matrix<scalar_t, 4, 1>> times(swingTimeLeft_.data());
     // std::cout << "preCompute times: " << footPlacementConstraints_.transpose() << std::endl;
+  }
+
+  auto eeReferece = [&](size_t footIndex) {
+    vector_t reference(6);
+    const scalar_t xPosition = swingTrajectoryPlannerPtr_->getXpositionConstraint(footIndex, t);
+    const scalar_t yPosition = swingTrajectoryPlannerPtr_->getYpositionConstraint(footIndex, t);
+    const scalar_t zPosition = swingTrajectoryPlannerPtr_->getZpositionConstraint(footIndex, t);
+
+    const scalar_t xVelocity = swingTrajectoryPlannerPtr_->getXvelocityConstraint(footIndex, t);
+    const scalar_t yVelocity = swingTrajectoryPlannerPtr_->getYvelocityConstraint(footIndex, t);
+    const scalar_t zVelocity = swingTrajectoryPlannerPtr_->getZvelocityConstraint(footIndex, t);
+    reference << xPosition, yPosition, zPosition, xVelocity, yVelocity, zVelocity;
+    std::cout << "ref: " <<  reference.transpose() << std::endl;
+    return reference;
+  };
+
+  if (request.contains(Request::Cost)) {
+    for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
+      eeReference_[i] = eeReferece(i);
+    }
+    
   }
 }
 

@@ -57,6 +57,10 @@ class GaitSchedule {
    */
   void insertModeSequenceTemplate(const ModeSequenceTemplate& modeSequenceTemplate, scalar_t startTime, scalar_t finalTime);
 
+  scalar_t getNewModeSequenceStartTime() { return newModeSequenceStartTime_; }
+
+  const ModeSchedule& getModeSchedule() const { return modeSchedule_; }
+
  private:
   /**
    * Extends the switch information from lowerBoundTime to upperBoundTime based on the template mode sequence.
@@ -70,6 +74,7 @@ class GaitSchedule {
   ModeSchedule modeSchedule_;
   ModeSequenceTemplate modeSequenceTemplate_;
   scalar_t phaseTransitionStanceTime_;
+  scalar_t newModeSequenceStartTime_;
 };
 
 }  // namespace legged_robot

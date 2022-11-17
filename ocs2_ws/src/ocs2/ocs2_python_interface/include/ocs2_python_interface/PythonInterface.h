@@ -202,6 +202,10 @@ class PythonInterface {
   //   throw std::runtime_error("PythonInterface::getInputDim must be implemented by robot-specific derived class.");
   // }
 
+  bool isProblemSolved() {
+    return mpcMrtInterface_->getcontrollerIsUpdated();
+  }
+
  protected:
   int stateDim_ = -1;  // -1 indicates that it is not initialized
   int inputDim_ = -1;  // -1 indicates that it is not initialized

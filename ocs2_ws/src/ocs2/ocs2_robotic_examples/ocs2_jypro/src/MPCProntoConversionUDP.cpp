@@ -1,4 +1,3 @@
-    float lf;
 #pragma GCC optimize(2)
 // C++
 #include <stdio.h>
@@ -282,8 +281,8 @@ int main(int argc, char **argv) {
             vector_t state = vector_t::Zero(6 + dofOfRobot);
             vector_t input = vector_t::Zero(3 * numOfContactPoint + numOfActuatedJoint);
 
-            // state.tail(dofOfRobot) = mpcInputData.q_;
-            state(8) = 0.51; //z = 0.48
+            state.tail(dofOfRobot) = mpcInputData.q_;
+            // state(8) = 0.51; //z = 0.48
             state.tail(12) << -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
 
             // Initial command

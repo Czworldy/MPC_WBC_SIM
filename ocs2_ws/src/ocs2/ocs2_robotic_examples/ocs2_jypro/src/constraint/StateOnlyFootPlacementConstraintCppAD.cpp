@@ -78,8 +78,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  // return true;
+  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  return true;
 }
 
 
@@ -211,11 +211,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   //   << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
 
   // std::cout << "cppad:" << f.transpose() << "\n";
-
-
   // std::cout << "y: " << state(7) << "\n";
-
-
   const matrix_t J = Ax * getCppAdInterface()->getJacobian(tapedTimeState, params);
   constraint.dfdx =  J.rightCols(stateDim);
 
