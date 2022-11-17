@@ -73,17 +73,17 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
   auto pinocchioInterfaceCppAd = pinocchioInterface.toCppAd();
 
   // set pinocchioInterface to mapping
-  mappingPtr.reset(mapping.clone());
+  mappingPtr.reset(mapping_.clone());
   mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
 
   // position function
-  auto positionFunc_ = [&, this](const ad_vector_t& x, ad_vector_t& y) {
+  auto positionFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
     updateCallback(x, pinocchioInterfaceCppAd);
     y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
   };
 
-  positionFunc = positionFunc_; 
-  positionCppAdInterfacePtr_.reset(new CppAdInterface(positionFunc_, stateDim, modelName + "_position", modelFolder));
+  positionFunc_ = positionFunc; 
+  positionCppAdInterfacePtr_.reset(new CppAdInterface(positionFunc, stateDim, modelName + "_position", modelFolder));
   // velocity function
   auto velocityFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
     const ad_vector_t state = x.head(stateDim);
@@ -91,6 +91,7 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
     updateCallback(state, pinocchioInterfaceCppAd);
     y = getVelocityCppAd(pinocchioInterfaceCppAd, *mappingPtr, state, input);
   };
+  velocityFunc_ = velocityFunc; 
   velocityCppAdInterfacePtr_.reset(new CppAdInterface(velocityFunc, stateDim + inputDim, modelName + "_velocity", modelFolder));
 
   // orientation function
@@ -102,11 +103,11 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
       new CppAdInterface(orientationFunc, stateDim, 4 * endEffectorFrameIds_.size(), modelName + "_orientation", modelFolder));
 
   if (recompileLibraries) {
-    positionCppAdInterfacePtr_->createModels(CppAdInterface::ApproximationOrder::Second, verbose);
+    positionCppAdInterfacePtr_->createModels(CppAdInterface::ApproximationOrder::First, verbose);
     velocityCppAdInterfacePtr_->createModels(CppAdInterface::ApproximationOrder::First, verbose);
     orientationErrorCppAdInterfacePtr_->createModels(CppAdInterface::ApproximationOrder::First, verbose);
   } else {
-    positionCppAdInterfacePtr_->loadModelsIfAvailable(CppAdInterface::ApproximationOrder::Second, verbose);
+    positionCppAdInterfacePtr_->loadModelsIfAvailable(CppAdInterface::ApproximationOrder::First, verbose);
     velocityCppAdInterfacePtr_->loadModelsIfAvailable(CppAdInterface::ApproximationOrder::First, verbose);
     orientationErrorCppAdInterfacePtr_->loadModelsIfAvailable(CppAdInterface::ApproximationOrder::First, verbose);
   }
@@ -123,7 +124,7 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(const P
       endEffectorIds_(rhs.endEffectorIds_), 
       pinocchioInterface_(rhs.pinocchioInterface_), mapping_(rhs.mapping_),updateCallback_(rhs.updateCallback_),
       endEffectorFrameIds_(rhs.endEffectorFrameIds_) {
-        positionFunc = rhs.positionFunc; 
+        positionFunc_ = rhs.positionFunc_;  velocityFunc_ = rhs.velocityFunc_;
         // std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";
         }
 

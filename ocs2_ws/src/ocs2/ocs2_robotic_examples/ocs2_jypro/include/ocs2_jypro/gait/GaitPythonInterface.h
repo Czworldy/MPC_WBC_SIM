@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/gait/GaitSchedule.h"
 #include "ocs2_jypro/gait/ModeSequenceTemplate.h"
 #include "ocs2_jypro/gait/MotionPhaseDefinition.h"
+#include "ocs2_jypro/gait/GaitTable.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -50,6 +51,12 @@ class GaitPythonInterface : public SolverSynchronizedModule {
 
   void setMpcModeSequence(const std::string& msg);
 
+  scalar_t getSetModeStartTime() { return gaitSchedulePtr_->getNewModeSequenceStartTime(); }
+
+  const GaitTable& getCurrentGaitTable() const { return gaitTable_; }
+
+  const std::shared_ptr<GaitSchedule>& getGaitSchedulePtr() const { return gaitSchedulePtr_; }
+
 
  private:
 
@@ -60,6 +67,7 @@ class GaitPythonInterface : public SolverSynchronizedModule {
 
   std::atomic_bool gaitUpdated_;
   ModeSequenceTemplate receivedGait_;
+  GaitTable gaitTable_;
 };
 
 }  // namespace legged_robot

@@ -85,6 +85,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
                                                      TargetFeetPlacement& targetFeetPlacement) {
   const auto timeHorizon = finalTime - initTime;
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
   auto& targetState = targetTrajectories.stateTrajectory.back();
   const vector3_t& terrainParams = terrainEstDataPtr_->terrainParams.cast<scalar_t>();
@@ -92,13 +93,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   terrainNormal(2) = 1;
 
   vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
-  std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
+  // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
 
   const scalar_t distance2Terrain = 0.48; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
-  std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
-  std::cout << "intiState: " << initState.segment(6, 18).transpose() << std::endl;
+  // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
+  // std::cout << "intiState: " << initState.segment(6, 18).transpose() << std::endl;
 
   if(targetTrajectories.timeTrajectory.size() >= 2){
     // targetState(8) = zReference;
@@ -127,7 +128,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const auto& rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
   const auto& leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
   const auto& rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
-  // for(const auto& left_i : left) {
+  // for(const auto& left_i : leftFront) {
   //   std::cout << "left_i:" << left_i.transpose() << "\n";
   // }
   // for(const auto& right_i : right) {
@@ -138,7 +139,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
   
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
+  // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
 
 
   // std::cout << *terrainEstDataPtr_ << std::endl;

@@ -100,7 +100,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
     setObservation(0.0, initState, zeroInput);
   }
 
-  LeggedRobotPyBindings(std::shared_ptr<LeggedRobotInterface> interface) {
+  LeggedRobotPyBindings(std::shared_ptr<LeggedRobotInterface> interface, const std::string& gaitFile) {
 
     
     // // Robot interface
@@ -124,8 +124,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
                                     leggedRobotInterfacePtr_->getInitializer()));
     
     gaitReceiverPtr_.reset(new ocs2::legged_robot::GaitPythonInterface(
-            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), 
-            "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info", true));
+            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), gaitFile, true));
 
     terrainReceiverPtr_.reset(new ocs2::legged_robot::TerrainPythonInterface(
             leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr()));
@@ -145,7 +144,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
 
 
   void setModule(const std::string& moduleName) override {
-    std::cout << "setModule: " << moduleName << std::endl;
+    // std::cout << "setModule: " << moduleName << std::endl;
     gaitReceiverPtr_->setMpcModeSequence(moduleName);
   }
 

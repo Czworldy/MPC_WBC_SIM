@@ -51,14 +51,19 @@ GaitPythonInterface::GaitPythonInterface(std::shared_ptr<GaitSchedule> gaitSched
 void GaitPythonInterface::preSolverRun(scalar_t initTime, scalar_t finalTime, const vector_t& currentState,
                                 const ReferenceManagerInterface& referenceManager) {
   // std::cout << "GaitPythonInterface::preSolverRun" << std::endl;
+  const auto timeHorizon = finalTime - initTime;
+
   if (gaitUpdated_) {
-    std::cerr << "[GaitReceiver]: Setting new gait after time " << finalTime << "\n";
-    std::cerr << receivedGait_;
-    const auto timeHorizon = finalTime - initTime;
-    std::cerr << "timeHorizon: " <<timeHorizon << "\n";
+    // std::cerr << "[GaitReceiver]: Setting new gait after time " << finalTime << "\n";
+    // std::cerr << receivedGait_;
+    // const auto timeHorizon = finalTime - initTime;
+    // std::cerr << "timeHorizon: " <<timeHorizon << "\n";
     gaitSchedulePtr_->insertModeSequenceTemplate(receivedGait_, finalTime, timeHorizon);
     gaitUpdated_ = false;
   }
+  gaitTable_ = getGaitTable(gaitSchedulePtr_->getModeSchedule());
+  // std::cout << gaitTable_;
+
 }
 
 /******************************************************************************************************/
@@ -70,7 +75,11 @@ void GaitPythonInterface::setMpcModeSequence(const std::string& gaitCommand) {
     ModeSequenceTemplate modeSequenceTemplate = gaitMap_.at(gaitCommand);
     ocs2_msgs::mode_schedule modeScheduleMsg = createModeSequenceTemplateMsg(modeSequenceTemplate);
     receivedGait_ = readModeSequenceTemplateMsg(modeScheduleMsg);
-    gaitUpdated_ = true;
+    // gaitTable_ = getGaitTable(receivedGait_);
+    // std::cout << gaitTable_;
+    // gaitUpdated_ = true;
+    gaitSchedulePtr_->insertModeSequenceTemplate(receivedGait_, 0.0, 1.0);
+
   } catch (const std::out_of_range& e) {
     std::cout << "Gait \"" << gaitCommand << "\" not found.\n";
     // printGaitList(gaitList_);

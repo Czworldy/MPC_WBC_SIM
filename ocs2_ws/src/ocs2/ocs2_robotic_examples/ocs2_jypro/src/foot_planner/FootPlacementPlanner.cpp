@@ -114,7 +114,14 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       const scalar_array_t liftOffHeightSequence(modeSequence.size(), initFootPosition[2]);
       liftOffHeightSequence_[j] = liftOffHeightSequence;
 
-    if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
+    // if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
+    if(1){
+
+      vector3_t currentSwingLegPlacement;
+      if(!eesContactFlagStocks[j][initIndex]){ // current swing leg
+        const size_t previousIndex = lookup::findIndexInTimeArray(feetPlacementEvents_[j], initTime);
+        currentSwingLegPlacement = feetPlacement_[j][previousIndex]; 
+      }
       feetPlacement_[j].clear();
       feetPlacement_[j].reserve(modeSequence.size());
 
@@ -122,8 +129,13 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       touchDownHeightSequence_[j].clear();
       touchDownHeightSequence_[j].reserve(modeSequence.size());
 
+      //TODO this line i think should change every prerun.
       feetPlacementEvents_[j] = eventTimes;
       for (int p = 0; p < modeSequence.size(); ++p) {
+        if(!eesContactFlagStocks[j][initIndex] && p == initIndex){ // if current leg is swing leg then skip // use previous foot placement
+          feetPlacement_[j].emplace_back(currentSwingLegPlacement);          
+          continue; 
+        }
         if (!eesContactFlagStocks[j][p]) { // for all swing phases 
           const int swingStartIndex = startTimesIndices[j][p];
           const int swingFinalIndex = finalTimesIndices[j][p];
@@ -146,6 +158,12 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           scalar_t footplacementZ = footplacement[2];
           feetPlacement_[j].emplace_back(footplacement);          
           touchDownHeightSequence_[j].emplace_back(footplacementZ);    
+          if (p != 0){
+            liftOffHeightSequence_[j][p-1] = footplacementZ;
+          }
+          if (p == modeSequence.size() - 1){
+            liftOffHeightSequence_[j][p] = footplacementZ;
+          }
         }
         else{// for a stance leg
           // feetPlacement_[j].emplace_back(0,0,0);
