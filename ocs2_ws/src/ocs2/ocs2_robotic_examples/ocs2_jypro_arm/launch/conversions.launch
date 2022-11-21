@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="ocs2_jypro_arm" type="MPC_WBC_Conversions" 
+          name="MPC_WBC_Conversions"  output="screen" />
+    
+</launch>

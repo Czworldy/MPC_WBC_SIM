@@ -26,6 +26,7 @@ add_message_files(
     mpc_target_feetplacement.msg
     FootholdRegion.msg
     FootholdRegionGroup.msg
+    upper_layer_trajectory.msg
 )
 
 add_service_files(

@@ -48,6 +48,7 @@ TargetTrajectoriesKeyboardPublisher::TargetTrajectoriesKeyboardPublisher(::ros::
   auto observationCallback = [this](const ocs2_msgs::mpc_observation::ConstPtr& msg) {
     std::lock_guard<std::mutex> lock(latestObservationMutex_);
     latestObservation_ = ros_msg_conversions::readObservationMsg(*msg);
+    this->isMpcPolicyCome = true;
   };
   observationSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_observation>(topicPrefix + "_mpc_observation", 1, observationCallback);
 
@@ -59,15 +60,24 @@ TargetTrajectoriesKeyboardPublisher::TargetTrajectoriesKeyboardPublisher(::ros::
 /******************************************************************************************************/
 /******************************************************************************************************/
 void TargetTrajectoriesKeyboardPublisher::publishKeyboardCommand(const std::string& commadMsg) {
+  ::ros::Rate rate(50);
   while (ros::ok() && ros::master::check()) {
     // get command line
-    std::cout << commadMsg << ": ";
-    const vector_t commandLineInput = getCommandLine().cwiseMin(targetCommandLimits_).cwiseMax(-targetCommandLimits_);
+    // std::cout << commadMsg << ": ";
+    const vector_t commandLineInput = vector_t::Zero(10);
+    const std::string commandKey = "A";
+
+    // vector_t targetCommand = vector_t::Zero(4);
+    // const vector_t commandLineInput = targetCommand;
 
     // display
-    std::cout << "The following command is published: [" << toDelimitedString(commandLineInput) << "]\n\n";
+    // std::cout << "The following command is published: [" << toDelimitedString(commandLineInput) << "]\n\n";
 
     // get the latest observation
+    
+    // while ((!isMpcPolicyCome) && ros::ok() && ros::master::check()){
+    //     ::ros::spinOnce();
+    // }
     ::ros::spinOnce();
     SystemObservation observation;
     {
@@ -76,12 +86,54 @@ void TargetTrajectoriesKeyboardPublisher::publishKeyboardCommand(const std::stri
     }
 
     // get TargetTrajectories
-    const auto targetTrajectories = commandLineToTargetTrajectoriesFun_(commandLineInput, observation);
+    
 
     // publish TargetTrajectories
-    targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
+    if (isMpcPolicyCome) {
+      const auto targetTrajectories = commandLineToTargetTrajectoriesFun_(commandLineInput, commandKey, observation);
+      targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
+      isMpcPolicyCome = false;
+    }
+
+    rate.sleep();
   }  // end of while loop
 }
+
+// void TargetTrajectoriesKeyboardPublisher::publishKeyboardCommand(const std::string& commadMsg) {
+//   // ::ros::Rate rate(2);
+//   while (ros::ok() && ros::master::check()) {
+//     // get command line
+//     std::cout << commadMsg << ": ";
+//     const vector_t commandLineInput = getCommandLine().cwiseMin(targetCommandLimits_).cwiseMax(-targetCommandLimits_);
+//     const std::string commandKey = "A";
+
+//     // vector_t targetCommand = vector_t::Zero(4);
+//     // const vector_t commandLineInput = targetCommand;
+
+//     // display
+//     std::cout << "The following command is published: [" << toDelimitedString(commandLineInput) << "]\n\n";
+
+//     // get the latest observation
+    
+//     // while ((!isMpcPolicyCome) && ros::ok() && ros::master::check()){
+//     //     ::ros::spinOnce();
+//     // }
+//     ::ros::spinOnce();
+//     SystemObservation observation;
+//     {
+//       std::lock_guard<std::mutex> lock(latestObservationMutex_);
+//       observation = latestObservation_;
+//     }
+
+//     // get TargetTrajectories
+//     const auto targetTrajectories = commandLineToTargetTrajectoriesFun_(commandLineInput, commandKey, observation);
+
+//     // publish TargetTrajectories
+//     targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
+//     isMpcPolicyCome = false;
+//     // rate.sleep();
+//   }  // end of while loop
+// }
 
 /******************************************************************************************************/
 /******************************************************************************************************/

@@ -210,7 +210,16 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
                                     .cast<scalar_t>();
   }  // end of i loop
 
-  return {desiredTimeTrajectory, desiredStateTrajectory, desiredInputTrajectory};
+    // eePosition
+  N = targetTrajectoriesMsg.eePositionTrajectory.size();
+  vector_array_t desiredEEPositionTrajectory(N);
+  for (size_t i = 0; i < N; i++) {
+    desiredEEPositionTrajectory[i] = Eigen::Map<const Eigen::VectorXf>(targetTrajectoriesMsg.eePositionTrajectory[i].value.data(),
+                                                                targetTrajectoriesMsg.eePositionTrajectory[i].value.size())
+                                  .cast<scalar_t>(); 
+  }
+
+  return {desiredTimeTrajectory, desiredStateTrajectory, desiredInputTrajectory, desiredEEPositionTrajectory};
 }
 
 /******************************************************************************************************/

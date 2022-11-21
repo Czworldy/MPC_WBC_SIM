@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <string>
 
 #include <ros/subscriber.h>
 
@@ -46,7 +47,7 @@ namespace ocs2 {
 class TargetTrajectoriesKeyboardPublisher final {
  public:
   using CommandLineToTargetTrajectories =
-      std::function<TargetTrajectories(const vector_t& commadLineTarget, const SystemObservation& observation)>;
+      std::function<TargetTrajectories(const vector_t& commandLineTarget, const std::string& commandKey, const SystemObservation& observation)>;
 
   /**
    * Constructor
@@ -76,6 +77,13 @@ class TargetTrajectoriesKeyboardPublisher final {
   /** Gets the target from command line. */
   vector_t getCommandLine();
 
+  /*! Gets Circle Traj */
+  int flag;
+  double count; // [0, 360]
+  double Radius;
+  vector_t commandCircleInput;
+
+
   const vector_t targetCommandLimits_;
   CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun_;
 
@@ -84,6 +92,8 @@ class TargetTrajectoriesKeyboardPublisher final {
   ::ros::Subscriber observationSubscriber_;
   mutable std::mutex latestObservationMutex_;
   SystemObservation latestObservation_;
+
+  bool isMpcPolicyCome = false;
 };
 
 }  // namespace ocs2

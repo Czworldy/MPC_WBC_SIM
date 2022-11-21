@@ -41,7 +41,8 @@ namespace ocs2 {
 struct TargetTrajectories {
   explicit TargetTrajectories(size_t size = 0);
   TargetTrajectories(scalar_array_t desiredTimeTrajectory, vector_array_t desiredStateTrajectory,
-                     vector_array_t desiredInputTrajectory = vector_array_t());
+                     vector_array_t desiredInputTrajectory = vector_array_t(),
+                     vector_array_t desiredEEPositionTrajectory = vector_array_t());
   void clear();
   bool empty() const { return timeTrajectory.empty() || stateTrajectory.empty(); }
   size_t size() const { return timeTrajectory.size(); }
@@ -51,10 +52,12 @@ struct TargetTrajectories {
 
   vector_t getDesiredState(scalar_t time) const;
   vector_t getDesiredInput(scalar_t time) const;
+  vector_t getDesiredEEPosition(scalar_t time) const;
 
   scalar_array_t timeTrajectory;
   vector_array_t stateTrajectory;
   vector_array_t inputTrajectory;
+  vector_array_t eePositionTrajectory;
 };
 
 void swap(TargetTrajectories& lh, TargetTrajectories& rh);

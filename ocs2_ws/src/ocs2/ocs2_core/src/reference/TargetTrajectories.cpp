@@ -37,19 +37,23 @@ namespace ocs2 {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /***************************************************************************************************** */
-TargetTrajectories::TargetTrajectories(size_t size) : timeTrajectory(size), stateTrajectory(size), inputTrajectory(size) {}
+TargetTrajectories::TargetTrajectories(size_t size) : timeTrajectory(size), stateTrajectory(size), inputTrajectory(size), eePositionTrajectory(size) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /***************************************************************************************************** */
 TargetTrajectories::TargetTrajectories(scalar_array_t desiredTimeTrajectory, vector_array_t desiredStateTrajectory,
-                                       vector_array_t desiredInputTrajectory)
+                                       vector_array_t desiredInputTrajectory, vector_array_t desiredEEPositionTrajectory)
     : timeTrajectory(std::move(desiredTimeTrajectory)),
       stateTrajectory(std::move(desiredStateTrajectory)),
-      inputTrajectory(std::move(desiredInputTrajectory)) {
+      inputTrajectory(std::move(desiredInputTrajectory)),
+      eePositionTrajectory(std::move(desiredEEPositionTrajectory)) {
   assert(stateTrajectory.size() == timeTrajectory.size());
   if (!inputTrajectory.empty()) {
     assert(inputTrajectory.size() == timeTrajectory.size());
+  }
+  if (!eePositionTrajectory.empty()) {
+    assert(eePositionTrajectory.size() == timeTrajectory.size());
   }
 }
 
@@ -60,6 +64,7 @@ void TargetTrajectories::clear() {
   timeTrajectory.clear();
   stateTrajectory.clear();
   inputTrajectory.clear();
+  eePositionTrajectory.clear();
 }
 
 /******************************************************************************************************/
@@ -67,7 +72,7 @@ void TargetTrajectories::clear() {
 /***************************************************************************************************** */
 bool TargetTrajectories::operator==(const TargetTrajectories& other) {
   return this->timeTrajectory == other.timeTrajectory && this->stateTrajectory == other.stateTrajectory &&
-         this->inputTrajectory == other.inputTrajectory;
+         this->inputTrajectory == other.inputTrajectory && this->eePositionTrajectory == other.eePositionTrajectory;
 }
 
 /******************************************************************************************************/
@@ -97,10 +102,24 @@ vector_t TargetTrajectories::getDesiredInput(scalar_t time) const {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /***************************************************************************************************** */
+vector_t TargetTrajectories::getDesiredEEPosition(scalar_t time) const {
+  if(this->empty()) {
+    throw std::runtime_error("[TargetTrajectories] TargetTrajectories is empty!");
+  } else if (eePositionTrajectory.empty()) {
+    throw std::runtime_error("[TargetTrajectories] TargetTrajectories does not have eePositionTrajectory!");
+  } else {
+    return LinearInterpolation::interpolate(time, timeTrajectory, eePositionTrajectory);
+  }
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/***************************************************************************************************** */
 void swap(TargetTrajectories& lh, TargetTrajectories& rh) {
   lh.timeTrajectory.swap(rh.timeTrajectory);
   lh.stateTrajectory.swap(rh.stateTrajectory);
   lh.inputTrajectory.swap(rh.inputTrajectory);
+  lh.eePositionTrajectory.swap(rh.eePositionTrajectory);
 }
 
 /******************************************************************************************************/
@@ -111,6 +130,7 @@ std::ostream& operator<<(std::ostream& out, const TargetTrajectories& targetTraj
     out << "time: " << targetTrajectories.timeTrajectory[i] << "\n";
     out << "state: [" << toDelimitedString(targetTrajectories.stateTrajectory[i]) << "]\n";
     out << "input: [" << toDelimitedString(targetTrajectories.inputTrajectory[i]) << "]\n";
+    out << "eePosition: [" << toDelimitedString(targetTrajectories.eePositionTrajectory[i]) << "]\n";
   }  // end of i loop
 
   return out;

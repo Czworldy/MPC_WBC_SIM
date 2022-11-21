@@ -1,0 +1,39 @@
+#ifndef ARMMATH_H
+#define ARMMATH_H
+
+#include "common/Types.h"
+
+
+namespace ocs2 {
+namespace legged_robot {
+namespace arm {
+
+/*!
+ * Square a number
+ */
+scalar_t square(scalar_t a) {
+  return a * a;
+}
+
+/*!
+ * Convert a quaternion to RPY.  Uses ZYX order (yaw-pitch-roll), returns
+ * angles in (yaw-pitch-roll).
+ */
+vector3_t quaternionTOrpy(quaternion_t q){
+  vector3_t rpy;
+  scalar_t as = std::min(-2. * (q.x() * q.z() - q.w() * q.y()), .99999);
+  rpy(0) =
+      std::atan2(2 * (q.x() * q.y() + q.w() * q.z()),
+                 square(q.w()) + square(q.x()) - square(q.y()) - square(q.z()));
+  rpy(1) = std::asin(as);
+  rpy(2) =
+      std::atan2(2 * (q.y() * q.z() + q.w() * q.x()),
+                 square(q.w()) - square(q.x()) - square(q.y()) + square(q.z()));
+  return rpy; // yaw, pitch, roll
+ }
+
+} // namespace arm
+} // namespace legged_robot
+} // namespace ocs2
+
+#endif

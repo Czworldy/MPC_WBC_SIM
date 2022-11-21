@@ -1,0 +1,53 @@
+<?xml version = "1.0" ?>
+
+<launch>
+    <arg name="robot_name"         default="legged_robot_with_arm"/>
+    <arg name="config_name"        default="mpc"/>
+    <arg name="target_command"     default="$(find ocs2_jypro_arm)/config/command/targetTrajectories.info"/>
+    <arg name="gait_command"       default="$(find ocs2_jypro_arm)/config/command/gait.info"/>
+    <arg name="rviz"               default="true" />
+    <arg name="multiplot"          default="false"/>
+    <arg name="description_name"   default="legged_robot_with_arm_description"/>
+    <arg name="description_file"   default="$(find X20_ARM)/urdf/X20_ARM_ocs2.urdf"/>
+
+          <!-- The task file for the mpc. -->
+    <arg name="taskFile"          default="$(find ocs2_jypro_arm)/config/mpc/task.info"/>
+    <!-- The reference related config file of the robot -->
+    <arg name="referenceFile"     default="$(find ocs2_jypro_arm)/config/command/targetTrajectories.info"/>
+    <!-- The URDF model of the robot -->
+    <arg name="urdfFile"          default="$(find X20_ARM)/urdf/X20_ARM_ocs2.urdf"/>
+    <!-- The file defining gait definition -->
+    <arg name="gaitCommandFile"   default="$(find ocs2_jypro_arm)/config/command/gait.info"/>
+    
+    <group if="$(arg rviz)">
+      <include file="$(find ocs2_jypro_arm)/launch/visualize.launch"/>
+    </group>
+
+    <include file="$(find X20_ARM)/launch/load.launch" pass_all_args="true">
+        <arg name="description_name"   value="$(arg description_name)"/>
+        <arg name="description_file"   value="$(arg description_file)"/>
+    </include>
+      
+    <group if="$(arg multiplot)">
+      <include file="$(find ocs2_jypro_arm)/launch/multiplot.launch"/>
+    </group>
+
+      <!-- make the files into global parameters -->
+    <param name="taskFile"          value="$(arg taskFile)" />
+    <param name="referenceFile"     value="$(arg referenceFile)" />
+    <param name="urdfFile"          value="$(arg urdfFile)" />
+    <param name="gaitCommandFile"   value="$(arg gaitCommandFile)"/>
+
+    <node pkg="ocs2_jypro_arm" type="legged_robot_with_arm_mpc" name="legged_robot_with_arm_mpc"
+          output="screen"  launch-prefix=""/>
+
+    <node pkg="ocs2_jypro_arm" type="legged_robot_with_arm_dummy" name="legged_robot_with_arm_dummy"
+          output="screen"  launch-prefix="gnome-terminal --"/>
+
+
+
+    <node pkg="ocs2_jypro_arm" type="legged_robot_with_arm_gait_command" name="legged_robot_with_arm_gait_command"
+          output="screen"  launch-prefix="gnome-terminal --"/>
+
+          
+</launch>

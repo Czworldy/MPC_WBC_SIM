@@ -1,0 +1,199 @@
+/******************************************************************************
+Copyright (c) 2021, Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+ * Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+******************************************************************************/
+#include <pinocchio/fwd.hpp>
+#include <string>
+
+#include <ocs2_core/Types.h>
+#include <ocs2_core/misc/LoadData.h>
+
+#include <ocs2_ros_interfaces/command/TargetTrajectoriesKeyboardPublisher.h>
+
+#include <prePlanDefinition.h>
+#include <Preplanning.h>
+
+
+using namespace ocs2;
+
+namespace {
+scalar_t targetDisplacementVelocity;
+scalar_t targetArmJointVelocity;
+scalar_t targetRotationVelocity;
+scalar_t comHeight;
+vector_t defaultJointState(18);
+vector_t defaultLegJointState(12);
+bool commandFlag(false);
+bool isPrePlanSetUp(false);
+scalar_t targetTime;
+legged_robot::arm::GripperBasePosition  targetPosition;
+legged_robot::arm::PrePlanning preplanning;
+}  // namespace
+
+Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw){
+    Eigen::Matrix<double, 3, 3> RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll <<  1., 0., 0., 
+               0., cos(roll), -sin(roll),
+               0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+                0., 1., 0.,
+              -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+             sin(yaw), cos(yaw), 0.,
+              0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+
+scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
+  const scalar_t& dx = desiredBaseDisplacement(0);
+  const scalar_t& dy = desiredBaseDisplacement(1);
+  const scalar_t& dyaw = desiredBaseDisplacement(3);
+  const scalar_t& droll = desiredBaseDisplacement(5);
+  const scalar_t& dArm = desiredBaseDisplacement.tail(6).maxCoeff();
+  const scalar_t rotationTime = std::max(std::abs(dyaw) / targetRotationVelocity, std::abs(droll) / targetRotationVelocity);
+  const scalar_t displacement = std::sqrt(dx * dx + dy * dy);
+  const scalar_t displacementTime = std::max(displacement / targetDisplacementVelocity, dArm / targetArmJointVelocity);
+  return std::max(rotationTime, displacementTime);
+}
+
+/**
+ * Converts command line to TargetTrajectories.
+ * @param [in] commandLineTarget : [deltaX, deltaY, deltaZ, deltaYaw]
+ * @param [in] observation : the current observation
+ */
+TargetTrajectories commandLineToTargetTrajectories(const vector_t& commandLineTarget, const std::string& commandKey, const SystemObservation& observation) {
+  if (commandFlag) {
+    vector_t currentPose(12);
+    currentPose.head(6) = observation.state.segment<6>(6);
+    currentPose.tail(6) = observation.state.tail(6);
+    const vector_t targetPose = [&]() {
+      vector_t target(12);
+      vector_t command_xyz_in_body_frame(3), command_xyz_in_world_frame(3);
+      command_xyz_in_body_frame << commandLineTarget(0), commandLineTarget(1), commandLineTarget(2);
+      command_xyz_in_world_frame = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3)) * command_xyz_in_body_frame;
+
+      // base p_x, p_y are relative to current state
+      target(0) = currentPose(0) + command_xyz_in_world_frame(0);
+      target(1) = currentPose(1) + command_xyz_in_world_frame(1);
+      // base z relative to the default height
+      target(2) = currentPose(2) + command_xyz_in_world_frame(2);
+      // theta_z relative to current
+      target(3) = currentPose(3) + commandLineTarget(3) * M_PI / 180.0;
+      // theta_y, theta_x
+      target(4) = 0;
+      target(5) = 0;
+      // arm joint
+      target(6)  = currentPose(6)  + commandLineTarget(4);
+      target(7)  = currentPose(7)  + commandLineTarget(5);
+      target(8)  = currentPose(8)  + commandLineTarget(6);
+      target(9)  = currentPose(9)  + commandLineTarget(7);
+      target(10) = currentPose(10) + commandLineTarget(8);
+      target(11) = currentPose(11) + commandLineTarget(9);
+
+      return target;
+    }();
+
+    // target reaching duration
+    const scalar_t targetReachingTime = observation.time + estimateTimeToTarget(targetPose - currentPose);
+
+    // desired time trajectory
+    const scalar_array_t timeTrajectory{observation.time, targetReachingTime};
+
+    // desired state trajectory
+    vector_array_t stateTrajectory(2, vector_t::Zero(observation.state.size()));
+    stateTrajectory[0] << vector_t::Zero(6), currentPose.head(6), defaultLegJointState, currentPose.tail(6);
+    stateTrajectory[1] << vector_t::Zero(6), targetPose.head(6), defaultLegJointState, targetPose.tail(6);
+
+    // desired input trajectory (just right dimensions, they are not used)
+    const vector_array_t inputTrajectory(2, vector_t::Zero(observation.input.size()));
+
+    return {timeTrajectory, stateTrajectory, inputTrajectory}; 
+  }
+
+  else {
+    if (commandKey == "A") {
+
+      if(!isPrePlanSetUp) {
+        targetPosition.base_x = 0;
+        targetPosition.base_y = 0.5;
+        targetPosition.base_z = 0;
+        targetPosition.base_yaw = 0;
+        targetPosition.base_pitch = 0;
+        targetPosition.base_roll = 0;
+
+        targetPosition.gripper_x = 0.5;
+        targetPosition.gripper_y = 0;
+        targetPosition.gripper_z = 0;
+        targetPosition.gripper_yaw = 0;
+        targetPosition.gripper_pitch = 0;
+        targetPosition.gripper_roll = 0;
+        targetTime = observation.time + 30;
+
+        preplanning.setUpMotion(observation, targetPosition, targetTime);
+
+        isPrePlanSetUp = true;
+      }
+
+      TargetTrajectories targetTrajectories;
+
+      preplanning.eelineTrajectoryPlanning(observation, defaultLegJointState, targetTrajectories);
+
+      std::cout << "[commandLineToTargetTrajectories] targetPosition.gripper_x  : " << targetPosition.gripper_x << std::endl;
+      // std::cout << "[commandLineToTargetTrajectories] yaw[1] : " << targetTrajectories.stateTrajectory[1][9] << std::endl;
+      return targetTrajectories;
+    }
+  }
+}
+
+int main(int argc, char* argv[]) {
+  const std::string robotName = "legged_robot";
+
+  ::ros::init(argc, argv, robotName + "_target_joy");
+  ::ros::NodeHandle nodeHandle;
+  std::string targetCommandFile;
+  nodeHandle.getParam("/referenceFile", targetCommandFile);
+
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_info(targetCommandFile, pt);
+  targetDisplacementVelocity = pt.get<scalar_t>("targetDisplacementVelocity");
+  targetArmJointVelocity = pt.get<scalar_t>("targetArmJointVelocity");
+  targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
+  comHeight = pt.get<scalar_t>("comHeight");
+  ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
+  defaultLegJointState = defaultJointState.head(12);
+
+  // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
+  const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14};
+  TargetTrajectoriesKeyboardPublisher targetPoseCommand(nodeHandle, robotName, relativeBaseLimit, &commandLineToTargetTrajectories);
+
+  const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
+  targetPoseCommand.publishKeyboardCommand(commandMsg);
+
+  // Successful exit
+  return 0;
+}
