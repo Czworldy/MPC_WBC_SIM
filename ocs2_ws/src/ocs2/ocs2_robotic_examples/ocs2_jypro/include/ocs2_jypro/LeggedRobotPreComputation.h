@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/constraint/EndEffectorLinearConstraint.h"
 #include "ocs2_jypro/foot_planner/SwingTrajectoryPlanner.h"
 #include "ocs2_jypro/foot_planner/FootPlacementPlanner.h"
+#include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -51,6 +52,7 @@ class LeggedRobotPreComputation : public PreComputation {
   LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                             const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                             const FootPlacementPlanner& fottPlacementPlanner,
+                            std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
                             ModelSettings settings);
   ~LeggedRobotPreComputation() override = default;
 
@@ -75,6 +77,8 @@ class LeggedRobotPreComputation : public PreComputation {
   const SwingTrajectoryPlanner* swingTrajectoryPlannerPtr_;
   const FootPlacementPlanner* footPlacnementPlannerPtr_;
   const ModelSettings settings_;
+
+  std::shared_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
   std::vector<scalar_t> swingTimeLeft_;

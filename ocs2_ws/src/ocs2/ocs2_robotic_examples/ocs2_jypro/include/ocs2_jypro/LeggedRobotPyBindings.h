@@ -100,7 +100,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
     setObservation(0.0, initState, zeroInput);
   }
 
-  LeggedRobotPyBindings(std::shared_ptr<LeggedRobotInterface> interface, const std::string& gaitFile) {
+  LeggedRobotPyBindings(std::unique_ptr<LeggedRobotInterface> interface, const std::string& gaitFile) {
 
     
     // // Robot interface
@@ -169,10 +169,16 @@ class LeggedRobotPyBindings final : public PythonInterface {
     return leggedRobotInterfacePtr_->getCentroidalModelInfo().inputDim;
   }
 
+  ocs2::scalar_t getMpcCost(){
+    const auto& performance = mpcPtr_->getSolverPtr()->getPerformanceIndeces();
+    std::cout << "MPC cost: " << performance.cost << std::endl;
+    return performance.cost;
+  }
+
   
   // hold this interface to keep it alive, beacuse some classes reference its member
   // for example, FootPlacementPlanner's centroidalModelInfo_
-  std::shared_ptr<LeggedRobotInterface> leggedRobotInterfacePtr_ = nullptr; 
+  std::unique_ptr<LeggedRobotInterface> leggedRobotInterfacePtr_ = nullptr; 
   std::shared_ptr<ocs2::legged_robot::GaitPythonInterface> gaitReceiverPtr_ = nullptr;
   std::shared_ptr<ocs2::legged_robot::TerrainPythonInterface> terrainReceiverPtr_ = nullptr;
 };

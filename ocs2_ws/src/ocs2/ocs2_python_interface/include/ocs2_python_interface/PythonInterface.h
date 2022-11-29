@@ -205,13 +205,14 @@ class PythonInterface {
   bool isProblemSolved() {
     return mpcMrtInterface_->getcontrollerIsUpdated();
   }
+  std::unique_ptr<MPC_BASE> mpcPtr_;
 
  protected:
   int stateDim_ = -1;  // -1 indicates that it is not initialized
   int inputDim_ = -1;  // -1 indicates that it is not initialized
 
  private:
-  std::unique_ptr<MPC_BASE> mpcPtr_;
+  // std::unique_ptr<MPC_BASE> mpcPtr_;
   std::unique_ptr<MPC_MRT_Interface> mpcMrtInterface_;
   ModeSchedule modeSchedule_;
 

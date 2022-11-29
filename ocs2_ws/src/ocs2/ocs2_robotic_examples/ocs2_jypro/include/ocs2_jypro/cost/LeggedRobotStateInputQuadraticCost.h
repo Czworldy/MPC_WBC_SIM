@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <ocs2_core/cost/QuadraticStateInputCost.h>
+#include "ocs2_jypro/cost/LeggedRobotQuadraticStateInputCost.h"
 
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
 
@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 
-class LeggedRobotStateInputQuadraticCost final : public QuadraticStateInputCost {
+class LeggedRobotStateInputQuadraticCost final : public LeggedRobotQuadraticStateInputCost {
  public:
   LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
                                      const SwitchedModelReferenceManager& referenceManager);
@@ -50,7 +50,7 @@ class LeggedRobotStateInputQuadraticCost final : public QuadraticStateInputCost 
   LeggedRobotStateInputQuadraticCost(const LeggedRobotStateInputQuadraticCost& rhs) = default;
 
   std::pair<vector_t, vector_t> getStateInputDeviation(scalar_t time, const vector_t& state, const vector_t& input,
-                                                       const TargetTrajectories& targetTrajectories) const override;
+                                                       const TargetTrajectories& targetTrajectories, const PreComputation&) const override;
 
   const CentroidalModelInfo info_;
   const SwitchedModelReferenceManager* referenceManagerPtr_;

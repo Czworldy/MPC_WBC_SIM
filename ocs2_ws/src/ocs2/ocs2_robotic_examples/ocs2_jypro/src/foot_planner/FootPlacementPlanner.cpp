@@ -147,7 +147,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           //TODO: test whether use swingStartTime or swingFinalTime to calculate the desired states.
           //This maybe affect the max velocity of the base motion, and the horizon of MPC.
           //Currently, we use swingFinalTime, MPC horizen = 0.5s. max velocity = 0.2m/s.
-          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
+          const vector_t desiredstate = targetTrajectories.getDesiredState((swingFinalTime + swingStartTime)/2);
 
           pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
           pinocchio::updateFramePlacements(model, data);

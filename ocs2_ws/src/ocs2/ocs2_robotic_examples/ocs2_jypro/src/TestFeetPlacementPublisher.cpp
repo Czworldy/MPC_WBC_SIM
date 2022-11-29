@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
       visualization_msgs::Marker feetPlacement;
 
 
-  std::normal_distribution<ocs2::scalar_t> n(0,0.1);
+  std::normal_distribution<ocs2::scalar_t> n(0,0.05);
 
   std::vector<vector3_t> leftPoints;
   std::vector<vector3_t> rightPoints;
