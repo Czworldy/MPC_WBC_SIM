@@ -46,11 +46,13 @@ namespace legged_robot {
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                                                      const FootPlacementPlanner& footPlacementPlanner,
+                                                     std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
       footPlacnementPlannerPtr_(&footPlacementPlanner),
+      leggedIKSolverPtr_(std::move(leggedIKSolverPtr)),
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
@@ -96,7 +98,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     scalar_t tol = 0.05;
 
     Eigen::Matrix<scalar_t, 6, 1> constraint, b;
-     b  << -point[0], point[0], -point[1], point[1], -point[2]+10., point[2]+10.;
+     b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
     constraint = b.array() + tol;
     
     return constraint;
@@ -124,13 +126,21 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     const scalar_t yVelocity = swingTrajectoryPlannerPtr_->getYvelocityConstraint(footIndex, t);
     const scalar_t zVelocity = swingTrajectoryPlannerPtr_->getZvelocityConstraint(footIndex, t);
     reference << xPosition, yPosition, zPosition, xVelocity, yVelocity, zVelocity;
-    std::cout << "ref: " <<  reference.transpose() << std::endl;
+    // std::cout << "ref: " <<  reference.transpose() << std::endl;
     return reference;
   };
+
+  // auto eeIKSolver = [&](size_t footIndex, const vector3_t& pos) {
+
+  //   leggedIKSolverPtr_->setBasePos(x.segment<6>(6));
+  //   vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
+  //   std::cout << "res: " <<  res.transpose() << std::endl;
+  // };
 
   if (request.contains(Request::Cost)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeReference_[i] = eeReferece(i);
+      // eeIKSolver(i, eeReference_[i].segment<3>(0));
     }
     
   }

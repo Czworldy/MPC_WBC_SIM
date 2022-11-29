@@ -84,6 +84,7 @@ add_library(ocs2_jypro
   src/constraint/CBFFootPlacementConstraintCppAD.cpp
   src/cost/LeggedRobotStateInputQuadraticCost.cpp
   src/cost/LeggedRobotEndEffectorCost.cpp
+  src/cost/LeggedRobotQuadraticStateInputCost.cpp
   src/initialization/LeggedRobotInitializer.cpp
   src/synchronized_module/LeggedRobotReferenceManager.cpp
   src/synchronized_module/SwitchedModelReferenceManager.cpp
@@ -94,6 +95,7 @@ add_library(ocs2_jypro
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
   src/foot_planner/FootPlacementPlanner.cpp
+  src/foot_planner/LeggedIKSolver.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitPythonInterface.cpp
