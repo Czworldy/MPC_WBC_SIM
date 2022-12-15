@@ -139,6 +139,8 @@ std::shared_ptr<GaitSchedule> LeggedRobotInterface::loadGaitSchedule(const std::
 /******************************************************************************************************/
 void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile, const std::string& urdfFile,
                                                      const std::string& referenceFile, bool verbose) {
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_info(taskFile, pt);
   // PinocchioInterface
   pinocchioInterfacePtr_.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFile, modelSettings_.jointNames))); //DQWANG:URDF MODEL -> PINOCCHIO MODEL
 
@@ -216,10 +218,15 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
-    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+    bool useFeetPlacementConstraint = false;
+    loadData::loadPtreeValue(pt, useFeetPlacementConstraint, "useFeetPlacementConstraint", true);
+    if (useFeetPlacementConstraint) {
+      problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-                                              i, barrierPenaltyConfig_)
-                                             );
+                                              i, barrierPenaltyConfig_));
+    }
+
+
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

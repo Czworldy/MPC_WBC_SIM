@@ -50,17 +50,17 @@ int main(int argc, char** argv) {
     Eigen::Matrix<ocs2::scalar_t, 3, 1> leftpoint =  {0.0, __FOOT_Y__, __FOOT_R__};
     Eigen::Matrix<ocs2::scalar_t, 3, 1> rightpoint = {0.0, -__FOOT_Y__, __FOOT_R__};
 
-    for(size_t i = 0; i < 12; ++i) {
+    for(size_t i = 0; i < 23; ++i) {
       if(i < 3){
-        leftpoint[0] = 0.25*i - __FOOT_X__;
-        rightpoint[0] = 0.25*i - __FOOT_X__;
+        leftpoint[0] = 0.3*i - __FOOT_X__;
+        rightpoint[0] = 0.3*i - __FOOT_X__;
         double random = n(e);
         leftpoint[1] += random;
         rightpoint[1] += random;
       }
       else{
-        leftpoint[0] = 0.25*(i - 3) + __FOOT_X__;
-        rightpoint[0] = 0.25*(i - 3) + __FOOT_X__;
+        leftpoint[0] = 0.3*(i - 3) + __FOOT_X__;
+        rightpoint[0] = 0.3*(i - 3) + __FOOT_X__;
         // leftpoint[2] = 0.03+0.06*(i-3);
         // rightpoint[2] = 0.03+0.06*(i-3);
         double random = n(e);

@@ -1,4 +1,3 @@
-    float lf;
 #pragma GCC optimize(2)
 // C++
 #include <stdio.h>
@@ -148,7 +147,9 @@ Eigen::Matrix<double, 3, 1> baseRPY;
 bool isReset(false);
 
 // Function
+using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
+matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
 QuaternionToRPY yawTotalCounter;
 // Main
 int main(int argc, char **argv) {
@@ -265,9 +266,20 @@ int main(int argc, char **argv) {
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
         // Omega
-        mpcInputData.v_[3] = buf.base_angular_vel_body[2];
-        mpcInputData.v_[4] = buf.base_angular_vel_body[1];
-        mpcInputData.v_[5] = buf.base_angular_vel_body[0]; 
+
+        //實物中這裡全是body是不行的
+        matrix3_t transMatrixInverse = rpyDotTOtwist(mpcInputData.q_[3], mpcInputData.q_[4], mpcInputData.q_[5]).inverse();
+        mpcInputData.v_.segment<3>(3) = transMatrixInverse * buf.base_angular_vel_world;
+        if(!isnormal(mpcInputData.v_[3])){
+            std::cout << " singluarity transMatrix!!!!!!!! \n";
+            abort();
+            mpcInputData.v_[3] = buf.base_angular_vel_world[2];
+            mpcInputData.v_[4] = buf.base_angular_vel_world[1];
+            mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
+        }
+        // mpcInputData.v_[3] = buf.base_angular_vel_world[2];
+        // mpcInputData.v_[4] = buf.base_angular_vel_world[1];
+        // mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
         // Terrain 
@@ -439,30 +451,30 @@ int main(int argc, char **argv) {
             std::cout << "MPC State:____________ " << std::endl;
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i] << std::endl;
+                std::cout << mpc_input_msg.state.value[i] << " ";
             }
-            std::cout << "Body Pose: x y z yaw pitch roll" << std::endl;
+            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i + 6] << std::endl;
+                std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
-            std::cout << "Actuated Joints:" << std::endl;
+            std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.state.value[i + 12] << std::endl;
+                std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
-            std::cout << "MPC Input:___________ " << std::endl;
+            std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.input.value[i] << std::endl;
+                std::cout << mpc_input_msg.input.value[i] << " ";
             }
-            // std::cout << "Actuated Joints: " << std::endl;  
-            // for(uint i = 0; i < numOfActuatedJoint; i++){
-            //     std::cout << mpc_input_msg.input.value[mpc_input_msg.input.value.size() - 12 + i] << std::endl;
-            // }
-            std::cout << "Gait Mode:____________" << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[0]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[1]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[2]) << std::endl;
-            std::cout << int(mpcInputData.stance_bool_[3]) << std::endl;
+            std::cout << "\nActuated Joints speed: " << std::endl;  
+            for(uint i = 0; i < numOfActuatedJoint; i++){
+                std::cout << mpc_input_msg.input.value[mpc_input_msg.input.value.size() - 12 + i] << " ";
+            }
+            std::cout << "\nGait Mode:____________" << std::endl;
+            std::cout << int(mpcInputData.stance_bool_[0]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[1]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[2]) << " ";
+            std::cout << int(mpcInputData.stance_bool_[3]) << "\n";
             std::cout << double(mpc_input_msg.mode) << std::endl;
             std::cout << "terrain Parameters: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
             std::cout << "time: " << mpc_input_msg.time << std::endl;
@@ -484,3 +496,13 @@ Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q){
     //     rpy[2] += 2*M_PI;
     return rpy;
  }
+
+matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
+    matrix3_t translation_Matrix;
+
+    translation_Matrix << 0, -sin(theta_z), cos(theta_y) * cos(theta_z),
+                          0, cos(theta_z), cos(theta_y) * sin(theta_z),
+                          1, 0 , -sin(theta_y);
+                          
+    return translation_Matrix;
+}
