@@ -273,7 +273,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         DesiredTrajectoriesForWBC();
 
         // std::cerr << "\n[dqwang: mpcPolicyCallback] DesiredTrajectoriesForWBC Done!\n";
-        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData state times: " << wbcInterfaceData.stateTime;
+        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData state times: " << wbcInterfaceData.stateTime.transpose();
 
         std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait;
         std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData secondgait: " << wbcInterfaceData.secondGait;

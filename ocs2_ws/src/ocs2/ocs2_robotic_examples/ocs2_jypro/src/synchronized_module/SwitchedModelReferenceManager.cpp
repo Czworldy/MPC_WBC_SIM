@@ -129,9 +129,9 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const auto& rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
   const auto& leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
   const auto& rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
-  // for(const auto& left_i : left) {
-  //   std::cout << "left_i:" << left_i.transpose() << "\n";
-  // }
+  for(const auto& left_i : leftFront) {
+    std::cout << "left_i:" << left_i.transpose() << "\n";
+  }
   // for(const auto& right_i : right) {
   //   std::cout << "right_i:" << right_i.transpose() << "\n";
   // }
@@ -140,7 +140,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
   
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, -0.4);
+  swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
 
 
