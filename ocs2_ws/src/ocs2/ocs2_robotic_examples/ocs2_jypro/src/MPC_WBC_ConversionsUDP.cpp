@@ -383,6 +383,7 @@ void getGeneralizedVelocities(){
         const auto& Ag = pinocchio::computeCentroidalMap(model, data, q[k]); // Computes the Centroidal Momentum Matrix
         pseudoInverse(Ag.leftCols(6), 0.0001, InverseAb[k]); // InverseAb
         Aj[k] = Ag.rightCols(numOfActuatedJoint); // Aj
+        std::cout << "data.mass[0]: " << data.mass[0] << std::endl;
         v[k].head(6) = InverseAb[k] * (mpcData.stateTrajectory_[k].head(6) * data.mass[0] - Aj[k] * v[k].tail(numOfActuatedJoint));
     }
 }
@@ -414,6 +415,7 @@ void DesiredTrajectoriesForWBC(){
       // wbcInterfaceData.baseVelocity[k][5] = v[k][3]; // yaw  
       //这里的顺序不用换了
       wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
+      // wbcInterfaceData.baseVelocity[k].tail(3).setZero(); //= (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
       
       // Contact Point Position

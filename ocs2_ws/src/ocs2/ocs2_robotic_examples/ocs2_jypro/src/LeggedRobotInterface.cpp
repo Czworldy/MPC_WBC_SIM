@@ -241,6 +241,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                      *referenceManagerPtr_->getSwingTrajectoryPlanner(), 
                                                                      *referenceManagerPtr_->getFootPlacementPlanner(),
                                                                      std::move(leggedIKSolverPtr_),
+                                                                     terrainEstDataPtr,
                                                                      modelSettings_));
 
   // Rollout

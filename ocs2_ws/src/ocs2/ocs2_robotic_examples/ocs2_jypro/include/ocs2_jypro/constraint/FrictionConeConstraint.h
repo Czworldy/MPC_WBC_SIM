@@ -103,6 +103,9 @@ class FrictionConeConstraint final : public StateInputConstraint {
 
   /** Sets the estimated terrain normal expressed in the world frame. */
   void setSurfaceNormalInWorld(const vector3_t& surfaceNormalInWorld);
+  void setSurfaceNormalInWorld(const matrix3_t& terrainRotationMatrix){
+    t_R_w = terrainRotationMatrix.transpose();
+  }
 
  private:
   struct LocalForceDerivatives {
@@ -124,7 +127,7 @@ class FrictionConeConstraint final : public StateInputConstraint {
 
   FrictionConeConstraint(const FrictionConeConstraint& other) = default;
   vector_t coneConstraint(const vector3_t& localForces) const;
-  LocalForceDerivatives computeLocalForceDerivatives(const vector3_t& forcesInBodyFrame) const;
+  LocalForceDerivatives computeLocalForceDerivatives(const vector3_t& forcesInBodyFrame, const matrix3_t& R_w2t) const;
   ConeLocalDerivatives computeConeLocalDerivatives(const vector3_t& localForces) const;
   ConeDerivatives computeConeConstraintDerivatives(const ConeLocalDerivatives& coneLocalDerivatives,
                                                    const LocalForceDerivatives& localForceDerivatives) const;

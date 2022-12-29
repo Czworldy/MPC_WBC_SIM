@@ -147,7 +147,9 @@ Eigen::Matrix<double, 3, 1> baseRPY;
 bool isReset(false);
 
 // Function
+using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
+matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
 QuaternionToRPY yawTotalCounter;
 // Main
 int main(int argc, char **argv) {
@@ -264,9 +266,18 @@ int main(int argc, char **argv) {
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
         // Omega
-        mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
-        mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
-        mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world? 
+        matrix3_t transMatrixInverse = rpyDotTOtwist(mpcInputData.q_[3], mpcInputData.q_[4], mpcInputData.q_[5]).inverse();
+
+        mpcInputData.v_.segment<3>(3) = transMatrixInverse * buf.base_angular_vel_world;
+        if(!isnormal(mpcInputData.v_[3])){
+            std::cout << " singluarity transMatrix!!! \n";
+            mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
+            mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
+            mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world? 
+        }
+        // mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
+        // mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
+        // mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world? 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
         // Terrain 
@@ -314,6 +325,7 @@ int main(int argc, char **argv) {
         const auto& Hcom = Ag * mpcInputData.v_;
         pinocchio::computeTotalMass(model, data);
         // Centroidal Momtentum
+        std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
         for(uint i = 0; i < 3; i++){
             mpc_input_msg.state.value[i] = Hcom[i] / data.mass[0]; // data.hg.linear()[i];
             mpc_input_msg.state.value[i + 3] = Hcom[i+3] / data.mass[0];  // data.hg.angular()[i];
@@ -485,3 +497,13 @@ Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q){
     //     rpy[2] += 2*M_PI;
     return rpy;
  }
+
+matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
+    matrix3_t translation_Matrix;
+
+    translation_Matrix << 0, -sin(theta_z), cos(theta_y) * cos(theta_z),
+                          0, cos(theta_z), cos(theta_y) * sin(theta_z),
+                          1, 0 , -sin(theta_y);
+                          
+    return translation_Matrix;
+}

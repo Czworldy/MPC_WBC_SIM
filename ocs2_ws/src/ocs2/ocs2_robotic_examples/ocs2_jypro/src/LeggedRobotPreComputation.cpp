@@ -47,12 +47,14 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                                                      const FootPlacementPlanner& footPlacementPlanner,
                                                      std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                                                     std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
       footPlacnementPlannerPtr_(&footPlacementPlanner),
       leggedIKSolverPtr_(std::move(leggedIKSolverPtr)),
+      terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
@@ -78,8 +80,10 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   // lambda to set config for normal velocity constraints
   auto eeNormalVelConConfig = [&](size_t footIndex) {
     EndEffectorLinearConstraint::Config config;
+    vector3_t terrainNormal = terrainEstDataPtr_->terrainQuat.cast<scalar_t>().toRotationMatrix().col(2);
     config.b = (vector_t(1) << -swingTrajectoryPlannerPtr_->getZvelocityConstraint(footIndex, t)).finished();
-    config.Av = (matrix_t(1, 3) << 0.0, 0.0, 1.0).finished();
+    // config.Av = (matrix_t(1, 3) << 0.0, 0.0, 1.0).finished();
+    config.Av = terrainNormal.transpose();
     if (!numerics::almost_eq(settings_.positionErrorGain, 0.0)) {
       config.b(0) -= settings_.positionErrorGain * swingTrajectoryPlannerPtr_->getZpositionConstraint(footIndex, t);
       config.Ax = (matrix_t(1, 3) << 0.0, 0.0, settings_.positionErrorGain).finished();
@@ -137,13 +141,13 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   //   std::cout << "res: " <<  res.transpose() << std::endl;
   // };
 
-  if (request.contains(Request::Cost)) {
-    for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
-      eeReference_[i] = eeReferece(i);
-      // eeIKSolver(i, eeReference_[i].segment<3>(0));
-    }
+  // if (request.contains(Request::Cost)) {
+  //   for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
+  //     eeReference_[i] = eeReferece(i);
+  //     // eeIKSolver(i, eeReference_[i].segment<3>(0));
+  //   }
     
-  }
+  // }
 }
 
 }  // namespace legged_robot
