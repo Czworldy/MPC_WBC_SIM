@@ -140,7 +140,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   
   // Normal swing feet trajectory
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  swingTrajectoryPtr_->update(modeSchedule, 0.03);
 
 
   // std::cout << *terrainEstDataPtr_ << std::endl;
