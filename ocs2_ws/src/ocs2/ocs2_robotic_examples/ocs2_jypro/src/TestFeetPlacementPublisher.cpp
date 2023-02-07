@@ -51,22 +51,42 @@ int main(int argc, char** argv) {
     Eigen::Matrix<ocs2::scalar_t, 3, 1> leftpoint =  {0.0, __FOOT_Y__, __FOOT_R__};
     Eigen::Matrix<ocs2::scalar_t, 3, 1> rightpoint = {0.0, -__FOOT_Y__, __FOOT_R__};
 
-    for(size_t i = 0; i < 100; ++i) {
+    for(size_t i = 0; i < 13; ++i) {
       if(i < 3){
-        leftpoint[0] = 0.25*i - 0.338;
-        rightpoint[0] = 0.25*i - 0.338;
+        leftpoint[0] = 0.2*i - 0.308;
+        rightpoint[0] = 0.2*i - 0.308;
         double random = n(e);
-        leftpoint[1] += random;
-        rightpoint[1] += random;
+        // leftpoint[1] += random;
+        // rightpoint[1] += random;
       }
-      else{
-        leftpoint[0] = 0.25*(i - 3) + 0.338;
-        rightpoint[0] = 0.25*(i - 3) + 0.338;
+      else if (i == 4 || i == 5 || i == 3){
+        leftpoint[0] = 0.25*(i - 3) + 0.308;
+        rightpoint[0] = 0.25*(i - 3) + 0.308;
         // leftpoint[2] = 0.03+0.06*(i-3);
         // rightpoint[2] = 0.03+0.06*(i-3);
         double random = n(e);
-        leftpoint[1] += random;
-        rightpoint[1] += random;
+        // leftpoint[1] += random;
+        // rightpoint[1] += random;
+      }
+      if(i > 5 && i < 10){
+        leftpoint[0] = 1 + 0.23*(i -5) - 0.05;
+        rightpoint[0] = 1 + 0.23*(i -5) - 0.05;
+        leftpoint[1] = __FOOT_Y__;
+        rightpoint[1] = -__FOOT_Y__;
+        leftpoint[2] = 0.08 * (i-5);
+        rightpoint[2] = 0.08 * (i-5);
+
+      }
+
+      if(i >= 10){
+        leftpoint[0] = 1.87 + 0.25*(i - 9);
+        rightpoint[0] = 1.87 + 0.25*(i - 9);
+
+        leftpoint[1] = __FOOT_Y__;
+        rightpoint[1] = -__FOOT_Y__;
+
+        leftpoint[2] = 0.08 * 4;
+        rightpoint[2] = 0.08 * 4;
       }
 
       if (i == 0 || i == 3)
