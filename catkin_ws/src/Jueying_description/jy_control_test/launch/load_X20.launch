@@ -10,7 +10,9 @@
   <arg name="urdf_tf_publish"    default="false" />
 
     <!-- these are the arguments you can pass this launch file, for example paused:=true -->
-  <arg name="world_name" value="$(find jueying_gazebo)/worlds/flatfloor.world"/>
+  <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/slope_X.world"/> -->
+  <arg name="world_name" value="$(find jueying_gazebo)/worlds/tong_5.world"/>
+
   <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/wall.world"/> -->
   <!-- <arg name="world_name" value="/home/dqwang/MPC_WBC_sim/catkin_ws/src/Jueying_description/X20/world/jypro_world"/> -->
   <arg name="paused" default="true"/>
@@ -76,8 +78,12 @@
   <param name="publish_frequency" type="double" value="50.0" />
   </node>
 
+    <node if="$(arg urdf_tf_publish)" pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" >
+    <param name="publish_frequency" type="double" value="50.0" />
+    </node>
+
   <arg name="rvizconfig" default="$(find jy_control_test)/rviz/load_robot.rviz" />
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/> 
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
 
 </launch>
 

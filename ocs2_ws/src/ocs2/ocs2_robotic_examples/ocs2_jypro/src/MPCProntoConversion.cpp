@@ -114,9 +114,10 @@ int main(int argc, char **argv)
 
     // URDF Model -> Pinocchio Model
     std::string urdfFilePath;
-    if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
-      std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
-    }
+    nh.getParam("/urdfFile", urdfFilePath);
+    // if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
+    //   std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
+    // }
     pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFilePath, modelSettings.jointNames)));
 
     while(nh.ok()){

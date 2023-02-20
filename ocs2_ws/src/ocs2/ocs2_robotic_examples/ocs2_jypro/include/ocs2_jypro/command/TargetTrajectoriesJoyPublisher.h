@@ -45,54 +45,53 @@ namespace ocs2 {
  * This class lets the user to insert robot command form command line.
  */
 class TargetTrajectoriesJoyPublisher final {
- public:
-  using CommandLineToTargetTrajectories =
+  public:
+    using CommandLineToTargetTrajectories =
       std::function<TargetTrajectories(const vector_t& commadLineTarget, const SystemObservation& observation)>;
 
-  /**
-   * Constructor
-   *
-   * @param [in] nodeHandle: ROS node handle.
-   * @param [in] topicPrefix: The TargetTrajectories will be published on "topicPrefix_mpc_target" topic. Moreover, the latest
-   * observation is be expected on "topicPrefix_mpc_observation" topic.
-   * @param [in] targetCommandLimits: The limits of the loaded command from command-line (for safety purposes).
-   * @param [in] commandLineToTargetTrajectoriesFun: A function which transforms the command line input to TargetTrajectories.
-   */
-  TargetTrajectoriesJoyPublisher(::ros::NodeHandle& nodeHandle, const std::string& topicPrefix,
-                                      const scalar_array_t& targetCommandLimits, const ocs2::scalar_t joyGainLinearFactors,
-                                      const ocs2::scalar_t joyGainAngelerFactors, CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun);
+    /**
+     * Constructor
+     *
+     * @param [in] nodeHandle: ROS node handle.
+     * @param [in] topicPrefix: The TargetTrajectories will be published on "topicPrefix_mpc_target" topic. Moreover, the latest
+     * observation is be expected on "topicPrefix_mpc_observation" topic.
+     * @param [in] targetCommandLimits: The limits of the loaded command from command-line (for safety purposes).
+     * @param [in] commandLineToTargetTrajectoriesFun: A function which transforms the command line input to TargetTrajectories.
+     */
+    TargetTrajectoriesJoyPublisher(::ros::NodeHandle &nodeHandle, const std::string &topicPrefix,
+                                   const scalar_array_t &targetCommandLimits, const ocs2::scalar_t joyGainLinearFactors,
+                                   const ocs2::scalar_t joyGainAngelerFactors, CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun);
 
-  /** Gets the command vector size. */
-  size_t targetCommandSize() const { return targetCommandLimits_.size(); }
+    /** Gets the command vector size. */
+    size_t targetCommandSize() const { return targetCommandLimits_.size(); }
 
-  /**
-   * Publishes command line input. If the input command is shorter than the expected command
-   * size (targetCommandSize), the method will set the rest of the command to zero.
-   *
-   * @param [in] commadMsg: Message to be displayed on screen.
-   */
-  void publishKeyboardCommand(const std::string& commadMsg = "Enter command, separated by space");
+    /**
+     * Publishes command line input. If the input command is shorter than the expected command
+     * size (targetCommandSize), the method will set the rest of the command to zero.
+     *
+     * @param [in] commadMsg: Message to be displayed on screen.
+     */
+    void publishKeyboardCommand(const std::string &commadMsg = "Enter command, separated by space");
 
- private:
+  private:
+    ocs2::scalar_t filter(ocs2::scalar_t &input, ocs2::scalar_t &lastInput, ocs2::scalar_t alpha);
 
-  ocs2::scalar_t filter(ocs2::scalar_t& input, ocs2::scalar_t& lastInput, ocs2::scalar_t alpha);
+    const vector_t targetCommandLimits_;
+    CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun_;
 
-  const vector_t targetCommandLimits_;
-  CommandLineToTargetTrajectories commandLineToTargetTrajectoriesFun_;
+    std::unique_ptr<TargetTrajectoriesRosPublisher> targetTrajectoriesPublisherPtr_;
 
-  std::unique_ptr<TargetTrajectoriesRosPublisher> targetTrajectoriesPublisherPtr_;
+    ::ros::Subscriber observationSubscriber_, joySubscriber_;
+    mutable std::mutex latestObservationMutex_, latestJoyMsgsMutex_;
+    SystemObservation latestObservation_;
 
-  ::ros::Subscriber observationSubscriber_, joySubscriber_;
-  mutable std::mutex latestObservationMutex_, latestJoyMsgsMutex_;
-  SystemObservation latestObservation_;
+    scalar_t deltaX, deltaY, deltaYaw;
+    scalar_t lastdeltaX = 0, lastdeltaY = 0, lastdeltaYaw = 0;
 
-  scalar_t deltaX, deltaY, deltaYaw;
-  scalar_t lastdeltaX = 0, lastdeltaY = 0, lastdeltaYaw = 0;
+    const ocs2::scalar_t joyGainLinearFactors_, joyGainAngularFactors_;
 
-  const ocs2::scalar_t joyGainLinearFactors_, joyGainAngularFactors_;
-
-  bool isMpcPolicyCome = false;
-  bool isJoyMsgsCome = false;
+    bool isMpcPolicyCome = false;
+    bool isJoyMsgsCome = false;
 };
 
-}  // namespace ocs2
+} // namespace ocs2

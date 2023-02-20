@@ -37,7 +37,7 @@ namespace robotic_assets {
 
 /** Gets the path to the package source directory. */
 inline std::string getPath() {
-  return "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_assets";
+  return "/home/yjy/nuclear_pro/x20_sim_220909/ocs2_ws/src/ocs2/ocs2_robotic_assets";
 }
 
 }  // namespace robotic_assets

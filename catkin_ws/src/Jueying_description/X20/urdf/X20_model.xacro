@@ -68,7 +68,7 @@
     <child link="imu_link"/>
   </joint>
 
-  <link name="velodyne">
+  <!-- <link name="velodyne">
     <inertial>
       <mass value="0.0000001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -92,8 +92,13 @@
     <origin xyz="0.4 0 0.2"/>
     <parent link="BASE"/>
     <child link="velodyne"/>
-  </joint>
+  </joint> -->
 
+ <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
+  <xacro:HDL-32E parent="BASE" name="velodyne2" topic="/velodyne_points_32"  hz="10" samples="220" >
+    <origin xyz="0.35 0 0.6" rpy="0 0.5 0" />
+  </xacro:HDL-32E>
+  
     <link name="camera_link">
     <inertial>
       <mass value="0.0000001"/>
@@ -118,7 +123,7 @@
   </link>
   <joint name="camera_to_velodyne" type="fixed">
     <origin xyz="0.013274 -0.035092 0.0245" rpy="0 0 0" />
-    <parent link="velodyne" />
+    <parent link="velodyne2" />
     <child link="camera_link" />
     <axis xyz="0 0 1" />
   </joint>
@@ -655,7 +660,7 @@
     </sensor>
   </gazebo>
   <!-- Gazebo requires the velodyne_gazebo_plugins package -->
-  <gazebo reference="velodyne">
+  <!-- <gazebo reference="velodyne">
     <sensor name="velodyne-VLP16" type="ray">
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
@@ -694,7 +699,7 @@
         <gaussianNoise>0.008</gaussianNoise>
       </plugin>
     </sensor>
-  </gazebo>
+  </gazebo> -->
 
   <!-- Joint 'implicitSpringDamper' setup, according to official website's suggestion-->
   <xacro:macro name="joint_setup_block" params="joint_name">

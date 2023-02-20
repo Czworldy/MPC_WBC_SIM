@@ -107,8 +107,9 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation, const P
     pinocchio::updateFramePlacements(model, data);
 
     const auto timeStamp = ros::Time::now();
-    // publishObservation(timeStamp, observation); //TWILIGHT DEBUG
-    // publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
+    publishObservation(timeStamp, observation); //TWILIGHT DEBUG
+    publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
+    std:: cout << "LeggedRobotVisualizer::publishOptimizedStateTrajectory" << std::endl;
     publishOptimizedStateTrajectory(timeStamp, primalSolution.timeTrajectory_, primalSolution.stateTrajectory_,
                                     primalSolution.modeSchedule_);
     lastTime_ = observation.time;
@@ -133,7 +134,7 @@ void LeggedRobotVisualizer::publishObservation(ros::Time timeStamp, const System
   // Publish
   // publishJointTransforms(timeStamp, qJoints);
   // publishBaseTransform(timeStamp, basePose);
-  // publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
+  publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
 }
 
 /******************************************************************************************************/
@@ -156,7 +157,7 @@ void LeggedRobotVisualizer::publishBaseTransform(ros::Time timeStamp, const vect
   if (robotStatePublisherPtr_ != nullptr) {
     geometry_msgs::TransformStamped baseToWorldTransform;
     baseToWorldTransform.header = getHeaderMsg(frameId_, timeStamp);
-    baseToWorldTransform.child_frame_id = "base";
+    baseToWorldTransform.child_frame_id = "BASE";
 
     const Eigen::Quaternion<scalar_t> q_world_base = getQuaternionFromEulerAnglesZyx(vector3_t(basePose.tail<3>()));
     baseToWorldTransform.transform.rotation = getOrientationMsg(q_world_base);
@@ -362,7 +363,7 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
   static bool firstTime = true;
   static visualization_msgs::Marker feetPlacement;
   if(firstTime){
-  
+
   feetPlacement.type = visualization_msgs::Marker::SPHERE_LIST;
   feetPlacement.scale.x = footMarkerDiameter_;
   feetPlacement.scale.y = footMarkerDiameter_;
