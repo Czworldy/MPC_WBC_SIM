@@ -22,7 +22,6 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: ""
@@ -242,7 +241,6 @@ Visualization Manager:
       Namespaces:
         CoM Trajectory: true
         EE Trajectories: true
-        Future footholds: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -299,7 +297,7 @@ Visualization Manager:
           Marker Topic: /legged_robot/desiredBaseTrajectory
           Name: Target Base Trajectory
           Namespaces:
-            "": true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
