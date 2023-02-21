@@ -1,0 +1,133 @@
+/******************************************************************************
+Copyright (c) 2020, Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+******************************************************************************/
+
+#include "ocs2_jypro/command/TargetTrajectoriesPublisher.h"
+
+#include <ocs2_core/misc/CommandLine.h>
+#include <ocs2_core/misc/Display.h>
+#include <ocs2_msgs/mpc_observation.h>
+#include <ocs2_msgs/mpc_target_trajectories.h>
+#include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
+
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
+namespace ocs2 {
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &nodeHandle, const std::string &topicPrefix,
+                                                               const vector_t &defaultJointState)
+    : defaultJointState_(defaultJointState){
+    // observation subscriber
+    auto observationCallback = [this](const ocs2_msgs::mpc_observation::ConstPtr &msg) {
+        std::lock_guard<std::mutex> lock(latestObservationMutex_);
+        latestObservation_ = ros_msg_conversions::readObservationMsg(*msg);
+        this->isMpcPolicyCome = true;
+    };
+    observationSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_observation>(topicPrefix + "_mpc_observation", 1, observationCallback);
+
+    auto trajCallback = [this](const ocs2_msgs::mpc_target_trajectories::ConstPtr &msg) {
+        std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+        receivedTargetTrajectories_ = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
+        this->isJoyMsgsCome = true;
+    };
+    joySubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_target_trajectories>("/traj", 1, trajCallback);
+
+    // Trajectories publisher
+    targetTrajectoriesPublisherPtr_.reset(new TargetTrajectoriesRosPublisher(nodeHandle, topicPrefix));
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &commadMsg) {
+    ::ros::Rate rate(10);
+    while (ros::ok() && ros::master::check()) {
+        ::ros::spinOnce();
+        if (isJoyMsgsCome && isMpcPolicyCome) {
+            std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+
+            std::cout << "The following command is received: [" << receivedTargetTrajectories_ << "]\n\n";
+
+            SystemObservation observation;
+            {
+                std::lock_guard<std::mutex> lock(latestObservationMutex_);
+                observation = latestObservation_;
+            }
+            const auto targetTrajectories = getTargetTrajectories(observation);
+
+            // publish TargetTrajectories
+            targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
+            this->isJoyMsgsCome = false;
+        }
+        rate.sleep();
+    } // end of while loop
+}
+
+ocs2::scalar_t TargetTrajectoriesPublisher::filter(ocs2::scalar_t &input, ocs2::scalar_t &lastOutput, ocs2::scalar_t alpha) {
+    lastOutput = alpha * input + (1 - alpha) * lastOutput;
+    input = lastOutput;
+    return lastOutput;
+}
+
+TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const SystemObservation& observation) {
+    // get current pose
+    const vector_t currentPose = observation.state.segment<6>(6);
+    const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
+
+    Eigen::Matrix3d TransformMat;
+    TransformMat << cos(currentYaw), -sin(currentYaw), currentX,
+                    sin(currentYaw),  cos(currentYaw), currentY,
+                    0, 0, 1;
+    scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
+    vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    int pointCounter = 0;
+
+    for(const auto& state : receivedTargetTrajectories_.stateTrajectory){
+      Eigen::Vector3d pose_xy;
+      pose_xy << state(0), state(1), 1;
+      const auto poseInOdomFrame = TransformMat * pose_xy;
+      auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
+                                        currentYaw + state(2), currentPose(4), currentPose(5)).finished();
+      stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
+      pointCounter++;
+    }
+
+    return {timeTrajectory, stateTrajectory, inputTrajectory};
+}
+            
+
+} // namespace ocs2
