@@ -139,7 +139,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
 
   if (request.contains(Request::Cost)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
-      // eeReference_[i] = eeReferece(i);
+      eeReference_[i] = eeReferece(i);
       // eeIKSolver(i, eeReference_[i].segment<3>(0));
     }
     
