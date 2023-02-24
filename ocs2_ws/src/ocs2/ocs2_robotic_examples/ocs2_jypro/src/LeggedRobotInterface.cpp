@@ -214,17 +214,17 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                   modelSettings_.recompileLibrariesCppAd, modelSettings_.verboseCppAd));
     
 
-    // problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost", 
-    //                           getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
-    //                           modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
+    problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost", 
+                              getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
+                              modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
     // std::cout << "add done!\n";
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
-    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-    //                                           i, barrierPenaltyConfig_)
-    //                                          );
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig_)
+                                             );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr, 
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

@@ -104,6 +104,7 @@ add_library(ocs2_jypro
   src/LeggedRobotInterface.cpp
   src/LeggedRobotPreComputation.cpp
   src/visualization/LeggedRobotVisualizer.cpp
+  src/visualization/FootPlacementVisualizer.cpp
 
   src/BodyPositionEstimator/BodyPositionEstimator.cpp
   src/BodyPositionEstimator/SystemParameter.cpp

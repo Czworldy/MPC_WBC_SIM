@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
 
 #include <ocs2_sqp/MultipleShootingMpc.h>
+#include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 
 int main(int argc, char** argv) {
   const std::string robotName = "legged_robot";
@@ -67,7 +68,9 @@ int main(int argc, char** argv) {
   // Terrain receiver
   auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainReceiver>(nodeHandle, 
       interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
-
+  
+  auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
+  
   // MPC
   // ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
   //                   interface.getInitializer());
@@ -76,6 +79,7 @@ int main(int argc, char** argv) {
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
+  mpc.getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
 
   // Launch MPC ROS node
   ocs2::MPC_ROS_Interface mpcNode(mpc, robotName);
