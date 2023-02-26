@@ -37,13 +37,15 @@ namespace legged_robot {
 /******************************************************************************************************/
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
-                                                             std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr,
-                                                             std::shared_ptr<TerrainEstData> terrainEstDataPtr)
+                                                             std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
+                                                             std::shared_ptr<TerrainEstData> terrainEstDataPtr,
+                                                             std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
-      terrainEstDataPtr_(std::move(terrainEstDataPtr)) {}
+      terrainEstDataPtr_(std::move(terrainEstDataPtr)),
+      mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -112,6 +114,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     }
   }
 
+  
+
   //   std::cout << "######## modify target state ########\n"; 
   // }
 
@@ -134,9 +138,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // for(const auto& right_i : right) {
   //   std::cout << "right_i:" << right_i.transpose() << "\n";
   // }
-  footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
+  // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
+  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_);
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+
+  
   
   // Normal swing feet trajectory
   swingTrajectoryPtr_->update(modeSchedule, 0.0);

@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/ModelSettings.h"
 #include "ocs2_jypro/initialization/LeggedRobotInitializer.h"
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
+#include "ocs2_jypro/synchronized_module/LegEndEffectorsPolygonReceiver.h"
 
 /**
  * LeggedRobotInterface class

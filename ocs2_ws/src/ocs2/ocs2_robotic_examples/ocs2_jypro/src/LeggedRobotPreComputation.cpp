@@ -45,14 +45,14 @@ namespace legged_robot {
 /******************************************************************************************************/
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
-                                                     const FootPlacementPlanner& footPlacementPlanner,
+                                                     const FootConstraintsPlanner& footConstraintsPlanner,
                                                      std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
                                                      std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
-      footPlacnementPlannerPtr_(&footPlacementPlanner),
+      footConstraintsPlannerPtr_(&footConstraintsPlanner),
       leggedIKSolverPtr_(std::move(leggedIKSolverPtr)),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       settings_(std::move(settings)) {
@@ -96,23 +96,27 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return swingTrajectoryPlannerPtr_->getSwingTimeLeft(footIndex, t);
   };
 
-  auto footPlacementPoint = [&](size_t footIndex) {
-    vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
-    // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
-    scalar_t tol = 0.03;
+  // auto footPlacementPoint = [&](size_t footIndex) {
+  //   vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
+  //   // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
+  //   scalar_t tol = 0.03;
 
-    Eigen::Matrix<scalar_t, 6, 1> constraint, b;
-     b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
-    constraint = b.array() + tol;
+  //   Eigen::Matrix<scalar_t, 6, 1> constraint, b;
+  //    b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
+  //   constraint = b.array() + tol;
     
-    return constraint;
+  //   return constraint;
+  // };
+  auto footPlacementPolygonConstraint = [&](size_t footIndex) {
+    return footConstraintsPlannerPtr_->getFootPolygonConstraint(footIndex, t);
+    // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
   };
 
   if (request.contains(Request::Constraint)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
       swingTimeLeft_[i] = swingTimeLeftLambda(i);
-      footPlacementConstraints_[i] = footPlacementPoint(i);
+      footPlacementConstraints_[i] = footPlacementPolygonConstraint(i);
       // std::cout << "preCompute times: " << t << "\t" << footPlacementConstraints_[i].transpose() << std::endl;
 
     }

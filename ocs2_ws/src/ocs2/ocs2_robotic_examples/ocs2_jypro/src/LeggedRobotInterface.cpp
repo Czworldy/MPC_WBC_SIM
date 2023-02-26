@@ -158,15 +158,16 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   CentroidalModelPinocchioMapping pinocchioMapping(getCentroidalModelInfo());
   PinocchioEndEffectorKinematics endEffectorKinematics(*pinocchioInterfacePtr_, pinocchioMapping,
                                                        modelSettings().contactNames3DoF);
-  std::unique_ptr<FootPlacementPlanner> footPlacementPlanner(
-      new FootPlacementPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
+  std::unique_ptr<FootConstraintsPlanner> footPlacementPlanner(
+      new FootConstraintsPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
   
   std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_(new legged::LeggedIKSolver(*pinocchioInterfacePtr_, getCentroidalModelInfo(), endEffectorKinematics));
   
   std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
+  auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
   // Mode schedule manager
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner), 
-                                                                            std::move(footPlacementPlanner), terrainEstDataPtr);
+                                                                            std::move(footPlacementPlanner), terrainEstDataPtr, mpcPolygonArrayPtr);
 
   // Optimal control problem
   problemPtr_.reset(new OptimalControlProblem);
