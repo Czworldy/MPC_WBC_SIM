@@ -7,11 +7,17 @@ LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle n
                                                                std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr, 
                                                                const std::string& robotName) :
   mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr))  {
-  mpcPolygonMsgSubscriber_ = nodeHandle.subscribe(robotName + "_mpc_region", 1, 
+  mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe(robotName + "_mpc_region_lf", 1, 
+        &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
+  mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe(robotName + "_mpc_region_rf", 1, 
+        &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
+  mpcPolygonMsgSubscriber_[2] = nodeHandle.subscribe(robotName + "_mpc_region_lh", 1, 
+        &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
+  mpcPolygonMsgSubscriber_[3] = nodeHandle.subscribe(robotName + "_mpc_region_rh", 1, 
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
 }
 
-void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Region::ConstPtr& msg){
+void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::RegionForFoot::ConstPtr& msg){
   std::lock_guard<std::mutex> lock(receivedPolygonMsgMutex_);
   // legEndeffectorPolygonReceived_->clear();
   // for (int i = 0; i < msg->polygons.size(); i++){
@@ -19,12 +25,12 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   // }
   const int foot_id = msg->foot_id;
   receivedFeetPoints_[foot_id].clear();
-  receivedFeetPoints_[foot_id].reserve(msg->polygons.size());
-  for (int i = 0; i < msg->polygons.size(); i++){
+  receivedFeetPoints_[foot_id].reserve(msg->region.size());
+  for (int i = 0; i < msg->region.size(); i++){
     std::vector<Eigen::Vector3d> polygon;
-    polygon.reserve(msg->polygons[i].points.size());
-    for (int j = 0; j < msg->polygons[i].points.size(); j++){
-      polygon.push_back(Eigen::Vector3d(msg->polygons[i].points[j].x, msg->polygons[i].points[j].y, msg->polygons[i].points[j].z));
+    polygon.reserve(msg->region[i].boundaryPoint.size());
+    for (int j = 0; j < msg->region[i].boundaryPoint.size(); j++){
+      polygon.push_back(Eigen::Vector3d(msg->region[i].boundaryPoint[j].x, msg->region[i].boundaryPoint[j].y, msg->region[i].boundaryPoint[j].z));
     }
     receivedFeetPoints_[foot_id].push_back(polygon);
   }

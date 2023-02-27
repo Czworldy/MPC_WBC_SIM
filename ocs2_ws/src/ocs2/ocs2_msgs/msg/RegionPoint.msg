@@ -1,1 +1,0 @@
-geometry_msgs/Point[] points #区域的边界点（依次连接）# point:x y z 

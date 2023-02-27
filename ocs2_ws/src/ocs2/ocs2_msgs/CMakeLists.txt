@@ -26,9 +26,8 @@ add_message_files(
     mpc_target_feetplacement.msg
     FootholdRegion.msg
     FootholdRegionGroup.msg
-    RegionPoint.msg
-    Region.msg
-    
+    RegionForFoot.msg
+    RegionSingle.msg
 )
 
 add_service_files(

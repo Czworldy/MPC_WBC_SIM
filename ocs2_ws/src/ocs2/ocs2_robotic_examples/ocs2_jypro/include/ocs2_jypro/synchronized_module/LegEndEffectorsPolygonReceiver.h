@@ -2,7 +2,7 @@
 #include "ocs2_jypro/constraint/Polygon.hpp"
 #include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
 #include "ocs2_jypro/common/Types.h"
-#include <ocs2_msgs/Region.h>
+#include <ocs2_msgs/RegionForFoot.h>
 
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
 
@@ -26,7 +26,7 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
     void postSolverRun(const PrimalSolution& primalSolution) override{};
   private:
     /* data */
-    ros::Subscriber mpcPolygonMsgSubscriber_;
+    feet_array_t<ros::Subscriber> mpcPolygonMsgSubscriber_;
     std::mutex receivedPolygonMsgMutex_;
     std::atomic_bool polygonsUpdated_;
 
@@ -41,7 +41,7 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
     // feet_array_t<std::vector<ocs2::Polygon>>> transformedPolygons_;
 
 
-    void mpcPolygonMsgCallback(const ocs2_msgs::Region::ConstPtr& msg);
+    void mpcPolygonMsgCallback(const ocs2_msgs::RegionForFoot::ConstPtr& msg);
     // 
 
 };

@@ -40,13 +40,6 @@ class FootConstraintsPlanner{
    const feet_array_t<scalar_array_t>& gettouchDownHeightSequence() const{ return touchDownHeightSequence_; }
    const feet_array_t<scalar_array_t>& getfeetPlacementEvents() const{ return feetPlacementEvents_; }
    const feet_array_t<std::vector<vector3_t>>& getfeetPlacement() const{ return feetPlacement_; }
-   void setTargetPoints(const std::vector<vector3_t>& leftFrontPoints, const std::vector<vector3_t>& rightFrontPoints,
-                  const std::vector<vector3_t>& leftBackPoints, const std::vector<vector3_t>& rightBackPoints){
-    leftFrontPoints_  = leftFrontPoints ;  
-    rightFrontPoints_ = rightFrontPoints; 
-    leftBackPoints_   = leftBackPoints  ;
-    rightBackPoints_  = rightBackPoints ;
-   }
 
    void setTargetPolygonVerteices(const feet_polygon_array_t& legEndEffectorPolygon ){
     legEndEffectorPolygon_ = legEndEffectorPolygon;
@@ -87,7 +80,7 @@ class FootConstraintsPlanner{
     void checkThatIndicesAreValid(int leg, int index, int startIndex, 
                                         int finalIndex, const std::vector<size_t>& phaseIDsStock);
 
-   vector3_t choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position); 
+  //  vector3_t choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position); 
    std::pair<int, vector3_t> choiceCloestPolygonVertex(const size_t& footNum, const vector3_t& position);
     
    PinocchioInterface& pinocchioInterface_;
@@ -95,10 +88,10 @@ class FootConstraintsPlanner{
    const CentroidalModelInfo& centroidalModelInfo_;
 
    const size_t numFeet_; 
-   std::vector<vector3_t> leftFrontPoints_;
-   std::vector<vector3_t> rightFrontPoints_;
-   std::vector<vector3_t> leftBackPoints_;
-   std::vector<vector3_t> rightBackPoints_;
+  //  std::vector<vector3_t> leftFrontPoints_;
+  //  std::vector<vector3_t> rightFrontPoints_;
+  //  std::vector<vector3_t> leftBackPoints_;
+  //  std::vector<vector3_t> rightBackPoints_;
 
    feet_polygon_array_t legEndEffectorPolygon_;
 
