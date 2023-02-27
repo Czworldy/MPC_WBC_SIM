@@ -28,7 +28,7 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
     /* data */
     feet_array_t<ros::Subscriber> mpcPolygonMsgSubscriber_;
     std::mutex receivedPolygonMsgMutex_;
-    std::atomic_bool polygonsUpdated_;
+    bool polygonsUpdated_ = false;
 
 
     // std::shared_ptr<std::vector<ocs2::Polygon>> legEndeffectorPolygonReceived_;

@@ -44,7 +44,7 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
                             const ReferenceManagerInterface& referenceManager) {
   if(polygonsUpdated_){
     std::lock_guard<std::mutex> lock(receivedPolygonMsgMutex_);
-    std::cout << "polygonsUpdated_";
+    std::cout << "polygonsUpdated_\n";
     // point transformed to the world frame. 4x4 tf matrix.
     const auto& currentPose = initState.segment<6>(6);
     matrix_t tfMatrix = matrix_t::Identity(4,4);

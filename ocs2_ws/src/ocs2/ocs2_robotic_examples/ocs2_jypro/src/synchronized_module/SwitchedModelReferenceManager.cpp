@@ -139,6 +139,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //   std::cout << "right_i:" << right_i.transpose() << "\n";
   // }
   // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
+  // std::cout << "mpcPolygonArrayPtr_[0][0][0]: " << (*mpcPolygonArrayPtr_)[0][0][0].transpose() << std::endl;
+
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_);
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);

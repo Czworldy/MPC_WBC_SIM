@@ -168,10 +168,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
   initPolygon.resize(1);
   initPolygon[0].reserve(4);
-  initPolygon[0].push_back(vector3_t(10, 10, 0));
-  initPolygon[0].push_back(vector3_t(-10, 10, 0));
-  initPolygon[0].push_back(vector3_t(-10, -10, 0));
-  initPolygon[0].push_back(vector3_t(10, -10, 0));
+  initPolygon[0].push_back(vector3_t(10, 0, 0));
+  initPolygon[0].push_back(vector3_t(0, 10, 0));
+  initPolygon[0].push_back(vector3_t(-10, 0, 0));
+  initPolygon[0].push_back(vector3_t(0, -10, 0));
   (*mpcPolygonArrayPtr)[0] = initPolygon;
   (*mpcPolygonArrayPtr)[1] = initPolygon;
   (*mpcPolygonArrayPtr)[2] = initPolygon;
