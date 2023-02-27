@@ -3,17 +3,17 @@
 namespace ocs2 {
 namespace legged_robot {
 
-LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle, 
-                                                               std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr, 
+LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle,
+                                                               std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr,
                                                                const std::string& robotName) :
   mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr))  {
-  mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe(robotName + "_mpc_region_lf", 1, 
+  mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe("foothold_planner/RegionForFoot_LF", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
-  mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe(robotName + "_mpc_region_rf", 1, 
+  mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe("foothold_planner/RegionForFoot_RF", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
-  mpcPolygonMsgSubscriber_[2] = nodeHandle.subscribe(robotName + "_mpc_region_lh", 1, 
+  mpcPolygonMsgSubscriber_[2] = nodeHandle.subscribe("foothold_planner/RegionForFoot_LH", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
-  mpcPolygonMsgSubscriber_[3] = nodeHandle.subscribe(robotName + "_mpc_region_rh", 1, 
+  mpcPolygonMsgSubscriber_[3] = nodeHandle.subscribe("foothold_planner/RegionForFoot_RH", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
 }
 
@@ -24,15 +24,17 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   //   legEndeffectorPolygonReceived_->push_back(ocs2::Polygon(msg->polygons[i]));
   // }
   const int foot_id = msg->foot_id;
+  // std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
   receivedFeetPoints_[foot_id].clear();
   receivedFeetPoints_[foot_id].reserve(msg->region.size());
-  for (int i = 0; i < msg->region.size(); i++){
-    std::vector<Eigen::Vector3d> polygon;
-    polygon.reserve(msg->region[i].boundaryPoint.size());
-    for (int j = 0; j < msg->region[i].boundaryPoint.size(); j++){
-      polygon.push_back(Eigen::Vector3d(msg->region[i].boundaryPoint[j].x, msg->region[i].boundaryPoint[j].y, msg->region[i].boundaryPoint[j].z));
-    }
-    receivedFeetPoints_[foot_id].push_back(polygon);
+  // std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
+  for (int i = 0; i < msg->region.size(); i++) {
+      std::vector<Eigen::Vector3d> polygon;
+      polygon.reserve(msg->region[i].boundaryPoint.size());
+      for (int j = 0; j < msg->region[i].boundaryPoint.size(); j++) {
+          polygon.push_back(Eigen::Vector3d(msg->region[i].boundaryPoint[j].x, msg->region[i].boundaryPoint[j].y, msg->region[i].boundaryPoint[j].z));
+      }
+      receivedFeetPoints_[foot_id].push_back(polygon);
   }
 
   polygonsUpdated_ = true;
@@ -42,6 +44,7 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
                             const ReferenceManagerInterface& referenceManager) {
   if(polygonsUpdated_){
     std::lock_guard<std::mutex> lock(receivedPolygonMsgMutex_);
+    std::cout << "polygonsUpdated_";
     // point transformed to the world frame. 4x4 tf matrix.
     const auto& currentPose = initState.segment<6>(6);
     matrix_t tfMatrix = matrix_t::Identity(4,4);
@@ -76,7 +79,7 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
       ++leg;
     }
 
-    *mpcTransformedPolygonsPtr_ = std::move(transformedFeetPoints_);
+    *mpcTransformedPolygonsPtr_ = transformedFeetPoints_;
 
     // save the transformed points to let footplacementplanner chose.
     // create polygon using transformed points.
@@ -89,7 +92,7 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
 }
 
 LegEndEffectorsPolygonReceiver::~LegEndEffectorsPolygonReceiver(){}
-  
+
 } // namespace legged_robot
 } // namespace ocs2
 

@@ -101,7 +101,6 @@ void TargetTrajectoriesJoyPublisher::publishKeyboardCommand(const std::string &c
             std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
             const Eigen::Matrix<ocs2::scalar_t, 4, 1> commandLineInput = {deltaX, deltaY, 0, deltaYaw};
 
-
             // display
             std::cout << "The following command is published: [" << toDelimitedString(commandLineInput) << "]\n\n";
 

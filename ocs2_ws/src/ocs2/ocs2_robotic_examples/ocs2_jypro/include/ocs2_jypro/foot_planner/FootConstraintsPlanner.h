@@ -25,12 +25,12 @@ class FootConstraintsPlanner{
 
 
 
-   FootConstraintsPlanner(PinocchioInterface& pinocchioInterface, 
+   FootConstraintsPlanner(PinocchioInterface& pinocchioInterface,
                          const PinocchioEndEffectorKinematics& endEffectorKinematics,
                          const CentroidalModelInfo& centroidalModelInfo,
                          size_t numFeet);
 
-   void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories, 
+   void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories,
                     scalar_t initTime, const vector_t& initState);
 
    vector3_t getFootPlacementNominal(size_t leg,  scalar_t time) const;
@@ -42,6 +42,7 @@ class FootConstraintsPlanner{
    const feet_array_t<std::vector<vector3_t>>& getfeetPlacement() const{ return feetPlacement_; }
 
    void setTargetPolygonVerteices(const feet_polygon_array_t& legEndEffectorPolygon ){
+    // std::cout << "legEndEffectorPolygon set size:" << legEndEffectorPolygon.size() << "\n";
     legEndEffectorPolygon_ = legEndEffectorPolygon;
    }
 
@@ -77,17 +78,17 @@ class FootConstraintsPlanner{
    * @return { startTimeIndexStock, finalTimeIndexStock}
    */
     static std::pair<std::vector<int>, std::vector<int>> updateFootSchedule(const std::vector<bool>& contactFlagStock);
-    void checkThatIndicesAreValid(int leg, int index, int startIndex, 
+    void checkThatIndicesAreValid(int leg, int index, int startIndex,
                                         int finalIndex, const std::vector<size_t>& phaseIDsStock);
 
-  //  vector3_t choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position); 
+  //  vector3_t choiceCloestFootPlacement(const size_t& footNum, const vector3_t& position);
    std::pair<int, vector3_t> choiceCloestPolygonVertex(const size_t& footNum, const vector3_t& position);
-    
+
    PinocchioInterface& pinocchioInterface_;
    std::unique_ptr<PinocchioEndEffectorKinematics> endEffectorKinematicsPtr_;
    const CentroidalModelInfo& centroidalModelInfo_;
 
-   const size_t numFeet_; 
+   const size_t numFeet_;
   //  std::vector<vector3_t> leftFrontPoints_;
   //  std::vector<vector3_t> rightFrontPoints_;
   //  std::vector<vector3_t> leftBackPoints_;

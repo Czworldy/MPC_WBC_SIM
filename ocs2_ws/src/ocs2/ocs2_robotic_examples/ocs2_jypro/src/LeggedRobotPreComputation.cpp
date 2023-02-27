@@ -44,7 +44,7 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
-                                                     const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
+                                                     const SwingTrajectoryPlanner& swingTrajectoryPlanner,
                                                      const FootConstraintsPlanner& footConstraintsPlanner,
                                                      std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
                                                      std::shared_ptr<TerrainEstData> terrainEstDataPtr,
@@ -104,7 +104,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   //   Eigen::Matrix<scalar_t, 6, 1> constraint, b;
   //    b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
   //   constraint = b.array() + tol;
-    
+
   //   return constraint;
   // };
   auto footPlacementPolygonConstraint = [&](size_t footIndex) {
@@ -150,7 +150,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   //     eeReference_[i] = eeReferece(i);
   //     // eeIKSolver(i, eeReference_[i].segment<3>(0));
   //   }
-    
+
   // }
 }
 
