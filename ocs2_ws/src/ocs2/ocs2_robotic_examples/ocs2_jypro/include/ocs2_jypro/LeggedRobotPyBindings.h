@@ -29,11 +29,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <ocs2_ddp/GaussNewtonDDP_MPC.h>
+// #include <ocs2_ddp/GaussNewtonDDP_MPC.h>
+#include <ocs2_sqp/MultipleShootingMpc.h>
 #include <ocs2_python_interface/PythonInterface.h>
 
 #include "ocs2_jypro/LeggedRobotInterface.h"
 #include "ocs2_jypro/gait/GaitPythonInterface.h"
+#include "ocs2_jypro/synchronized_module/TerrainPythonInterface.h"
 // #include "ocs2_jypro/definitions.h"
 #include <urdf_parser/urdf_parser.h>
 
@@ -78,9 +80,9 @@ class LeggedRobotPyBindings final : public PythonInterface {
     // inputDim_ = leggedRobotInterface.getCentroidalModelInfo().inputDim;
 
     // MPC
-    std::unique_ptr<GaussNewtonDDP_MPC> mpcPtr(new GaussNewtonDDP_MPC(leggedRobotInterfacePtr_->mpcSettings(), leggedRobotInterfacePtr_->ddpSettings(),
-                                                leggedRobotInterfacePtr_->getRollout(), leggedRobotInterfacePtr_->getOptimalControlProblem(),
-                                                leggedRobotInterfacePtr_->getInitializer()));
+  std::unique_ptr<ocs2::MultipleShootingMpc> mpcPtr(new ocs2::MultipleShootingMpc(leggedRobotInterfacePtr_->mpcSettings(), 
+                            leggedRobotInterfacePtr_->sqpSettings(), leggedRobotInterfacePtr_->getOptimalControlProblem(),
+                                    leggedRobotInterfacePtr_->getInitializer()));
     
     gaitReceiverPtr_.reset(new ocs2::legged_robot::GaitPythonInterface(
             leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), 
@@ -98,21 +100,79 @@ class LeggedRobotPyBindings final : public PythonInterface {
     setObservation(0.0, initState, zeroInput);
   }
 
+  LeggedRobotPyBindings(std::unique_ptr<LeggedRobotInterface> interface, const std::string& gaitFile) {
+
+    
+    // // Robot interface
+    // std::ifstream urdfStringFile(urdfFile);
+    // if (!urdfStringFile.is_open())
+    //   throw std::runtime_error("urdfStringFile open failed. Aborting.");
+    // // std::string urdfString((std::istreambuf_iterator<char>(urdfStringFile)), std::istreambuf_iterator<char>());
+    // std::stringstream ss;
+    // ss << urdfStringFile.rdbuf();
+    // const std::string urdfString = ss.str();
+
+    leggedRobotInterfacePtr_ = std::move(interface);
+
+    // System dimensions
+    // stateDim_ = leggedRobotInterface.getCentroidalModelInfo().stateDim;
+    // inputDim_ = leggedRobotInterface.getCentroidalModelInfo().inputDim;
+
+    // MPC
+  std::unique_ptr<ocs2::MultipleShootingMpc> mpcPtr(new ocs2::MultipleShootingMpc(leggedRobotInterfacePtr_->mpcSettings(), 
+                            leggedRobotInterfacePtr_->sqpSettings(), leggedRobotInterfacePtr_->getOptimalControlProblem(),
+                                    leggedRobotInterfacePtr_->getInitializer()));
+    
+    gaitReceiverPtr_.reset(new ocs2::legged_robot::GaitPythonInterface(
+            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), gaitFile, true));
+
+    terrainReceiverPtr_.reset(new ocs2::legged_robot::TerrainPythonInterface(
+            leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr()));
+
+    mpcPtr->getSolverPtr()->setReferenceManager(leggedRobotInterfacePtr_->getReferenceManagerPtr());
+    mpcPtr->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr_);       
+    mpcPtr->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr_);
+
+    auto initState = leggedRobotInterfacePtr_->getInitialState();
+    const ocs2::vector_t zeroInput = ocs2::vector_t::Zero(24);
+
+
+    // Python interface
+    PythonInterface::init(*leggedRobotInterfacePtr_, std::move(mpcPtr));
+    setObservation(0.0, initState, zeroInput);
+  }
+
+
   void setModule(const std::string& moduleName) override {
-    std::cout << "setModule: " << moduleName << std::endl;
+    // std::cout << "setModule: " << moduleName << std::endl;
     gaitReceiverPtr_->setMpcModeSequence(moduleName);
+  }
+
+  void setTerrain(const TerrainEstData& terrainData){
+    // std::cout << "setTerrain: " << terrainData << std::endl;
+    terrainReceiverPtr_->setMpcTerrain(terrainData);
+  }
+
+  void setTargetFeetPlacement(const TargetFeetPlacement& targetFeetPlacement) {
+    leggedRobotInterfacePtr_->getSwitchedModelReferenceManagerPtr()->setTargetFeetPlacement(targetFeetPlacement);
   }
 
   vector_t getInitState() override {
     return leggedRobotInterfacePtr_->getInitialState();
   }
 
-  int getStateDim() override {
+  int getStateDim()  {
     return leggedRobotInterfacePtr_->getCentroidalModelInfo().stateDim;
   }
 
-  int getInputDim() override {
+  int getInputDim()  {
     return leggedRobotInterfacePtr_->getCentroidalModelInfo().inputDim;
+  }
+
+  ocs2::scalar_t getMpcCost(){
+    const auto& performance = mpcPtr_->getSolverPtr()->getPerformanceIndeces();
+    std::cout << "MPC cost: " << performance.cost << std::endl;
+    return performance.cost;
   }
 
   
@@ -120,6 +180,7 @@ class LeggedRobotPyBindings final : public PythonInterface {
   // for example, FootPlacementPlanner's centroidalModelInfo_
   std::unique_ptr<LeggedRobotInterface> leggedRobotInterfacePtr_ = nullptr; 
   std::shared_ptr<ocs2::legged_robot::GaitPythonInterface> gaitReceiverPtr_ = nullptr;
+  std::shared_ptr<ocs2::legged_robot::TerrainPythonInterface> terrainReceiverPtr_ = nullptr;
 };
 
 }  // namespace ballbot

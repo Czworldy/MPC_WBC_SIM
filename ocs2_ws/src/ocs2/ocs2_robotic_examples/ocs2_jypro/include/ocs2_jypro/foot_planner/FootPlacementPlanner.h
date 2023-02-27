@@ -29,6 +29,7 @@ class FootPlacementPlanner{
    const feet_array_t<scalar_array_t>& getliftOffHeightSequence() const{ return liftOffHeightSequence_; }
    const feet_array_t<scalar_array_t>& gettouchDownHeightSequence() const{ return touchDownHeightSequence_; }
    const feet_array_t<scalar_array_t>& getfeetPlacementEvents() const{ return feetPlacementEvents_; }
+   const feet_array_t<std::vector<vector3_t>>& getfeetPlacement() const{ return feetPlacement_; }
    void setTargetPoints(const std::vector<vector3_t>& leftFrontPoints, const std::vector<vector3_t>& rightFrontPoints,
                   const std::vector<vector3_t>& leftBackPoints, const std::vector<vector3_t>& rightBackPoints){
     leftFrontPoints_  = leftFrontPoints ;  

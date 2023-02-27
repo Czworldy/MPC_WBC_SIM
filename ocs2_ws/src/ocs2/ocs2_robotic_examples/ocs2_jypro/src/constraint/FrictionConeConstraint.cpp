@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/constraint/FrictionConeConstraint.h"
 
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
+#include "ocs2_jypro/LeggedRobotPreComputation.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -66,7 +67,10 @@ bool FrictionConeConstraint::isActive(scalar_t time) const {
 vector_t FrictionConeConstraint::getValue(scalar_t time, const vector_t& state, const vector_t& input,
                                           const PreComputation& preComp) const {
   const auto forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
-  const vector3_t localForce = t_R_w * forcesInWorldFrame;
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
+  matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
+  // R_w2t.setIdentity();
+  const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
   return coneConstraint(localForce);
 }
 
@@ -77,9 +81,12 @@ VectorFunctionLinearApproximation FrictionConeConstraint::getLinearApproximation
                                                                                  const vector_t& input,
                                                                                  const PreComputation& preComp) const {
   const vector3_t forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
-  const vector3_t localForce = t_R_w * forcesInWorldFrame;
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
+  matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
+  // R_w2t.setIdentity();
+  const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
 
-  const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame);
+  const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame, R_w2t);
   const auto coneLocalDerivatives = computeConeLocalDerivatives(localForce);
   const auto coneDerivatives = computeConeConstraintDerivatives(coneLocalDerivatives, localForceDerivatives);
 
@@ -97,9 +104,12 @@ VectorFunctionQuadraticApproximation FrictionConeConstraint::getQuadraticApproxi
                                                                                        const vector_t& input,
                                                                                        const PreComputation& preComp) const {
   const vector3_t forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
-  const vector3_t localForce = t_R_w * forcesInWorldFrame;
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
+  matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
+  // R_w2t.setIdentity();
+  const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
 
-  const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame);
+  const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame, R_w2t);
   const auto coneLocalDerivatives = computeConeLocalDerivatives(localForce);
   const auto coneDerivatives = computeConeConstraintDerivatives(coneLocalDerivatives, localForceDerivatives);
 
@@ -117,9 +127,9 @@ VectorFunctionQuadraticApproximation FrictionConeConstraint::getQuadraticApproxi
 /******************************************************************************************************/
 /******************************************************************************************************/
 FrictionConeConstraint::LocalForceDerivatives FrictionConeConstraint::computeLocalForceDerivatives(
-    const vector3_t& forcesInWorldFrame) const {
+    const vector3_t& forcesInWorldFrame, const matrix3_t& R_w2t) const {
   LocalForceDerivatives localForceDerivatives{};
-  localForceDerivatives.dF_du = t_R_w;
+  localForceDerivatives.dF_du = R_w2t.transpose();
   return localForceDerivatives;
 }
 

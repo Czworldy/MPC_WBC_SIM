@@ -61,7 +61,7 @@ struct mpcPolicyData {
     ModeSchedule modeSchedule_;
 };
 // MPC OUTPUT FOR UDP
-#define LENGTH 15
+#define LENGTH 10
 size_t N_times = LENGTH;
 using vector_foot_t = Eigen::Matrix<Eigen::Matrix<Eigen::Matrix<float, 3, 1 >,4, 1>, LENGTH, 1>;
 using vector_base_t = Eigen::Matrix <Eigen::Matrix<float, 6, 1>, LENGTH, 1>;
@@ -82,6 +82,7 @@ public:
     vector_base_t baseAcceleration;
     vector_joint_t jointPos;
     vector_joint_t jointVel;
+    vector_joint_t jointAcc;
     Eigen::Matrix<float, LENGTH,1> stateTime;
 };
  
@@ -161,6 +162,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         
         size_t N_modeSequence = msg->modeSchedule.modeSequence.size(); // Gait Mode Sequence
         //Resize MPC Policy Data 
+        std::cout << "traj length: " << msg->timeTrajectory.size() << "\n";
         if (msg->timeTrajectory.size() > LENGTH){
           N_times = LENGTH;
         }
@@ -381,6 +383,7 @@ void getGeneralizedVelocities(){
         const auto& Ag = pinocchio::computeCentroidalMap(model, data, q[k]); // Computes the Centroidal Momentum Matrix
         pseudoInverse(Ag.leftCols(6), 0.0001, InverseAb[k]); // InverseAb
         Aj[k] = Ag.rightCols(numOfActuatedJoint); // Aj
+        std::cout << "data.mass[0]: " << data.mass[0] << std::endl;
         v[k].head(6) = InverseAb[k] * (mpcData.stateTrajectory_[k].head(6) * data.mass[0] - Aj[k] * v[k].tail(numOfActuatedJoint));
     }
 }
@@ -410,8 +413,15 @@ void DesiredTrajectoriesForWBC(){
       // wbcInterfaceData.baseVelocity[k][3] = v[k][5]; // roll        
       // wbcInterfaceData.baseVelocity[k][4] = v[k][4]; // pitch      
       // wbcInterfaceData.baseVelocity[k][5] = v[k][3]; // yaw  
-      wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[0][3], q[0][4], q[0][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z
+      //这里的顺序不用换了
+      wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
+      // wbcInterfaceData.baseVelocity[k].tail(3).setZero(); //= (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
+      
+      // Contact Point Position
+      for(size_t j = 0; j < N_contactPoint; j++){
+          wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation().cast<float>();
+      }
       // Base Acceleration
       pinocchio::computeCentroidalMapTimeVariation(model, data, q[k], v[k]); //the time derivative of the Centroidal Momentum Matrix
       vector_t hDot = vector_t::Zero(6);
@@ -429,14 +439,13 @@ void DesiredTrajectoriesForWBC(){
       wbcInterfaceData.baseAcceleration[k][0] = a[k][0]; //x
       wbcInterfaceData.baseAcceleration[k][1] = a[k][1]; //y
       wbcInterfaceData.baseAcceleration[k][2] = a[k][2]; //z
-      wbcInterfaceData.baseAcceleration[k][3] = a[k][5]; // roll   
-      wbcInterfaceData.baseAcceleration[k][4] = a[k][4]; // pitch   
-      wbcInterfaceData.baseAcceleration[k][5] = a[k][3]; // yaw 
+      // wbcInterfaceData.baseAcceleration[k][3] = a[k][5]; // roll   
+      // wbcInterfaceData.baseAcceleration[k][4] = a[k][4]; // pitch   
+      // wbcInterfaceData.baseAcceleration[k][5] = a[k][3]; // yaw 
+      wbcInterfaceData.baseAcceleration[k].tail(3) = 
+                    (rpyDotTOtwistDot(q[k][3], q[k][4], q[k][5], v[k][3], v[k][4], v[k][5]) * a[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
-      // Contact Point Position
-      for(size_t j = 0; j < N_contactPoint; j++){;
-          wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation().cast<float>();
-      }
+
       // Contact Point Velocity and Acceleration
       for(size_t j = 0; j < N_contactPoint; j++){
           matrix_t jacobianContactPoint = matrix_t::Zero(6, dofOfRobot);
@@ -453,6 +462,7 @@ void DesiredTrajectoriesForWBC(){
       for (int j(0); j < 12; j++) {
         wbcInterfaceData.jointPos[k][j] = q[k][6 + j];
         wbcInterfaceData.jointVel[k][j] = v[k][6 + j];
+        wbcInterfaceData.jointAcc[k][j] = a[k][6 + j];
       }
     }
 }

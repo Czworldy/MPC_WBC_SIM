@@ -45,16 +45,21 @@ namespace legged_robot {
 /******************************************************************************************************/
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
-                                                     const FootPlacementPlanner& footPlacementPlanner,
+                                                     const FootConstraintsPlanner& footConstraintsPlanner,
+                                                     std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                                                     std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
       swingTrajectoryPlannerPtr_(&swingTrajectoryPlanner),
-      footPlacnementPlannerPtr_(&footPlacementPlanner),
+      footConstraintsPlannerPtr_(&footConstraintsPlanner),
+      leggedIKSolverPtr_(std::move(leggedIKSolverPtr)),
+      terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       settings_(std::move(settings)) {
   eeNormalVelConConfigs_.resize(info_.numThreeDofContacts);
   swingTimeLeft_.resize(info_.numThreeDofContacts);
   footPlacementConstraints_.resize(info_.numThreeDofContacts);
+  eeReference_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -75,8 +80,10 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   // lambda to set config for normal velocity constraints
   auto eeNormalVelConConfig = [&](size_t footIndex) {
     EndEffectorLinearConstraint::Config config;
+    vector3_t terrainNormal = terrainEstDataPtr_->terrainQuat.cast<scalar_t>().toRotationMatrix().col(2);
     config.b = (vector_t(1) << -swingTrajectoryPlannerPtr_->getZvelocityConstraint(footIndex, t)).finished();
-    config.Av = (matrix_t(1, 3) << 0.0, 0.0, 1.0).finished();
+    // config.Av = (matrix_t(1, 3) << 0.0, 0.0, 1.0).finished();
+    config.Av = terrainNormal.transpose();
     if (!numerics::almost_eq(settings_.positionErrorGain, 0.0)) {
       config.b(0) -= settings_.positionErrorGain * swingTrajectoryPlannerPtr_->getZpositionConstraint(footIndex, t);
       config.Ax = (matrix_t(1, 3) << 0.0, 0.0, settings_.positionErrorGain).finished();
@@ -89,29 +96,62 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return swingTrajectoryPlannerPtr_->getSwingTimeLeft(footIndex, t);
   };
 
-  auto footPlacementPoint = [&](size_t footIndex) {
-    vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
-    // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
-    scalar_t tol = 0.04;
+  // auto footPlacementPoint = [&](size_t footIndex) {
+  //   vector3_t point = footPlacnementPlannerPtr_->getFootPlacementConstraint(footIndex, t);
+  //   // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
+  //   scalar_t tol = 0.03;
 
-    Eigen::Matrix<scalar_t, 6, 1> constraint, b;
-     b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
-    constraint = b.array() + tol;
+  //   Eigen::Matrix<scalar_t, 6, 1> constraint, b;
+  //    b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
+  //   constraint = b.array() + tol;
     
-    return constraint;
+  //   return constraint;
+  // };
+  auto footPlacementPolygonConstraint = [&](size_t footIndex) {
+    return footConstraintsPlannerPtr_->getFootPolygonConstraint(footIndex, t);
+    // std::cout << "foot index:" << footIndex << "\t" << point.transpose() << std::endl;
   };
 
   if (request.contains(Request::Constraint)) {
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeNormalVelConConfigs_[i] = eeNormalVelConConfig(i);
       swingTimeLeft_[i] = swingTimeLeftLambda(i);
-      footPlacementConstraints_[i] = footPlacementPoint(i);
+      footPlacementConstraints_[i] = footPlacementPolygonConstraint(i);
       // std::cout << "preCompute times: " << t << "\t" << footPlacementConstraints_[i].transpose() << std::endl;
 
     }
     // Eigen::Map<Eigen::Matrix<scalar_t, 4, 1>> times(swingTimeLeft_.data());
     // std::cout << "preCompute times: " << footPlacementConstraints_.transpose() << std::endl;
   }
+
+  auto eeReferece = [&](size_t footIndex) {
+    vector_t reference(6);
+    const scalar_t xPosition = swingTrajectoryPlannerPtr_->getXpositionConstraint(footIndex, t);
+    const scalar_t yPosition = swingTrajectoryPlannerPtr_->getYpositionConstraint(footIndex, t);
+    const scalar_t zPosition = swingTrajectoryPlannerPtr_->getZpositionConstraint(footIndex, t);
+
+    const scalar_t xVelocity = swingTrajectoryPlannerPtr_->getXvelocityConstraint(footIndex, t);
+    const scalar_t yVelocity = swingTrajectoryPlannerPtr_->getYvelocityConstraint(footIndex, t);
+    const scalar_t zVelocity = swingTrajectoryPlannerPtr_->getZvelocityConstraint(footIndex, t);
+    reference << xPosition, yPosition, zPosition, xVelocity, yVelocity, zVelocity;
+    // std::cout << "ref: " <<  reference.transpose() << std::endl;
+    return reference;
+  };
+
+  // auto eeIKSolver = [&](size_t footIndex, const vector3_t& pos) {
+
+  //   leggedIKSolverPtr_->setBasePos(x.segment<6>(6));
+  //   vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
+  //   std::cout << "res: " <<  res.transpose() << std::endl;
+  // };
+
+  // if (request.contains(Request::Cost)) {
+  //   for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
+  //     eeReference_[i] = eeReferece(i);
+  //     // eeIKSolver(i, eeReference_[i].segment<3>(0));
+  //   }
+    
+  // }
 }
 
 }  // namespace legged_robot

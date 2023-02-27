@@ -94,6 +94,7 @@ void PythonInterface::getMpcSolution(scalar_array_t& t, vector_array_t& x, vecto
   t = mpcMrtInterface_->getPolicy().timeTrajectory_;
   x = mpcMrtInterface_->getPolicy().stateTrajectory_;
   u = mpcMrtInterface_->getPolicy().inputTrajectory_;
+  modeSchedule_ = mpcMrtInterface_->getPolicy().modeSchedule_;
 }
 
 /******************************************************************************************************/
