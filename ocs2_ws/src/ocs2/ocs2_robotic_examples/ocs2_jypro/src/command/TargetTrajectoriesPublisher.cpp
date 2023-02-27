@@ -112,7 +112,7 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
                     sin(currentYaw),  cos(currentYaw), currentY,
                     0, 0, 1;
     scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
-    vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
     const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
     int pointCounter = 0;
 
