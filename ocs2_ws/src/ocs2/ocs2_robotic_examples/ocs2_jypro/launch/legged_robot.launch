@@ -43,10 +43,10 @@
           output="screen" launch-prefix=""/>
 
     <node pkg="ocs2_jypro" type="MPC_WBC_Conversions" name="MPC_WBC_Conversions"
-          output="screen" launch-prefix=""/>
+          output="screen" launch-prefix="gnome-terminal --"/>
 
     <node pkg="ocs2_jypro" type="legged_robot_dummy" name="legged_robot_dummy"
-          output="screen" launch-prefix=""/>
+          output="screen" launch-prefix="gnome-terminal --"/>
 
     <!-- <node pkg="ocs2_jypro" type="legged_robot_target" name="legged_robot_target" -->
 

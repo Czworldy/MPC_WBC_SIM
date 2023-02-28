@@ -69,6 +69,7 @@ vector3_t FootConstraintsPlanner::getFootPlacementNominal(size_t leg, scalar_t t
 
 const FootConstraints &FootConstraintsPlanner::getFootPolygonConstraint(size_t leg, scalar_t time) const {
     const auto index = lookup::findIndexInTimeArray(feetPlacementEvents_[leg], time);
+    std::cout << "feetPlacementConstraints_[leg][index]:" << feetPlacementConstraints_[leg][index].A << std::endl;
     return feetPlacementConstraints_[leg][index];
 }
 
@@ -174,7 +175,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     // }
                     vector3_t footplacement;
                     size_t polygonIndex;
-                    std::cout << "choiceCloestPolygonVertex\n";
+                    // std::cout << "choiceCloestPolygonVertex\n";
                     std::tie(polygonIndex, footplacement) = choiceCloestPolygonVertex(j, feetPosition);
                     feetPlacement_[j].emplace_back(footplacement);
                     touchDownHeightSequence_[j].emplace_back(footplacement[2]);
@@ -190,7 +191,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     FootConstraints constraint;
                     for (const auto &vertex : legEndEffectorPolygon_[j][polygonIndex]) {
                         polygon.addVertex(vertex.head(2));
-                        std::cout << "vertex: " << vertex.head(2).transpose() << std::endl;
+                        // std::cout << "vertex: " << vertex.head(2).transpose() << std::endl;
                     }
                     matrix_t A, conA;
                     vector_t b, zeroCol;
@@ -201,8 +202,8 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     conA << -A, zeroCol;
                     constraint.A = conA;
                     constraint.b = b;
-                    std::cout << "conA:" << constraint.A << "\n";
-                    std::cout << "b:" << constraint.b.transpose() << "\n";
+                    // std::cout << "conA:" << constraint.A << "\n";
+                    // std::cout << "b:" << constraint.b.transpose() << "\n";
                     feetPlacementConstraints_[j].emplace_back(constraint);
                 } else { // for a stance leg
                     // feetPlacement_[j].emplace_back(0,0,0);
@@ -228,7 +229,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     // touchDownHeightSequence_[j].emplace_back(footplacementZ);
                     vector3_t footplacement;
                     size_t polygonIndex;
-                    std::cout << "choiceCloestPolygonVertex\n";
+                    // std::cout << "choiceCloestPolygonVertex\n";
                     std::tie(polygonIndex, footplacement) = choiceCloestPolygonVertex(j, feetPosition);
                     feetPlacement_[j].emplace_back(footplacement); // TODO: this line should be changed to the nomial.
                     touchDownHeightSequence_[j].emplace_back(footplacement[2]);
@@ -238,7 +239,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     FootConstraints constraint;
                     for (const auto &vertex : legEndEffectorPolygon_[j][polygonIndex]) {
                         polygon.addVertex(vertex.head(2));
-                        std::cout << "vertex: " << vertex.head(2).transpose() << std::endl;
+                        // std::cout << "vertex: " << vertex.head(2).transpose() << std::endl;
                     }
                     matrix_t A, conA;
                     vector_t b, zeroCol;
@@ -249,8 +250,8 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     conA << -A, zeroCol;
                     constraint.A = conA;
                     constraint.b = b;
-                    std::cout << "conA:" << constraint.A << "\n";
-                    std::cout << "b:" << constraint.b.transpose() << "\n";
+                    // std::cout << "conA:" << constraint.A << "\n";
+                    // std::cout << "b:" << constraint.b.transpose() << "\n";
                     feetPlacementConstraints_[j].emplace_back(constraint);
 
                 }

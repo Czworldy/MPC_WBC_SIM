@@ -162,7 +162,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << "modifyReferences Done!" << "\n";
 
 }
 

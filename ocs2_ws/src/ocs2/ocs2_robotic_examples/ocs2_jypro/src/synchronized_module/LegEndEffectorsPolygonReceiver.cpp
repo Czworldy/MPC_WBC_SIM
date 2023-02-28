@@ -40,6 +40,21 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   polygonsUpdated_ = true;
 }
 
+matrix3_t rpyTORotateMat(double roll, double pitch, double yaw){
+    matrix3_t RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll <<  1., 0., 0.,
+               0., cos(roll), -sin(roll),
+               0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+                0., 1., 0.,
+              -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+             sin(yaw), cos(yaw), 0.,
+              0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+
 void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t finalTime, const vector_t& initState,
                             const ReferenceManagerInterface& referenceManager) {
   if(polygonsUpdated_){
@@ -49,9 +64,11 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
     const auto& currentPose = initState.segment<6>(6);
     matrix_t tfMatrix = matrix_t::Identity(4,4);
     const vector3_t ZyxEulerAngles = currentPose.tail(3);
-    const matrix3_t rotationMatrix = ocs2::getRotationMatrixFromZyxEulerAngles(ZyxEulerAngles);
-    tfMatrix.topLeftCorner(3,3) = rotationMatrix;
-    tfMatrix.topRightCorner(3,1) = currentPose.head(3);
+    const matrix3_t rotationMatrix = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3));
+    // tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
+    // tfMatrix.topRightCorner(3,1) = currentPose.head(3);
+
+    std::cout << "TF: " << tfMatrix << "\n";
 
     transformedFeetPoints_ = receivedFeetPoints_; // this is deep copy.
 

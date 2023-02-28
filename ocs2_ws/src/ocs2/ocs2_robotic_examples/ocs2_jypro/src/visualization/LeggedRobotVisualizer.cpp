@@ -108,7 +108,7 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation, const P
     const auto timeStamp = ros::Time::now();
     publishObservation(timeStamp, observation); //TWILIGHT DEBUG
     publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
-    std:: cout << "LeggedRobotVisualizer::publishOptimizedStateTrajectory" << std::endl;
+    // std:: cout << "LeggedRobotVisualizer::publishOptimizedStateTrajectory" << std::endl;
     publishOptimizedStateTrajectory(timeStamp, primalSolution.timeTrajectory_, primalSolution.stateTrajectory_,
                                     primalSolution.modeSchedule_);
     lastTime_ = observation.time;
