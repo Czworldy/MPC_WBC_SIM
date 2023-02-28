@@ -68,7 +68,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, -1, 0,
                 0, 0, 1,
                 0, 0, 0;
-        initialize(stateDim_, 0, modelName, "/tmp/ocs2",true, true);
+        std::cout << "start build CppAD!\n";
+        initialize(stateDim_, 0, modelName, "/tmp/ocs2_udq_mpc",true, true);
 
         
         
@@ -78,8 +79,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  // return true;
+  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  return true;
 }
 
 

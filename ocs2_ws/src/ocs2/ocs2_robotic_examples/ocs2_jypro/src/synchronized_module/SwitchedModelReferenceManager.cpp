@@ -125,10 +125,23 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   // std::cout << "targetFeetPlacement L size:" << targetFeetPlacement.targetFeetPlacemetLeft_.size() << "\n";
   // std::cout << "targetFeetPlacement R size:" << targetFeetPlacement.targetFeetPlacemetRight_.size() << "\n";
-  const auto& leftFront = targetFeetPlacement.targetFeetPlacemetLeftFront_;
-  const auto& rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
-  const auto& leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
-  const auto& rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
+  auto leftFront = targetFeetPlacement.targetFeetPlacemetLeftFront_;
+  auto rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
+  auto leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
+  auto rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
+  ocs2::vector3_t base_pose = initState.segment(6, 3);
+  // base_pose[0] += 0.04;
+  // base_pose[1] -= 0.05;
+
+  std::cout << "base_pose: " << base_pose.transpose() << "\n";
+  for (size_t i = 0; i < leftFront.size(); i++) {
+    leftFront[i] += base_pose;
+    rightFront[i] += base_pose;
+    leftBack[i] += base_pose;
+    rightBack[i] += base_pose;
+  }
+  
+
   for(const auto& left_i : leftFront) {
     std::cout << "left_i:" << left_i.transpose() << "\n";
   }

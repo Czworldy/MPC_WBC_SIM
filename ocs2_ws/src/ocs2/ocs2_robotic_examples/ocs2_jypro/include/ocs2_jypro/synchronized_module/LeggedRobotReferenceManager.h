@@ -41,7 +41,7 @@ namespace ocs2 {
  */
 class LeggedRobotReferenceManager : public ReferenceManagerInterface {
  public:
- using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
+//  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
 
   explicit LeggedRobotReferenceManager(TargetTrajectories initialTargetTrajectories = TargetTrajectories(),
                             ModeSchedule initialModeSchedule = ModeSchedule(),

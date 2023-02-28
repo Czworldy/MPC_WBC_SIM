@@ -112,6 +112,8 @@ public:
     Eigen::Quaterniond frame_c_quat_in_world;
     Eigen::Matrix<double, 3, 1> frame_c_xyz_in_world;
 
+    std::vector<Eigen::Vector3d> foot_position;
+    std::vector<Eigen::Vector3d> foot_position_for_terrain;
     ocs2::legged_robot::TerrainEstData terrainEstData;
 #ifdef USE_TERRAIN    
     std::vector<Eigen::Vector3d> foot_position;
@@ -431,6 +433,8 @@ int main(int argc, char **argv) {
         mpc_terrain_sync_input_msg.a = buf.terrainEstData.terrainParams[0];
         mpc_terrain_sync_input_msg.b = buf.terrainEstData.terrainParams[1];
         mpc_terrain_sync_input_msg.d = buf.terrainEstData.terrainParams[2];
+
+        std::cout << "buf.terrainEstData.terrainParams: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
 
         mpc_terrain_sync_input_msg.quaternion.w = buf.terrainEstData.terrainQuat.w();
         mpc_terrain_sync_input_msg.quaternion.x = buf.terrainEstData.terrainQuat.x();

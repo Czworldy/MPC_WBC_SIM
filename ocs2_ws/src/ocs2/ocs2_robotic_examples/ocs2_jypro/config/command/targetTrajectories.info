@@ -1,5 +1,5 @@
-targetDisplacementVelocity          0.3;
-targetRotationVelocity              0.3;
+targetDisplacementVelocity          1.0;
+targetRotationVelocity              1.0;
 
 comHeight                           0.0
 
@@ -19,5 +19,5 @@ defaultJointState
    (11,0)  1.584   ; RH_KFE
 }
 
-joyLinearVelocityGain               0.3;
-joyRotationVelocityGain             10;
+joyLinearVelocityGain               1.0;  
+joyRotationVelocityGain             40;

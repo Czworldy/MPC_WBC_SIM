@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/misc/Display.h>
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include "geometry_msgs/Twist.h"
 
 namespace ocs2 {
 
@@ -53,19 +54,30 @@ TargetTrajectoriesJoyPublisher::TargetTrajectoriesJoyPublisher(::ros::NodeHandle
   };
   observationSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_observation>(topicPrefix + "_mpc_observation", 1, observationCallback);
 
-  auto joyCallback = [this](const sensor_msgs::Joy::ConstPtr& msg) {
+  // auto joyCallback = [this](const sensor_msgs::Joy::ConstPtr& msg) {
+  //   std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+
+  //   deltaX = msg->axes[1] * joyGainLinearFactors_;
+  //   deltaY = msg->axes[0] * joyGainLinearFactors_;
+  //   deltaYaw = msg->axes[3] * joyGainAngularFactors_;
+
+  //   filter(deltaX, lastdeltaX, 0.4);
+  //   filter(deltaY, lastdeltaY, 0.4);
+  //   filter(deltaYaw, lastdeltaYaw, 0.4);
+  //   this->isJoyMsgsCome = true;
+  // };
+  // joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);
+
+    auto joyCallback = [this](const geometry_msgs::Twist::ConstPtr& msg) {
     std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
 
-    deltaX = msg->axes[1] * joyGainLinearFactors_;
-    deltaY = msg->axes[0] * joyGainLinearFactors_;
-    deltaYaw = msg->axes[3] * joyGainAngularFactors_;
+    deltaX    = msg->linear.x * joyGainLinearFactors_;
+    deltaY    = msg->linear.y * joyGainLinearFactors_;
+    deltaYaw  = msg->angular.z * joyGainAngularFactors_;
 
-    filter(deltaX, lastdeltaX, 0.4);
-    filter(deltaY, lastdeltaY, 0.4);
-    filter(deltaYaw, lastdeltaYaw, 0.4);
     this->isJoyMsgsCome = true;
   };
-  joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);
+  joySubscriber_ = nodeHandle.subscribe<geometry_msgs::Twist>("/vel", 1, joyCallback);
   // Trajectories publisher
   targetTrajectoriesPublisherPtr_.reset(new TargetTrajectoriesRosPublisher(nodeHandle, topicPrefix));
 }

@@ -197,10 +197,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     const std::string& footName = modelSettings_.contactNames3DoF[i];
 
     std::unique_ptr<EndEffectorKinematics<scalar_t>> eeKinematicsPtr;
-    if (useAnalyticalGradientsConstraints) {
-      throw std::runtime_error(
-          "[LeggedRobotInterface::setupOptimalConrolProblem] The analytical end-effector linear constraint is not implemented!");
-    } else {
+    // if (useAnalyticalGradientsConstraints) {
+    //   throw std::runtime_error(
+    //       "[LeggedRobotInterface::setupOptimalConrolProblem] The analytical end-effector linear constraint is not implemented!");
+    // } else {
       const auto infoCppAd = centroidalModelInfo_.toCppAd();
       const CentroidalModelPinocchioMappingCppAd pinocchioMappingCppAd(infoCppAd);
       auto velocityUpdateCallback = [&infoCppAd](const ad_vector_t& state, PinocchioInterfaceCppAd& pinocchioInterfaceAd) {
@@ -213,7 +213,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                     centroidalModelInfo_.stateDim, centroidalModelInfo_.inputDim,
                                                                     velocityUpdateCallback, footName, modelSettings_.modelFolderCppAd,
                                                                     modelSettings_.recompileLibrariesCppAd, modelSettings_.verboseCppAd));
-    }
+    // }
 
     problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));

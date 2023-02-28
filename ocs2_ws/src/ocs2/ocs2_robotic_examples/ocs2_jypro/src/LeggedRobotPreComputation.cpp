@@ -95,7 +95,7 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     scalar_t tol = 0.05;
 
     Eigen::Matrix<scalar_t, 6, 1> constraint, b;
-     b  << -point[0], point[0], -point[1], point[1], -point[2], point[2];
+     b  << -point[0], point[0], -point[1], point[1], -point[2]+1, point[2]+1;
     constraint = b.array() + tol;
     
     return constraint;

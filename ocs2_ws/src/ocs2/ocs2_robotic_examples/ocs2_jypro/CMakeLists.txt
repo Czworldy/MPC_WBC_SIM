@@ -233,6 +233,21 @@ target_link_libraries(legged_robot_target_joy
 )
 target_compile_options(legged_robot_target_joy PUBLIC ${pinocchio_CFLAGS_OTHER})
 
+# Traj Command node for legged robot walking (gait selection and target selection)
+add_executable(legged_robot_target_traj
+  src/LeggedRobotPoseCommandTrajNode.cpp
+  src/command/TargetTrajectoriesPublisher.cpp
+)
+add_dependencies(legged_robot_target_traj
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(legged_robot_target_traj
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+target_compile_options(legged_robot_target_traj PUBLIC ${pinocchio_CFLAGS_OTHER})
+
 
 add_executable(legged_robot_gait_command
   src/gait/Gait.cpp
