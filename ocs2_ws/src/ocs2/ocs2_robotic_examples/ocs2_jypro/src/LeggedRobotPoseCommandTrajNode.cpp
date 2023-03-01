@@ -58,13 +58,13 @@ int main(int argc, char *argv[]) {
     nodeHandle.getParam("/referenceFile", targetCommandFile);
     boost::property_tree::ptree pt;
     boost::property_tree::read_info(targetCommandFile, pt);
-    targetDisplacementVelocity = pt.get<scalar_t>("targetDisplacementVelocity");
-    targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
-    comHeight = pt.get<scalar_t>("comHeight");
+    // targetDisplacementVelocity = pt.get<scalar_t>("targetDisplacementVelocity");
+    // targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
+    // comHeight = pt.get<scalar_t>("comHeight");
     ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
-    ocs2::scalar_t joyLinearVelocityGain = pt.get<scalar_t>("joyLinearVelocityGain");
-    ocs2::scalar_t joyRotationVelocityGain = pt.get<scalar_t>("joyRotationVelocityGain");
+    // ocs2::scalar_t joyLinearVelocityGain = pt.get<scalar_t>("joyLinearVelocityGain");
+    // ocs2::scalar_t joyRotationVelocityGain = pt.get<scalar_t>("joyRotationVelocityGain");
 
     std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
 

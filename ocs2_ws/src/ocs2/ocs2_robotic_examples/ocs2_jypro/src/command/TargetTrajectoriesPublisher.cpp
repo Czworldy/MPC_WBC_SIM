@@ -34,13 +34,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_msgs/mpc_target_trajectories.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include "ocs2_jypro/common/Types.h"
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
+
+
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
+// #include <Eigen/Core>
+// #include <Eigen/Dense>
+// #include <Eigen/Geometry>
 
 namespace ocs2 {
 
@@ -105,27 +109,54 @@ ocs2::scalar_t TargetTrajectoriesPublisher::filter(ocs2::scalar_t &input, ocs2::
 TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const SystemObservation& observation) {
     // get current pose
     const vector_t currentPose = observation.state.segment<6>(6);
-    const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
 
-    Eigen::Matrix3d TransformMat;
-    TransformMat << cos(currentYaw), -sin(currentYaw), currentX,
-                    sin(currentYaw),  cos(currentYaw), currentY,
-                    0, 0, 1;
+    // 3x3 transform matrix from odom base to odom frame
+    // const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
+
+    // Eigen::Matrix3d TransformMat;
+    // TransformMat << cos(currentYaw), -sin(currentYaw), currentX,
+    //                 sin(currentYaw),  cos(currentYaw), currentY,
+    //                 0, 0, 1;
+    // scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
+    // vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
+    // const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    // int pointCounter = 0;
+
+    // for(const auto& state : receivedTargetTrajectories_.stateTrajectory){
+    //   Eigen::Vector3d pose_xy;
+    //   pose_xy << state(0), state(1), 1;
+    //   const auto poseInOdomFrame = TransformMat * pose_xy;
+    //   auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
+    //                                     currentYaw + state(2), currentPose(4), currentPose(5)).finished();
+    //   stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
+    //   pointCounter++;
+    // }
+    // ----------------------------------
+
+
+    // 4x4 transform matrix from odom base to odom frame
+    const scalar_t currentYaw = currentPose(3);
+    matrix_t tfMatrix = matrix_t::Identity(4,4);
+    const legged_robot::vector3_t ZyxEulerAngles = currentPose.tail(3);
+    const legged_robot::matrix3_t rotationMatrix = ocs2::getRotationMatrixFromZyxEulerAngles(ZyxEulerAngles);
+    tfMatrix.topLeftCorner(3,3) = rotationMatrix;
+    tfMatrix.topRightCorner(3,1) = currentPose.head(3);
+
     scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
     vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
     const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
     int pointCounter = 0;
 
     for(const auto& state : receivedTargetTrajectories_.stateTrajectory){
-      Eigen::Vector3d pose_xy;
-      pose_xy << state(0), state(1), 1;
-      const auto poseInOdomFrame = TransformMat * pose_xy;
+      legged_robot::vector3_t pose;
+      pose << state(0), state(1), 0;
+      const auto poseInOdomFrame = tfMatrix * pose.homogeneous();
       auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
                                         currentYaw + state(2), currentPose(4), currentPose(5)).finished();
       stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
       pointCounter++;
     }
-
+    
     return {timeTrajectory, stateTrajectory, inputTrajectory};
 }
             

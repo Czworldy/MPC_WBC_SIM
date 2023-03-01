@@ -234,10 +234,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
 //twilight 20230207 :delete foothold constraint
-    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-                                              i, barrierPenaltyConfig_)
-                                             );
+    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+    //                                           i, barrierPenaltyConfig_)
+    //                                          );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr,
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

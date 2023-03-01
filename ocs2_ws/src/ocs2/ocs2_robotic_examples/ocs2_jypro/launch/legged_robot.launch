@@ -51,7 +51,7 @@
     <!-- <node pkg="ocs2_jypro" type="legged_robot_target" name="legged_robot_target" -->
 
 
-    <node pkg="ocs2_jypro" type="legged_robot_target_joy" name="legged_robot_target_joy"
+    <node pkg="ocs2_jypro" type="legged_robot_target_traj" name="legged_robot_target_traj"
     output="screen" launch-prefix="gnome-terminal --"/>
 
 
@@ -59,11 +59,11 @@
     <node pkg="ocs2_jypro" type="legged_robot_gait_command" name="legged_robot_gait_command"
           output="screen"  launch-prefix="gnome-terminal --"/>
 
-      <node respawn="true" pkg="joy"
+      <!-- <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
       <param name="dev" type="string" value="/dev/input/js0" />
       <param name="deadzone" value="0.1" />
-      </node>
+      </node> -->
 
 <!-- <node pkg="ocs2_jypro" type="legged_robot_target_joy" name="legged_robot_target_joy"
 output="screen"> -->

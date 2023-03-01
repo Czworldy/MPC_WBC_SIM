@@ -292,7 +292,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
     wbcMsg.switchTime[0] = wbcInterfaceData.switchTime[0]; wbcMsg.switchTime[1] = wbcInterfaceData.switchTime[1];
 
     for (int i = 0; i < 4; i++)
-        std::cout <<wbcMsg.firstGait[i]<<"\t" << std::endl;
+        // std::cout <<wbcMsg.firstGait[i]<<"\t" << std::endl;
     wbcMsgisdone = true;
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     // std::cerr << "time:" << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()<< std::endl;

@@ -69,7 +69,7 @@ vector3_t FootConstraintsPlanner::getFootPlacementNominal(size_t leg, scalar_t t
 
 const FootConstraints &FootConstraintsPlanner::getFootPolygonConstraint(size_t leg, scalar_t time) const {
     const auto index = lookup::findIndexInTimeArray(feetPlacementEvents_[leg], time);
-    std::cout << "feetPlacementConstraints_[leg][index]:" << feetPlacementConstraints_[leg][index].A << std::endl;
+    // std::cout << "feetPlacementConstraints_[leg][index]:" << feetPlacementConstraints_[leg][index].A << std::endl;
     return feetPlacementConstraints_[leg][index];
 }
 
