@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
   auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainReceiver>(nodeHandle,
       interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
 
-  auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
+  // auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
 
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 

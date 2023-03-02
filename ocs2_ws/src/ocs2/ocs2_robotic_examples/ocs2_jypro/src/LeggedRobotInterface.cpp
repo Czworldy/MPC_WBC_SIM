@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/misc/Display.h>
 #include <ocs2_core/soft_constraint/StateInputSoftConstraint.h>
 #include <ocs2_core/soft_constraint/StateSoftConstraint.h>
+#include <ocs2_core/cost/QuadraticStateCost.h>
 #include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematicsCppAd.h>
 
@@ -58,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
 #include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
 #include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
+#include "ocs2_jypro/LoadMatrixFromFile.h"
 
 
 // Boost
@@ -206,6 +208,16 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
   // Cost terms
   problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_));
+  // add final cost
+  const std::string fileQfMatrix = "/home/yjy/jy_control_test/LQR/S.txt";
+  auto Qf = readMatrix(fileQfMatrix.c_str());
+  if (display_) {
+    std::cerr << "\n #### Final Cost Coefficients: ";
+    std::cerr << "\n #### =============================================================================\n";
+    std::cerr << "Q_final:\n" << Qf << "\n";
+    std::cerr << " #### =============================================================================\n";
+  }
+  problemPtr_->finalCostPtr->add("finalCost", std::unique_ptr<StateCost>(new QuadraticStateCost(Qf)));
 
   // Constraint terms
   // friction cone settings
@@ -242,10 +254,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
 //twilight 20230207 :delete foothold constraint
-    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-                                              i, barrierPenaltyConfig_)
-                                             );
+    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+    //                                           i, barrierPenaltyConfig_)
+    //                                          );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr,
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

@@ -128,7 +128,7 @@ rollout
 
 mpc
 {
-  timeHorizon                     0.5
+  timeHorizon                     1
   numPartitions                   3
 
   runtimeMaxNumIterations         5
@@ -198,24 +198,24 @@ Q
   (5,5)   10.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;
-  (6,6)   400.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
-  (7,7)   400.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
-  (8,8)   400.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
-  (9,9)   400.0    ; theta_base_z
-  (10,10) 200.0    ; theta_base_y
-  (11,11) 200.0    ; theta_base_x
+  (6,6)   1000.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
+  (7,7)   1000.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
+  (8,8)   1500.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
+  (9,9)   300.0    ; theta_base_z
+  (10,10) 500.0    ; theta_base_y
+  (11,11) 500.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;; 不能太低
-  (12,12) 50.0     ; LF_HAA
+  (12,12) 20.0     ; LF_HAA
   (13,13) 20.0     ; LF_HFE
   (14,14) 20.0     ; LF_KFE
-  (15,15) 50.0     ; LH_HAA
+  (15,15) 20.0     ; LH_HAA
   (16,16) 20.0     ; LH_HFE
   (17,17) 20.0     ; LH_KFE
-  (18,18) 50.0     ; RF_HAA
+  (18,18) 20.0     ; RF_HAA
   (19,19) 20.0     ; RF_HFE
   (20,20) 20.0     ; RF_KFE
-  (21,21) 50.0     ; RH_HAA
+  (21,21) 20.0     ; RH_HAA
   (22,22) 20.0     ; RH_HFE
   (23,23) 20.0     ; RH_KFE
 }
