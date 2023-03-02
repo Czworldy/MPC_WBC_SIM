@@ -52,7 +52,8 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                 std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
                                 std::shared_ptr<TerrainEstData> terrainEstDataPtr,
-                                std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr);
+                                std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
+                                std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr);
 
   ~SwitchedModelReferenceManager() override = default;
 
@@ -68,6 +69,8 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
 
   std::shared_ptr<feet_polygon_array_t>& getMpcPolygonArrayPtr() { return mpcPolygonArrayPtr_; }
 
+  std::shared_ptr<feet_array_t<std::vector<vector3_t>>>& getMpcNominalFeetholdsPtr() { return mpcNominalFeetholdsPtr_; }
+
  private:
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
                         ModeSchedule& modeSchedule) override;
@@ -79,6 +82,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr_;
   std::shared_ptr<TerrainEstData> terrainEstDataPtr_;
   std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr_;
+  std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr_;
   QuaternionToRPY terrainQuaternionToRPY_;
 };
 

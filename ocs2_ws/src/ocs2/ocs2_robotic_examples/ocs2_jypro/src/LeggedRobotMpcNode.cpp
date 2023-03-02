@@ -72,7 +72,10 @@ int main(int argc, char** argv) {
 
   auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
 
-  auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>(nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), robotName);
+  auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
+                            (nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
+                            interface.getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
+                              robotName);
   // MPC
   // ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),
   //                   interface.getInitializer());

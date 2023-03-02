@@ -164,7 +164,14 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_(new legged::LeggedIKSolver(*pinocchioInterfacePtr_, getCentroidalModelInfo(), endEffectorKinematics));
 
   std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
+
   auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
+  auto mpcNominalFootholdPtr = std::make_shared<feet_array_t<std::vector<vector3_t>>>();
+
+  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
+  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
 
   initPolygon.resize(1);
   initPolygon[0].reserve(4);
@@ -178,7 +185,8 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   (*mpcPolygonArrayPtr)[3] = initPolygon;
   // Mode schedule manager
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner),
-                                                                         std::move(footPlacementPlanner), terrainEstDataPtr, mpcPolygonArrayPtr);
+                                                                         std::move(footPlacementPlanner), terrainEstDataPtr, mpcPolygonArrayPtr,
+                                                                         mpcNominalFootholdPtr);
 
   // Optimal control problem
   problemPtr_.reset(new OptimalControlProblem);
@@ -234,10 +242,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                         getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
 //twilight 20230207 :delete foothold constraint
-    // problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
-    //                                          getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
-    //                                           i, barrierPenaltyConfig_)
-    //                                          );
+    problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+                                             getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
+                                              i, barrierPenaltyConfig_)
+                                             );
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
     //                                             getCBFFootPlacementConstraint(*eeKinematicsPtr,
     //                                             footName + "_CBFplacementConstraint",i, barrierPenaltyConfig));

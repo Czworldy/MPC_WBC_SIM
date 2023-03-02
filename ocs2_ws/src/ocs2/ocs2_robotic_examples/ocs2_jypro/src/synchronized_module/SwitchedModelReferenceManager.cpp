@@ -39,13 +39,15 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
-                                                             std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr)
+                                                             std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
+                                                             std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
-      mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)) {}
+      mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
+      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -141,7 +143,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
   // std::cout << "mpcPolygonArrayPtr_[0][0][0]: " << (*mpcPolygonArrayPtr_)[0][0][0].transpose() << std::endl;
 
-  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_);
+  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
 

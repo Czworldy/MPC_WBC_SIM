@@ -18,6 +18,7 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
 {
   public:
     LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle, std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr, 
+                                    std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
                                     const std::string& robotName);
     ~LegEndEffectorsPolygonReceiver();
 
@@ -35,8 +36,11 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
 
     feet_polygon_array_t receivedFeetPoints_;
     feet_polygon_array_t transformedFeetPoints_;
+    feet_array_t<std::vector<vector3_t>> receivedNominalFeethold_;
+    feet_array_t<std::vector<vector3_t>> transformedNominalFeethold_;
 
     std::shared_ptr<feet_polygon_array_t> mpcTransformedPolygonsPtr_;
+    std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcTransformedNominalFeetholdsPtr_;
 
     // feet_array_t<std::vector<ocs2::Polygon>>> transformedPolygons_;
 

@@ -4,9 +4,11 @@ namespace ocs2 {
 namespace legged_robot {
 
 LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle,
-                                                               std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr,
-                                                               const std::string& robotName) :
-  mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr))  {
+                                    std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr,
+                                    std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
+                                    const std::string& robotName) :
+  mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr)),
+  mpcTransformedNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {
   mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe("foothold_planner/RegionForFoot_LF", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
   mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe("foothold_planner/RegionForFoot_RF", 1,
@@ -27,6 +29,8 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   // std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
   receivedFeetPoints_[foot_id].clear();
   receivedFeetPoints_[foot_id].reserve(msg->region.size());
+  receivedNominalFeethold_[foot_id].clear();
+  receivedNominalFeethold_[foot_id].reserve(msg->region.size());
   // std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
   for (int i = 0; i < msg->region.size(); i++) {
       std::vector<Eigen::Vector3d> polygon;
@@ -35,12 +39,13 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
           polygon.push_back(Eigen::Vector3d(msg->region[i].boundaryPoint[j].x, msg->region[i].boundaryPoint[j].y, msg->region[i].boundaryPoint[j].z));
       }
       receivedFeetPoints_[foot_id].push_back(polygon);
+      receivedNominalFeethold_[foot_id].push_back(Eigen::Vector3d(msg->region[i].nominalFoothold.x, msg->region[i].nominalFoothold.y, msg->region[i].nominalFoothold.z));
   }
 
   polygonsUpdated_ = true;
 }
 
-matrix3_t rpyTORotateMat(double roll, double pitch, double yaw){
+inline matrix3_t rpyTORotateMat(double roll, double pitch, double yaw){
     matrix3_t RotateMatrix, R_roll, R_pitch, R_yaw;
     R_roll <<  1., 0., 0.,
                0., cos(roll), -sin(roll),
@@ -65,8 +70,8 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
     matrix_t tfMatrix = matrix_t::Identity(4,4);
     const vector3_t ZyxEulerAngles = currentPose.tail(3);
     const matrix3_t rotationMatrix = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3));
-    // tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
-    // tfMatrix.topRightCorner(3,1) = currentPose.head(3);
+    tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
+    tfMatrix.topRightCorner(3,1) = currentPose.head(3);
 
     std::cout << "TF: " << tfMatrix << "\n";
 
@@ -96,7 +101,20 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
       ++leg;
     }
 
+    transformedNominalFeethold_ = receivedNominalFeethold_;
+    leg = 0;
+    for(const auto& footholds:receivedNominalFeethold_){
+      polygonIndex = 0;
+      for(const auto& point:footholds){
+        const auto& transformedPoint = tfMatrix * point.homogeneous();
+        transformedNominalFeethold_[leg][polygonIndex] = transformedPoint.matrix().topRows(3);
+        ++polygonIndex;
+      }
+      ++leg;
+    }
+
     *mpcTransformedPolygonsPtr_ = transformedFeetPoints_;
+    *mpcTransformedNominalFeetholdsPtr_ = transformedNominalFeethold_;
 
     // save the transformed points to let footplacementplanner chose.
     // create polygon using transformed points.
