@@ -266,15 +266,25 @@ std::pair<int, vector3_t> FootConstraintsPlanner::choiceCloestPolygonVertex(cons
     vector3_t minPoint;
     size_t selectedPolygonNum = 0, polygonIndex = 0;
     // std::cout << "in side choiceCloestPolygonVertex" << legEndEffectorPolygon_.size() << "\n" ;
-    for (const auto &polygons : legEndEffectorPolygon_[footNum]) {
-        // std::cout << "polygons: " << polygons.size() << "\n";
-        for (const auto &vertex : polygons) {
-            const scalar_t distance = (vertex - position).norm();
-            if (distance < minDistance) {
-                minDistance = distance;
-                minPoint = vertex;
-                selectedPolygonNum = polygonIndex;
-            }
+    // for (const auto &polygons : legEndEffectorPolygon_[footNum]) {
+    //     // std::cout << "polygons: " << polygons.size() << "\n";
+    //     for (const auto &vertex : polygons) {
+    //         const scalar_t distance = (vertex - position).norm();
+    //         if (distance < minDistance) {
+    //             minDistance = distance;
+    //             minPoint = vertex;
+    //             selectedPolygonNum = polygonIndex;
+    //         }
+    //     }
+    //     ++polygonIndex;
+    // }
+
+    for(const auto& point : nominalFoothold_[footNum]){
+        const scalar_t distance = (point - position).norm();
+        if (distance < minDistance) {
+            minDistance = distance;
+            minPoint = point;
+            selectedPolygonNum = polygonIndex;
         }
         ++polygonIndex;
     }

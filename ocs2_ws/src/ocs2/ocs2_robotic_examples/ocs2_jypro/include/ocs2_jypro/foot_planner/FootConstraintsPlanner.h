@@ -41,12 +41,16 @@ class FootConstraintsPlanner{
    const feet_array_t<scalar_array_t>& getfeetPlacementEvents() const{ return feetPlacementEvents_; }
    const feet_array_t<std::vector<vector3_t>>& getfeetPlacement() const{ return feetPlacement_; }
 
-   void setTargetPolygonVerteices(const feet_polygon_array_t& legEndEffectorPolygon ){
+   void setTargetPolygonVerteices(const feet_polygon_array_t& legEndEffectorPolygon, 
+                            const feet_array_t<std::vector<vector3_t>>& nominalFoothold ){
     // std::cout << "legEndEffectorPolygon set size:" << legEndEffectorPolygon.size() << "\n";
     legEndEffectorPolygon_ = legEndEffectorPolygon;
+    nominalFoothold_ = nominalFoothold;
    }
 
    const feet_array_t<std::vector<FootConstraints>>& getFootConstraints() const{ return feetPlacementConstraints_; }
+
+   const feet_array_t<std::vector<vector3_t>>& getNominalFoothold() const{ return nominalFoothold_; }
 
  private:
       /**
@@ -95,6 +99,7 @@ class FootConstraintsPlanner{
   //  std::vector<vector3_t> rightBackPoints_;
 
    feet_polygon_array_t legEndEffectorPolygon_;
+   feet_array_t<std::vector<vector3_t>> nominalFoothold_;
 
    feet_array_t<std::vector<vector3_t>> feetPlacement_;
    feet_array_t<std::vector<scalar_t>> feetPlacementEvents_;
