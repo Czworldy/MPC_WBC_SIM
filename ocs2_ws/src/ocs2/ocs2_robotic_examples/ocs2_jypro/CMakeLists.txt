@@ -260,6 +260,7 @@ target_link_libraries(legged_robot_target_traj
 )
 target_compile_options(legged_robot_target_traj PUBLIC ${pinocchio_CFLAGS_OTHER})
 
+
 add_executable(legged_robot_gait_command
   src/gait/Gait.cpp
   src/gait/ModeSequenceTemplate.cpp

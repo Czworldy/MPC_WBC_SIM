@@ -58,16 +58,16 @@ Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw
     RotateMatrix = R_yaw * R_pitch * R_roll;
     return RotateMatrix;
 }
-
-scalar_t estimateTimeToTarget(const vector_t &desiredBaseDisplacement) {
-    const scalar_t &dx = desiredBaseDisplacement(0);
-    const scalar_t &dy = desiredBaseDisplacement(1);
-    const scalar_t &dyaw = desiredBaseDisplacement(3);
-    const scalar_t &droll = desiredBaseDisplacement(5);
-    const scalar_t rotationTime = std::max(std::abs(dyaw) / targetRotationVelocity, std::abs(droll) / targetRotationVelocity);
-    const scalar_t displacement = std::sqrt(dx * dx + dy * dy);
-    const scalar_t displacementTime = displacement / targetDisplacementVelocity;
-    return std::max(rotationTime, displacementTime);
+ 
+scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
+  const scalar_t& dx = desiredBaseDisplacement(0);
+  const scalar_t& dy = desiredBaseDisplacement(1);
+  const scalar_t& dyaw = desiredBaseDisplacement(3);
+  const scalar_t& droll = desiredBaseDisplacement(5);
+  const scalar_t rotationTime = std::max(std::abs(dyaw) / targetRotationVelocity, std::abs(droll) / targetRotationVelocity);
+  const scalar_t displacement = std::sqrt(dx * dx + dy * dy);
+  const scalar_t displacementTime = displacement / targetDisplacementVelocity;
+  return std::max(rotationTime, displacementTime);
 }
 
 /**
@@ -75,30 +75,26 @@ scalar_t estimateTimeToTarget(const vector_t &desiredBaseDisplacement) {
  * @param [in] commadLineTarget : [deltaX, deltaY, deltaZ, deltaYaw]
  * @param [in] observation : the current observation
  */
-TargetTrajectories commandLineToTargetTrajectories(const vector_t &commadLineTarget, const SystemObservation &observation) {
-
-
-    //  joy command in body frame
-    const vector_t currentPose = observation.state.segment<6>(6);
-    const vector_t targetPose = [&]() {
-        vector_t target(6);
-        vector_t command_xyz_in_body_frame(3), command_xyz_in_world_frame(3);
-        command_xyz_in_body_frame << commadLineTarget(0), commadLineTarget(1), commadLineTarget(2);
-        command_xyz_in_world_frame = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3)) * command_xyz_in_body_frame;
-        // base p_x, p_y are relative to current state
-        target(0) = currentPose(0) + command_xyz_in_world_frame(0);
-        target(1) = currentPose(1) + command_xyz_in_world_frame(1);
-        // base z relative to the default height
-        target(2) = currentPose(2) + command_xyz_in_world_frame(2);
-        // theta_z relative to current
-        target(3) = currentPose(3) + commadLineTarget(3) * M_PI / 180.0;
-        // theta_y, theta_x
-        target(4) = 0;
-        target(5) = 0;
-        std::cout << ">>>>>>>>>>>target:\n"
-                  << target << "\n";
-        return target;
-    }();
+TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTarget, const SystemObservation& observation) { 
+  const vector_t currentPose = observation.state.segment<6>(6); 
+  const vector_t targetPose = [&]() { 
+  vector_t target(6); 
+  vector_t command_xyz_in_body_frame(3), command_xyz_in_world_frame(3); 
+  command_xyz_in_body_frame << commadLineTarget(0), commadLineTarget(1), commadLineTarget(2); 
+  command_xyz_in_world_frame = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3)) * command_xyz_in_body_frame; 
+    // base p_x, p_y are relative to current state 
+  target(0) = currentPose(0) + command_xyz_in_world_frame(0); 
+  target(1) = currentPose(1) + command_xyz_in_world_frame(1); 
+  // base z relative to the default height 
+  target(2) = currentPose(2) + command_xyz_in_world_frame(2); 
+  // theta_z relative to current 
+  target(3) = currentPose(3) + commadLineTarget(3) * M_PI / 180.0; 
+  // theta_y, theta_x 
+  target(4) = 0; 
+  target(5) = 0; 
+    std::cout << ">>>>>>>>>>>target:\n" << target << "\n"; 
+  return target; 
+  }(); 
 
     // target reaching duration
     const scalar_t targetReachingTime = observation.time + estimateTimeToTarget(targetPose - currentPose);

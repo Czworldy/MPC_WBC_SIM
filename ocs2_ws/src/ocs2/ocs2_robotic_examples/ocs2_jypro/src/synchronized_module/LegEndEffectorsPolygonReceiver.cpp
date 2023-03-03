@@ -42,20 +42,20 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
       receivedNominalFeethold_[foot_id].push_back(Eigen::Vector3d(msg->region[i].nominalFoothold.x, msg->region[i].nominalFoothold.y, msg->region[i].nominalFoothold.z));
   }
 
-  polygonsUpdated_ = true;
+    polygonsUpdated_ = true;
 }
 
 inline matrix3_t rpyTORotateMat(double roll, double pitch, double yaw){
     matrix3_t RotateMatrix, R_roll, R_pitch, R_yaw;
-    R_roll <<  1., 0., 0.,
-               0., cos(roll), -sin(roll),
-               0., sin(roll), cos(roll);
+    R_roll << 1., 0., 0.,
+        0., cos(roll), -sin(roll),
+        0., sin(roll), cos(roll);
     R_pitch << cos(pitch), 0, sin(pitch),
-                0., 1., 0.,
-              -sin(pitch), 0., cos(pitch);
+        0., 1., 0.,
+        -sin(pitch), 0., cos(pitch);
     R_yaw << cos(yaw), -sin(yaw), 0.,
-             sin(yaw), cos(yaw), 0.,
-              0., 0., 1.;
+        sin(yaw), cos(yaw), 0.,
+        0., 0., 1.;
     RotateMatrix = R_yaw * R_pitch * R_roll;
     return RotateMatrix;
 }
@@ -73,11 +73,11 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
     tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
     tfMatrix.topRightCorner(3,1) = currentPose.head(3);
 
-    std::cout << "TF: " << tfMatrix << "\n";
+        std::cout << "TF: " << tfMatrix << "\n";
 
-    transformedFeetPoints_ = receivedFeetPoints_; // this is deep copy.
+        transformedFeetPoints_ = receivedFeetPoints_; // this is deep copy.
 
-    // transformedPolygons_
+        // transformedPolygons_
 
     size_t leg = 0, polygonIndex = 0, pointIndex = 0;
     for(const auto& polygons:receivedFeetPoints_){
@@ -116,18 +116,16 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
     *mpcTransformedPolygonsPtr_ = transformedFeetPoints_;
     *mpcTransformedNominalFeetholdsPtr_ = transformedNominalFeethold_;
 
-    // save the transformed points to let footplacementplanner chose.
-    // create polygon using transformed points.
-    // form the constraints. (cteate constraints struct)
+        // save the transformed points to let footplacementplanner chose.
+        // create polygon using transformed points.
+        // form the constraints. (cteate constraints struct)
 
-    // legEndeffectorPolygonReceived_->copy(terrainEstDataTemp_);
-    polygonsUpdated_ = false;
-  }
-
+        // legEndeffectorPolygonReceived_->copy(terrainEstDataTemp_);
+        polygonsUpdated_ = false;
+    }
 }
 
-LegEndEffectorsPolygonReceiver::~LegEndEffectorsPolygonReceiver(){}
+LegEndEffectorsPolygonReceiver::~LegEndEffectorsPolygonReceiver() {}
 
 } // namespace legged_robot
 } // namespace ocs2
-

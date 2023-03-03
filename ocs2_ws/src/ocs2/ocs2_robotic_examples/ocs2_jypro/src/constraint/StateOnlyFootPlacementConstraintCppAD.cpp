@@ -69,7 +69,8 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, -1, 0,
                 0, 0, 1,
                 0, 0, 0;
-        initialize(stateDim_, 0, modelName, "/tmp/ocs2",true, true);
+        std::cout << "start build CppAD!\n";
+        initialize(stateDim_, 0, modelName, "/tmp/ocs2_udq_mpc",true, true);
 
         
         
@@ -171,6 +172,8 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
     throw std::runtime_error("[StateOnlyFootPlacementConstraint] Quadratic approximation not supported!");
   }
 
+  // std::cout << "FootCostraintOnline.\n";
+
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   VectorFunctionQuadraticApproximation constraint;
 
@@ -187,7 +190,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   FootConstraints footConstraint = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
   constraint.f = footConstraint.A * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + footConstraint.b;
   // std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" << contactPointIndex_ << std::endl;
-
+  std::cout << "b: " << footConstraint.b.transpose() << "\n";
 
   scalar_t s_t(0.);
   

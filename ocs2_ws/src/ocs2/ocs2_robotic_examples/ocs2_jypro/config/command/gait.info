@@ -12,6 +12,7 @@ list
   [9] lindyhop
   [10] skipping
   [11] pawup
+  [12] standing_trot2
 }
 
 stance
@@ -36,9 +37,9 @@ trot
    }
    switchingTimes
    {
-     [0]     0.0
-     [1]     0.33
-     [2]     0.66
+     [0]     0.00
+     [1]     0.35
+     [2]     0.70
    }
 }
 
@@ -60,6 +61,7 @@ standing_trot
     [4]     0.8
   }
 }
+
 
 flying_trot
 {
@@ -252,4 +254,23 @@ pawup
      [0]     0.0
      [1]     2.0
    }
+}
+
+standing_trot2
+{
+  modeSequence
+  {
+    [0]     LF_RH
+    [1]     STANCE
+    [2]     RF_LH
+    [3]     STANCE
+  }
+  switchingTimes
+  {
+    [0]     0.00
+    [1]     0.30
+    [2]     0.35
+    [3]     0.65
+    [4]     0.70
+  }
 }

@@ -112,6 +112,8 @@ public:
     Eigen::Quaterniond frame_c_quat_in_world;
     Eigen::Matrix<double, 3, 1> frame_c_xyz_in_world;
 
+    std::vector<Eigen::Vector3d> foot_position;
+    std::vector<Eigen::Vector3d> foot_position_for_terrain;
     ocs2::legged_robot::TerrainEstData terrainEstData;
 #ifdef USE_TERRAIN
     std::vector<Eigen::Vector3d> foot_position;
@@ -147,6 +149,7 @@ Eigen::Matrix<double, 3, 1> baseRPY;
 bool isReset(false);
 
 // Function
+using matrix3_t = Eigen::Matrix<double, 3, 3>;
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
@@ -266,18 +269,20 @@ int main(int argc, char **argv) {
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
         // Omega
-        matrix3_t transMatrixInverse = rpyDotTOtwist(mpcInputData.q_[3], mpcInputData.q_[4], mpcInputData.q_[5]).inverse();
 
+        //實物中這裡全是body是不行的
+        matrix3_t transMatrixInverse = rpyDotTOtwist(mpcInputData.q_[3], mpcInputData.q_[4], mpcInputData.q_[5]).inverse();
         mpcInputData.v_.segment<3>(3) = transMatrixInverse * buf.base_angular_vel_world;
         if(!isnormal(mpcInputData.v_[3])){
-            std::cout << " singluarity transMatrix!!! \n";
-            mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
-            mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
-            mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world?
+            std::cout << " singluarity transMatrix!!!!!!!! \n";
+            abort();
+            mpcInputData.v_[3] = buf.base_angular_vel_world[2];
+            mpcInputData.v_[4] = buf.base_angular_vel_world[1];
+            mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
         }
-        // mpcInputData.v_[3] = buf.base_angular_vel_world[2];// body or world?
-        // mpcInputData.v_[4] = buf.base_angular_vel_world[1];// body or world?
-        // mpcInputData.v_[5] = buf.base_angular_vel_world[0];// body or world?
+        // mpcInputData.v_[3] = buf.base_angular_vel_world[2];
+        // mpcInputData.v_[4] = buf.base_angular_vel_world[1];
+        // mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
         // Terrain
@@ -433,6 +438,8 @@ int main(int argc, char **argv) {
         mpc_terrain_sync_input_msg.b = buf.terrainEstData.terrainParams[1];
         mpc_terrain_sync_input_msg.d = buf.terrainEstData.terrainParams[2];
 
+        std::cout << "buf.terrainEstData.terrainParams: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
+
         mpc_terrain_sync_input_msg.quaternion.w = buf.terrainEstData.terrainQuat.w();
         mpc_terrain_sync_input_msg.quaternion.x = buf.terrainEstData.terrainQuat.x();
         mpc_terrain_sync_input_msg.quaternion.y = buf.terrainEstData.terrainQuat.y();
@@ -453,21 +460,27 @@ int main(int argc, char **argv) {
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i] << " ";
+                std::cout << mpc_input_msg.state.value[i] << " ";
             }
+            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
+                std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
+            std::cout << "\nActuated Joints:" << std::endl;
             std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
+                std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
+            std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){
                 std::cout << mpc_input_msg.input.value[i] << " ";
             }
-            std::cout << "\nActuated Joints speed: " << std::endl;
+            std::cout << "\nActuated Joints speed: " << std::endl;  
             for(uint i = 0; i < numOfActuatedJoint; i++){
                 std::cout << mpc_input_msg.input.value[mpc_input_msg.input.value.size() - 12 + i] << " ";
             }
@@ -504,6 +517,6 @@ matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
     translation_Matrix << 0, -sin(theta_z), cos(theta_y) * cos(theta_z),
                           0, cos(theta_z), cos(theta_y) * sin(theta_z),
                           1, 0 , -sin(theta_y);
-
+                          
     return translation_Matrix;
 }

@@ -62,6 +62,7 @@ struct mpcPolicyData {
 };
 // MPC OUTPUT FOR UDP
 #define LENGTH 10
+#define LENGTH 10
 size_t N_times = LENGTH;
 using vector_foot_t = Eigen::Matrix<Eigen::Matrix<Eigen::Matrix<float, 3, 1 >,4, 1>, LENGTH, 1>;
 using vector_base_t = Eigen::Matrix <Eigen::Matrix<float, 6, 1>, LENGTH, 1>;
@@ -162,7 +163,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         
         size_t N_modeSequence = msg->modeSchedule.modeSequence.size(); // Gait Mode Sequence
         //Resize MPC Policy Data 
-        std::cout << "traj length: " << msg->timeTrajectory.size() << "\n";
+        // std::cout << "traj length: " << msg->timeTrajectory.size() << "\n";
         if (msg->timeTrajectory.size() > LENGTH){
           N_times = LENGTH;
         }
@@ -273,15 +274,20 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         DesiredTrajectoriesForWBC();
 
         // std::cerr << "\n[dqwang: mpcPolicyCallback] DesiredTrajectoriesForWBC Done!\n";
-        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData state times: " << wbcInterfaceData.stateTime;
+        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData state times start: " << wbcInterfaceData.stateTime[0] << "\n";
 
-        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait;
-        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData secondgait: " << wbcInterfaceData.secondGait;
+        // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait;
+        // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData secondgait: " << wbcInterfaceData.secondGait;
 
         int res = sendto(send_fd, &wbcInterfaceData, sizeof(wbcInterfaceData), 0, (struct sockaddr*)&send_aadr, (socklen_t)sizeof(send_aadr));
-        std::chrono::steady_clock::time_point send_tp = std::chrono::steady_clock::now();
-        std::cerr << "send to time" 
-        << std::chrono::duration_cast<std::chrono::milliseconds>(send_tp.time_since_epoch()).count() << "\n";
+        auto now = std::chrono::steady_clock::now();
+        static  std::chrono::steady_clock::time_point t1;
+        auto us = std::chrono::duration_cast<std::chrono::microseconds>(now - t1).count();
+        std::cout << "MPC_WBC WAKE TIME: " << us << "us" << std::endl;
+        t1 = now;
+        // std::chrono::steady_clock::time_point send_tp = std::chrono::steady_clock::now();
+        // std::cerr << "send to time" 
+        // << std::chrono::duration_cast<std::chrono::milliseconds>( .time_since_epoch()).count() << "\n";
 }
 
 void KinematicDynamicSetup(std::string& urdfFilePath){
@@ -415,7 +421,6 @@ void DesiredTrajectoriesForWBC(){
       // wbcInterfaceData.baseVelocity[k][5] = v[k][3]; // yaw  
       //这里的顺序不用换了
       wbcInterfaceData.baseVelocity[k].tail(3) = (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
-      // wbcInterfaceData.baseVelocity[k].tail(3).setZero(); //= (rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3)).cast<float>();//X Y Z // to check
 
       
       // Contact Point Position

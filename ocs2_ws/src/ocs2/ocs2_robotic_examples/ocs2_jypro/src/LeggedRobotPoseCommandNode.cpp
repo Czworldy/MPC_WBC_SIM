@@ -43,6 +43,21 @@ scalar_t comHeight;
 vector_t defaultJointState(12);
 }  // namespace
 
+Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw){
+    Eigen::Matrix<double, 3, 3> RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll <<  1., 0., 0., 
+               0., cos(roll), -sin(roll),
+               0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+                0., 1., 0.,
+              -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+             sin(yaw), cos(yaw), 0.,
+              0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+
 scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
   const scalar_t& dx = desiredBaseDisplacement(0);
   const scalar_t& dy = desiredBaseDisplacement(1);
@@ -63,16 +78,20 @@ TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTar
   const vector_t currentPose = observation.state.segment<6>(6);
   const vector_t targetPose = [&]() {
     vector_t target(6);
+    vector_t command_xyz_in_body_frame(3), command_xyz_in_world_frame(3);
+    command_xyz_in_body_frame << commadLineTarget(0), commadLineTarget(1), commadLineTarget(2);
+    command_xyz_in_world_frame = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3)) * command_xyz_in_body_frame;
+
     // base p_x, p_y are relative to current state
-    target(0) = currentPose(0) + commadLineTarget(0);
-    target(1) = currentPose(1) + commadLineTarget(1);
+    target(0) = currentPose(0) + command_xyz_in_world_frame(0);
+    target(1) = currentPose(1) + command_xyz_in_world_frame(1);
     // base z relative to the default height
-    target(2) = currentPose(2);
+    target(2) = currentPose(2) + command_xyz_in_world_frame(2);
     // theta_z relative to current
-    target(3) = 0 + commadLineTarget(3) * M_PI / 180.0;
+    target(3) = currentPose(3) + commadLineTarget(3) * M_PI / 180.0;
     // theta_y, theta_x
     target(4) = 0;
-    target(5) = 0 + commadLineTarget(2) * M_PI / 180.0;
+    target(5) = 0;
 
     std::cout << ">>>>>>>>>>>target:\n" << target << "\n";
     return target;
@@ -96,10 +115,9 @@ TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTar
 }
 
 int main(int argc, char* argv[]) {
-  // ros node handle
   const std::string robotName = "legged_robot";
 
-  ::ros::init(argc, argv, robotName + "_target_joy");
+  ::ros::init(argc, argv, robotName + "_target");
   ::ros::NodeHandle nodeHandle;
   std::string targetCommandFile;
   nodeHandle.getParam("/referenceFile", targetCommandFile);
@@ -111,7 +129,7 @@ int main(int argc, char* argv[]) {
   comHeight = pt.get<scalar_t>("comHeight");
   ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
-  std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
+  // ros node handle
 
   // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
   const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};
