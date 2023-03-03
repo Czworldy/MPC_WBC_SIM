@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     ocs2_msgs::mpc_observation mpc_input_msg;
     ros::Rate rate(200);
     // Main Variables
-    BodyPositionEst bodyPositionEst;
+    // BodyPositionEst bodyPositionEst;
     std::unique_ptr<PinocchioInterface> pinocchioInterfacePtr;
     legged_robot::ModelSettings modelSettings;
 
@@ -114,9 +114,10 @@ int main(int argc, char **argv)
 
     // URDF Model -> Pinocchio Model
     std::string urdfFilePath;
-    if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
-      std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
-    }
+    nh.getParam("/urdfFile", urdfFilePath);
+    // if (!ros::param::get("/legged_robot_description", urdfFilePath)) {
+    //   std::cerr << "Param " << "/legged_robot_description" << " not found; unable to generate urdf" << std::endl;
+    // }
     pinocchioInterfacePtr.reset(new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFilePath, modelSettings.jointNames)));
 
     while(nh.ok()){

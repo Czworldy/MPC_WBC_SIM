@@ -31,15 +31,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_jypro/common/utils.h>
 
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
+
 namespace ocs2 {
 namespace legged_robot {
-
+inline matrix3_t rpyTORotateMat(vector3_t rpy);
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
 LeggedRobotStateInputQuadraticCost::LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
                                                                        const SwitchedModelReferenceManager& referenceManager)
-    : QuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager) {}
+    : LeggedRobotQuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -52,11 +54,44 @@ LeggedRobotStateInputQuadraticCost* LeggedRobotStateInputQuadraticCost::clone() 
 /******************************************************************************************************/
 /******************************************************************************************************/
 std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputDeviation(
-    scalar_t time, const vector_t& state, const vector_t& input, const TargetTrajectories& targetTrajectories) const {
+    scalar_t time, const vector_t& state, const vector_t& input, const TargetTrajectories& targetTrajectories, const PreComputation& preComp) const {
   const auto contactFlags = referenceManagerPtr_->getContactFlags(time);
   const vector_t xNominal = targetTrajectories.getDesiredState(time);
   const vector_t uNominal = weightCompensatingInput(info_, contactFlags);
-  return {state - xNominal, input - uNominal};
+
+  const vector3_t xNominalOrientation = xNominal.segment<3>(3);
+  const vector3_t xOrientation = state.segment<3>(3);
+
+  const matrix3_t R = rpyTORotateMat(xOrientation.reverse());
+  const matrix3_t RNominal = rpyTORotateMat(xNominalOrientation.reverse());
+
+  const matrix3_t err = (R * RNominal.transpose()).log();
+  const vector3_t errVec = vector3_t(err(2, 1), err(0, 2), err(1, 0)).reverse();
+
+  vector_t xDeviation = state - xNominal;
+  xDeviation.segment<3>(3) = errVec;
+
+  return {xDeviation, input - uNominal};
+}
+
+
+inline matrix3_t rpyTORotateMat(vector3_t rpy){
+    const scalar_t roll = rpy(0);
+    const scalar_t pitch = rpy(1);
+    const scalar_t yaw = rpy(2);
+    using namespace std;
+    matrix3_t RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll <<  1., 0., 0., 
+               0., cos(roll), -sin(roll),
+               0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+               0., 1., 0.,
+               -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+             sin(yaw), cos(yaw), 0.,
+             0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
 }
 
 }  // namespace legged_robot

@@ -205,7 +205,7 @@ ocs2::vector_t mpcTrackingController(const ocs2::SystemObservation& currentObser
   // Load the latest MPC policy
   bool policyUpdated = mpcMrtInterface.updatePolicy();
   if (policyUpdated) {
-    ROS_INFO_STREAM("<<< New MPC policy received at " << currentObservation.time);
+    // ROS_INFO_STREAM("<<< New MPC policy received at " << currentObservation.time);
   }
 
   // Evaluate the current policy

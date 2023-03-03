@@ -42,23 +42,23 @@ scalar_t targetDisplacementVelocity;
 scalar_t targetRotationVelocity;
 scalar_t comHeight;
 vector_t defaultJointState(12);
-}  // namespace
+} // namespace
 
-Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw){ 
- Eigen::Matrix<double, 3, 3> RotateMatrix, R_roll, R_pitch, R_yaw; 
- R_roll << 1., 0., 0.,  
- 0., cos(roll), -sin(roll), 
- 0., sin(roll), cos(roll); 
- R_pitch << cos(pitch), 0, sin(pitch), 
- 0., 1., 0., 
- -sin(pitch), 0., cos(pitch); 
- R_yaw << cos(yaw), -sin(yaw), 0., 
- sin(yaw), cos(yaw), 0., 
- 0., 0., 1.; 
- RotateMatrix = R_yaw * R_pitch * R_roll; 
- return RotateMatrix; 
- } 
-
+Eigen::Matrix<double, 3, 3> rpyTORotateMat(double roll, double pitch, double yaw) {
+    Eigen::Matrix<double, 3, 3> RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll << 1., 0., 0.,
+        0., cos(roll), -sin(roll),
+        0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+        0., 1., 0.,
+        -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+        sin(yaw), cos(yaw), 0.,
+        0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+ 
 scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
   const scalar_t& dx = desiredBaseDisplacement(0);
   const scalar_t& dy = desiredBaseDisplacement(1);
@@ -96,51 +96,50 @@ TargetTrajectories commandLineToTargetTrajectories(const vector_t& commadLineTar
   return target; 
   }(); 
 
-  // target reaching duration
-  const scalar_t targetReachingTime = observation.time + estimateTimeToTarget(targetPose - currentPose);
+    // target reaching duration
+    const scalar_t targetReachingTime = observation.time + estimateTimeToTarget(targetPose - currentPose);
 
-  // desired time trajectory
-  const scalar_array_t timeTrajectory{observation.time, targetReachingTime};
+    // desired time trajectory
+    const scalar_array_t timeTrajectory{observation.time, targetReachingTime};
 
-  // desired state trajectory
-  vector_array_t stateTrajectory(2, vector_t::Zero(observation.state.size()));
-  stateTrajectory[0] << vector_t::Zero(6), currentPose, defaultJointState;
-  stateTrajectory[1] << vector_t::Zero(6), targetPose, defaultJointState;
+    // desired state trajectory
+    vector_array_t stateTrajectory(2, vector_t::Zero(observation.state.size()));
+    stateTrajectory[0] << vector_t::Zero(6), currentPose, defaultJointState;
+    stateTrajectory[1] << vector_t::Zero(6), targetPose, defaultJointState;
 
-  // desired input trajectory (just right dimensions, they are not used)
-  const vector_array_t inputTrajectory(2, vector_t::Zero(observation.input.size()));
+    // desired input trajectory (just right dimensions, they are not used)
+    const vector_array_t inputTrajectory(2, vector_t::Zero(observation.input.size()));
 
-  return {timeTrajectory, stateTrajectory, inputTrajectory};
+    return {timeTrajectory, stateTrajectory, inputTrajectory};
 }
 
-int main(int argc, char* argv[]) {
-  // ros node handle
-  const std::string robotName = "legged_robot";
+int main(int argc, char *argv[]) {
+    // ros node handle
+    const std::string robotName = "legged_robot";
 
-  ::ros::init(argc, argv, robotName + "_target_joy");
-  ::ros::NodeHandle nodeHandle;
-  std::string targetCommandFile;
-  nodeHandle.getParam("/referenceFile", targetCommandFile);
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_info(targetCommandFile, pt);
-  targetDisplacementVelocity = pt.get<scalar_t>("targetDisplacementVelocity");
-  targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
-  comHeight = pt.get<scalar_t>("comHeight");
-  ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
+    ::ros::init(argc, argv, robotName + "_target_joy");
+    ::ros::NodeHandle nodeHandle;
+    std::string targetCommandFile;
+    nodeHandle.getParam("/referenceFile", targetCommandFile);
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_info(targetCommandFile, pt);
+    targetDisplacementVelocity = pt.get<scalar_t>("targetDisplacementVelocity");
+    targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
+    comHeight = pt.get<scalar_t>("comHeight");
+    ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
 
-  ocs2::scalar_t joyLinearVelocityGain = pt.get<scalar_t>("joyLinearVelocityGain");
-  ocs2::scalar_t joyRotationVelocityGain = pt.get<scalar_t>("joyRotationVelocityGain");
+    ocs2::scalar_t joyLinearVelocityGain = pt.get<scalar_t>("joyLinearVelocityGain");
+    ocs2::scalar_t joyRotationVelocityGain = pt.get<scalar_t>("joyRotationVelocityGain");
 
-  std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
+    std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
 
+    // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
+    const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};
+    TargetTrajectoriesJoyPublisher targetPoseCommand(nodeHandle, robotName, relativeBaseLimit, joyLinearVelocityGain, joyRotationVelocityGain, &commandLineToTargetTrajectories);
 
-  // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
-  const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};
-  TargetTrajectoriesJoyPublisher targetPoseCommand(nodeHandle, robotName, relativeBaseLimit, joyLinearVelocityGain, joyRotationVelocityGain, &commandLineToTargetTrajectories);
+    const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
+    targetPoseCommand.publishKeyboardCommand(commandMsg);
 
-  const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
-  targetPoseCommand.publishKeyboardCommand(commandMsg);
-
-  // Successful exit
-  return 0;
+    // Successful exit
+    return 0;
 }

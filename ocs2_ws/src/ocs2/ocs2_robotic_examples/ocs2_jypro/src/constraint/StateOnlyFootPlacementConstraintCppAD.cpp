@@ -5,6 +5,7 @@
 
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include "ocs2_jypro/LeggedRobotPreComputation.h"
+#include "ocs2_jypro/foot_planner/FootConstraintsPlanner.h"
 
 
 namespace ocs2 {
@@ -79,8 +80,9 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
 /******************************************************************************************************/
 /******************************************************************************************************/
 bool StateOnlyFootPlacementConstraint::isActive(scalar_t time) const {
-  // return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
-  return true;
+  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  // return referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+  // return true;
 }
 
 
@@ -96,14 +98,11 @@ vector_t StateOnlyFootPlacementConstraint::getValue(scalar_t time, const vector_
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   vector_t tapedTimeState(1 + state.rows());
 
-  vector_t state_ = state;
-  vector_t y = vector_t::Zero(6);
-  y(2) = state(8);
-  state_.segment<6>(6) = y;
   tapedTimeState << time, state;
 
-  vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
-  vector_t f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + b;
+  FootConstraints footConstraint = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  // vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  vector_t f = footConstraint.A * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + footConstraint.b;
 
 
 
@@ -138,12 +137,10 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
   state_.segment<6>(6) = y;
   tapedTimeState << time, state;
 
-  vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
-  constraint.f = Ax * getCppAdInterface()->getFunctionValue(tapedTimeState, params) + b;
+  FootConstraints footConstraint = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  // vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  vector_t f = footConstraint.A * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + footConstraint.b;
 
-  if(referenceManagerPtr_->getContactFlags(time)[contactPointIndex_]){
-    constraint.f.array() += stance_tol;
-  }
 
   scalar_t s_t(0.);
   
@@ -162,7 +159,7 @@ VectorFunctionLinearApproximation StateOnlyFootPlacementConstraint::getLinearApp
 
   constraint.f.noalias() += s_t * vector_t::Ones(getNumConstraints(time));
 
-  const matrix_t J = Ax * getCppAdInterface()->getJacobian(tapedTimeState, params);
+  const matrix_t J = footConstraint.A * getCppAdInterface()->getJacobian(tapedTimeState, params);
   constraint.dfdx =  J.rightCols(stateDim);
 
   return constraint;
@@ -174,6 +171,8 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   if (getOrder() != ConstraintOrder::Quadratic) {
     throw std::runtime_error("[StateOnlyFootPlacementConstraint] Quadratic approximation not supported!");
   }
+
+  // std::cout << "FootCostraintOnline.\n";
 
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   VectorFunctionQuadraticApproximation constraint;
@@ -188,11 +187,10 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   tapedTimeState << time, state;
 
   
-  vector_t b = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  FootConstraints footConstraint = preCompLegged.getFootPlacementConstraint()[contactPointIndex_];
+  constraint.f = footConstraint.A * getCppAdInterface()->getFunctionValue(tapedTimeState, vector_t(0)) + footConstraint.b;
   // std::cout << "b:" << b.transpose() << "\t time:" << time << "\t leg:" << contactPointIndex_ << std::endl;
-  vector_t f = getCppAdInterface()->getFunctionValue(tapedTimeState, params);
-  constraint.f = Ax * f + b;
-
+  std::cout << "b: " << footConstraint.b.transpose() << "\n";
 
   scalar_t s_t(0.);
   
@@ -212,12 +210,8 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   //   << contactPointIndex_<< "\t f:"<< constraint.f.transpose() << std::endl;
 
   // std::cout << "cppad:" << f.transpose() << "\n";
-
-
   // std::cout << "y: " << state(7) << "\n";
-
-
-  const matrix_t J = Ax * getCppAdInterface()->getJacobian(tapedTimeState, params);
+  const matrix_t J = footConstraint.A * getCppAdInterface()->getJacobian(tapedTimeState, params);
   constraint.dfdx =  J.rightCols(stateDim);
 
   // const size_t numConstraints = constraint.f.rows();
@@ -247,7 +241,7 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
   constraint.dfdux.resize(numConstraints);
   constraint.dfduu.resize(numConstraints);
   for (int i = 0; i < numConstraints; i++){
-    constraint.dfdxx[i].noalias() = Ax.row(i)[0] * H[0] + Ax.row(i)[1] * H[1] + Ax.row(i)[2] * H[2];
+    constraint.dfdxx[i].noalias() = footConstraint.A.row(i)[0] * H[0] + footConstraint.A.row(i)[1] * H[1] + footConstraint.A.row(i)[2] * H[2];
     constraint.dfdxx[i].diagonal().array() -= config_.hessianDiagonalShift;
 
   }

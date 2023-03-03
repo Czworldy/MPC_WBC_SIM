@@ -22,10 +22,12 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   kdl_parser
   robot_state_publisher
   pronto_msgs
+  teb_local_planner
 )
 
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
+  teb_local_planner
 )
 
 find_package(Boost REQUIRED COMPONENTS
@@ -37,7 +39,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(pinocchio REQUIRED pinocchio)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wfatal-errors -Wl,--no-as-needed")
+
 
 ###################################
 ## catkin specific configuration ##
@@ -82,16 +86,22 @@ add_library(ocs2_jypro
   src/constraint/ZeroVelocityConstraintCppAd.cpp
   src/constraint/StateOnlyFootPlacementConstraintCppAD.cpp
   src/constraint/CBFFootPlacementConstraintCppAD.cpp
+  src/constraint/Polygon.cpp
   src/cost/LeggedRobotStateInputQuadraticCost.cpp
+  src/cost/LeggedRobotEndEffectorCost.cpp
+  src/cost/LeggedRobotQuadraticStateInputCost.cpp
   src/initialization/LeggedRobotInitializer.cpp
   src/synchronized_module/LeggedRobotReferenceManager.cpp
   src/synchronized_module/SwitchedModelReferenceManager.cpp
   src/synchronized_module/LeggedRobotRosReferenceManager.cpp
   src/synchronized_module/TerrainReceiver.cpp
+  src/synchronized_module/TerrainPythonInterface.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
   src/foot_planner/FootPlacementPlanner.cpp
+  src/foot_planner/FootConstraintsPlanner.cpp
+  src/foot_planner/LeggedIKSolver.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitPythonInterface.cpp
@@ -100,6 +110,8 @@ add_library(ocs2_jypro
   src/LeggedRobotInterface.cpp
   src/LeggedRobotPreComputation.cpp
   src/visualization/LeggedRobotVisualizer.cpp
+  src/visualization/FootPlacementVisualizer.cpp
+  src/synchronized_module/LegEndEffectorsPolygonReceiver.cpp
 
   src/BodyPositionEstimator/BodyPositionEstimator.cpp
   src/BodyPositionEstimator/SystemParameter.cpp

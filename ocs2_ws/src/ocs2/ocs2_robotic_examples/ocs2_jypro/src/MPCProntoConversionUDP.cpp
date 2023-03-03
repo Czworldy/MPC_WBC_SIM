@@ -63,7 +63,7 @@ using namespace ocs2;
 
 // Struct
 struct LimbsContacts {
-public: 
+public:
     float lf;
     float rf;
     float lh;
@@ -115,7 +115,7 @@ public:
     std::vector<Eigen::Vector3d> foot_position;
     std::vector<Eigen::Vector3d> foot_position_for_terrain;
     ocs2::legged_robot::TerrainEstData terrainEstData;
-#ifdef USE_TERRAIN    
+#ifdef USE_TERRAIN
     std::vector<Eigen::Vector3d> foot_position;
     Eigen::Quaterniond terrain_orientation;
     Eigen::Vector3d terrain_params;
@@ -149,6 +149,7 @@ Eigen::Matrix<double, 3, 1> baseRPY;
 bool isReset(false);
 
 // Function
+using matrix3_t = Eigen::Matrix<double, 3, 3>;
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
@@ -192,7 +193,7 @@ int main(int argc, char **argv) {
     ros::ServiceClient mpcResetServiceClient_ = nh.serviceClient<ocs2_msgs::reset>("/legged_robot_mpc_reset");
     ocs2_msgs::mpc_observation mpc_input_msg;
     ocs2_msgs::mpc_terrain mpc_terrain_sync_input_msg;
-    ros::Rate rate(200);   
+    ros::Rate rate(200);
 
     mpc_input = nh.advertise<ocs2_msgs::mpc_observation>("/legged_robot_mpc_observation", 1);
     mpc_terrain_sync_input = nh.advertise<ocs2_msgs::mpc_terrain>("/legged_robot_mpc_terrain", 1);
@@ -225,7 +226,7 @@ int main(int argc, char **argv) {
         recvfrom(rec_fd, &buf, buf_len, 0, (struct sockaddr*)&rec_aadr, &len);
         std::chrono::steady_clock::time_point recv_tp = std::chrono::steady_clock::now();
         // auto duration = recv_tp.time_since_epoch();
-        std::cerr << "\nreceive time: " 
+        std::cerr << "\nreceive time: "
         << std::chrono::duration_cast<std::chrono::milliseconds>(recv_tp.time_since_epoch()).count() << "\n";
         // Convert EstimatorOutput to MpcInput
         mpcInputData.time_ = buf.time_stamp;
@@ -284,7 +285,7 @@ int main(int argc, char **argv) {
         // mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
-        // Terrain 
+        // Terrain
         #ifdef USE_TERRAIN
         mpcInputData.terrainRotMat = buf.terrain_orientation.toRotationMatrix();
         mpcInputData.terrain_params = buf.terrain_params;
@@ -297,10 +298,12 @@ int main(int argc, char **argv) {
             vector_t input = vector_t::Zero(3 * numOfContactPoint + numOfActuatedJoint);
 
             state.tail(dofOfRobot) = mpcInputData.q_;
+            // state(8) = 0.51; //z = 0.48
+            state.tail(12) << -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
 
             // Initial command
             TargetTrajectories initTargetTrajectories({0.0}, {state}, {input});
-  
+
             ocs2_msgs::reset resetSrv;
             resetSrv.request.reset = static_cast<uint8_t>(true);
             resetSrv.request.targetTrajectories = ros_msg_conversions::createTargetTrajectoriesMsg(initTargetTrajectories);
@@ -322,11 +325,12 @@ int main(int argc, char **argv) {
         auto& data = pinocchioInterfacePtr->getData();
         pinocchio::forwardKinematics(model, data, mpcInputData.q_, mpcInputData.v_);
         // pinocchio::computeCentroidalMomentum(model, data);
-        
+
         const auto& Ag = pinocchio::computeCentroidalMap(model, data, mpcInputData.q_);
         const auto& Hcom = Ag * mpcInputData.v_;
         pinocchio::computeTotalMass(model, data);
         // Centroidal Momtentum
+        std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
         for(uint i = 0; i < 3; i++){
             mpc_input_msg.state.value[i] = Hcom[i] / data.mass[0]; // data.hg.linear()[i];
             mpc_input_msg.state.value[i + 3] = Hcom[i+3] / data.mass[0];  // data.hg.angular()[i];
@@ -342,7 +346,7 @@ int main(int argc, char **argv) {
 
         // mpc_input_msg
         mpc_input_msg.input.value.resize(3 * numOfContactPoint + numOfActuatedJoint);
-        // Contact Force 
+        // Contact Force
         uint index = 0;
         for(uint i = 0; i < numOfContactPoint; i++){
             if(mpcInputData.stance_bool_[i]){
@@ -363,7 +367,7 @@ int main(int argc, char **argv) {
             mpc_input_msg.input.value[3 * mpcInputData.numOfStance_ + i] = mpcInputData.v_[6 + i];
         }
 
-        // mpc_time_msg 
+        // mpc_time_msg
         mpc_input_msg.time = buf.time_stamp;
 
         // mpc_mode_msg
@@ -456,15 +460,21 @@ int main(int argc, char **argv) {
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i] << " ";
+                std::cout << mpc_input_msg.state.value[i] << " ";
             }
+            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
+                std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
+            std::cout << "\nActuated Joints:" << std::endl;
             std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
+                std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
+            std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){
@@ -481,7 +491,7 @@ int main(int argc, char **argv) {
             std::cout << int(mpcInputData.stance_bool_[3]) << "\n";
             std::cout << double(mpc_input_msg.mode) << std::endl;
             std::cout << "terrain Parameters: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
-            std::cout << "time: " << mpc_input_msg.time << std::endl;
+            // std::cout << "time: " << mpc_input_msg.time << std::endl;
         }
         // rate.sleep();
     }
@@ -489,7 +499,7 @@ int main(int argc, char **argv) {
     close(rec_fd);
 
     return 0;
-}   
+}
 
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q){
     Eigen::Matrix<double, 3, 1> rpy;

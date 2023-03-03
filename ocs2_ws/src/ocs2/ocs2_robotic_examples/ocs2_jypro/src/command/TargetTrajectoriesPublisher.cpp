@@ -29,18 +29,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ocs2_jypro/command/TargetTrajectoriesPublisher.h"
 
+#include "ocs2_jypro/common/Types.h"
 #include <ocs2_core/misc/CommandLine.h>
 #include <ocs2_core/misc/Display.h>
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_msgs/mpc_target_trajectories.h>
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
+// #include <Eigen/Core>
+// #include <Eigen/Dense>
+// #include <Eigen/Geometry>
 
 namespace ocs2 {
 
@@ -48,8 +50,8 @@ namespace ocs2 {
 /******************************************************************************************************/
 /******************************************************************************************************/
 TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &nodeHandle, const std::string &topicPrefix,
-                                                               const vector_t &defaultJointState)
-    : defaultJointState_(defaultJointState){
+                                                         const vector_t &defaultJointState)
+    : defaultJointState_(defaultJointState) {
     // observation subscriber
     auto observationCallback = [this](const ocs2_msgs::mpc_observation::ConstPtr &msg) {
         std::lock_guard<std::mutex> lock(latestObservationMutex_);
@@ -102,32 +104,80 @@ ocs2::scalar_t TargetTrajectoriesPublisher::filter(ocs2::scalar_t &input, ocs2::
     return lastOutput;
 }
 
-TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const SystemObservation& observation) {
+inline legged_robot::matrix3_t rpyTORotateMat(double roll, double pitch, double yaw) {
+    legged_robot::matrix3_t RotateMatrix, R_roll, R_pitch, R_yaw;
+    R_roll << 1., 0., 0.,
+        0., cos(roll), -sin(roll),
+        0., sin(roll), cos(roll);
+    R_pitch << cos(pitch), 0, sin(pitch),
+        0., 1., 0.,
+        -sin(pitch), 0., cos(pitch);
+    R_yaw << cos(yaw), -sin(yaw), 0.,
+        sin(yaw), cos(yaw), 0.,
+        0., 0., 1.;
+    RotateMatrix = R_yaw * R_pitch * R_roll;
+    return RotateMatrix;
+}
+
+TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const SystemObservation &observation) {
     // get current pose
     const vector_t currentPose = observation.state.segment<6>(6);
+
+    // 3x3 transform matrix from odom base to odom frame
     const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
 
     Eigen::Matrix3d TransformMat;
     TransformMat << cos(currentYaw), -sin(currentYaw), currentX,
-                    sin(currentYaw),  cos(currentYaw), currentY,
-                    0, 0, 1;
+        sin(currentYaw), cos(currentYaw), currentY,
+        0, 0, 1;
     scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
-    vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
     const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
     int pointCounter = 0;
 
-    for(const auto& state : receivedTargetTrajectories_.stateTrajectory){
-      Eigen::Vector3d pose_xy;
-      pose_xy << state(0), state(1), 1;
-      const auto poseInOdomFrame = TransformMat * pose_xy;
-      auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
-                                        currentYaw + state(2), currentPose(4), currentPose(5)).finished();
-      stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
-      pointCounter++;
+    for (const auto &state : receivedTargetTrajectories_.stateTrajectory) {
+        Eigen::Vector3d pose_xy;
+        pose_xy << state(0), state(1), 1;
+        const auto poseInOdomFrame = TransformMat * pose_xy;
+        auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
+                           currentYaw + state(2), currentPose(4), currentPose(5))
+                              .finished();
+        stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
+        pointCounter++;
     }
+    // ----------------------------------
+
+    // 4x4 transform matrix from odom base to odom frame
+    // const scalar_t currentYaw = currentPose(3);
+    // matrix_t tfMatrix = matrix_t::Identity(4, 4);
+    // const legged_robot::vector3_t ZyxEulerAngles = currentPose.tail(3);
+    // std::cout << "ZyxEulerAngles: " << ZyxEulerAngles.transpose() << "\n";
+    // legged_robot::matrix3_t rotationMatrix = ocs2::getRotationMatrixFromZyxEulerAngles(ZyxEulerAngles);
+    // std::cout << "ocs2::rotationMatrix = \n"
+    //           << rotationMatrix << "\n";
+    // rotationMatrix = rpyTORotateMat(currentPose(5), currentPose(4), currentPose(3));
+    // std::cout << "rpyTORotateMat = \n"
+    //           << rotationMatrix << "\n";
+    // tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
+    // tfMatrix.topRightCorner(3, 1) = currentPose.head(3);
+
+    // scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
+    // vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
+    // const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
+    // int pointCounter = 0;
+
+    // for (const auto &state : receivedTargetTrajectories_.stateTrajectory) {
+    //     legged_robot::vector3_t pose;
+    //     pose << state(0), state(1), 0;
+    //     const auto poseInOdomFrame = tfMatrix * pose.homogeneous();
+    //     auto targetPose = (vector_t(6) << poseInOdomFrame(0), poseInOdomFrame(1), currentPose(2),
+    //                        currentYaw + state(2), currentPose(4), currentPose(5))
+    //                           .finished();
+    //     stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
+    //     pointCounter++;
+    // }
 
     return {timeTrajectory, stateTrajectory, inputTrajectory};
 }
-            
 
 } // namespace ocs2

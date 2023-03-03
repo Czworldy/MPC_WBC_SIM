@@ -108,6 +108,7 @@ add_library(${PROJECT_NAME}
   src/integration/SystemEventHandler.cpp
   src/reference/ModeSchedule.cpp
   src/reference/TargetTrajectories.cpp
+  src/reference/TargetFeetPlacement.cpp
   src/loopshaping/LoopshapingDefinition.cpp
   src/loopshaping/LoopshapingPropertyTree.cpp
   src/loopshaping/LoopshapingFilter.cpp

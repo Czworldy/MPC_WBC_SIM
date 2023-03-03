@@ -29,6 +29,7 @@
   <depend>ocs2_centroidal_model</depend>
   <depend>ocs2_ros_interfaces</depend>
   <depend>ocs2_python_interface</depend>
+  <depend>teb_local_planner</depend>
 
   <depend>pinocchio</depend>
   <depend>X20</depend>

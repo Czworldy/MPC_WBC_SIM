@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     ocs2_msgs::mpc_observation mpc_input_msg;
     ros::Rate rate(200);
     // Main Variables
-    BodyPositionEst bodyPositionEst;
+    // BodyPositionEst bodyPositionEst;
     std::unique_ptr<PinocchioInterface> pinocchioInterfacePtr;
     legged_robot::ModelSettings modelSettings;
 

@@ -59,12 +59,28 @@ class SwingTrajectoryPlanner {
               const feet_array_t<scalar_array_t>& touchDownHeightSequence, 
               const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
               scalar_t initTime);
+              
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement);
 
   scalar_t getZvelocityConstraint(size_t leg, scalar_t time) const;
 
   scalar_t getZpositionConstraint(size_t leg, scalar_t time) const;
 
+  scalar_t getXvelocityConstraint(size_t leg, scalar_t time) const;
+
+  scalar_t getXpositionConstraint(size_t leg, scalar_t time) const;
+
+  scalar_t getYvelocityConstraint(size_t leg, scalar_t time) const;
+
+  scalar_t getYpositionConstraint(size_t leg, scalar_t time) const;
+
+
+
   scalar_t getSwingTimeLeft(size_t leg, scalar_t time) const;
+
+  void setSwingHeight(scalar_t swingHeight){
+    // config_.swingHeight = swingHeight;
+  }
 
  private:
   /**
@@ -113,6 +129,8 @@ class SwingTrajectoryPlanner {
   const size_t numFeet_;
 
   feet_array_t<std::vector<SplineCpg>> feetHeightTrajectories_;
+  feet_array_t<std::vector<CubicSpline>> feetXTrajectories_;
+  feet_array_t<std::vector<CubicSpline>> feetYTrajectories_;
   feet_array_t<std::vector<scalar_t>> feetHeightTrajectoriesEvents_;
 };
 

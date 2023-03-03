@@ -116,7 +116,7 @@ int main(int argc, char **argv)
     nh.getParam("/urdfFile", urdfFilePath);
     KinematicDynamicSetup(urdfFilePath);
     std::cerr << "____________________________dqwang______________________________________" << std::endl;
-    
+
     // spin
     while (ros::ok() && ros::master::check()) {
         ros::spinOnce();
@@ -137,11 +137,11 @@ int main(int argc, char **argv)
 
 void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg) {
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-    
+
     size_t N_times = msg->timeTrajectory.size(); // Time Horison
     size_t N_modeSequence = msg->modeSchedule.modeSequence.size(); // Gait Mode Sequence
 
-    //Resize MPC Policy Data 
+    //Resize MPC Policy Data
     mpcData.timeTrajectory_.clear();
     mpcData.timeTrajectory_.resize(N_times);
     mpcData.stateTrajectory_.clear();
@@ -238,13 +238,13 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
     getGeneralizedVelocities();
     DesiredTrajectoriesForWBC();
 
-    for (int i = 0; i < N_times; i++){  
+    for (int i = 0; i < N_times; i++){
         //position
         wbcMsg.wbcTraj[i].basePos.push_back(q[i][0]); //x
         wbcMsg.wbcTraj[i].basePos.push_back(q[i][1]); //y
         wbcMsg.wbcTraj[i].basePos.push_back(q[i][2]); //z
         wbcMsg.wbcTraj[i].basePos.push_back(q[i][5]); //r
-        wbcMsg.wbcTraj[i].basePos.push_back(q[i][4]); //p 
+        wbcMsg.wbcTraj[i].basePos.push_back(q[i][4]); //p
         wbcMsg.wbcTraj[i].basePos.push_back(q[i][3]); //y
         // velocity
         wbcMsg.wbcTraj[i].baseVel.push_back(wbcInterfaceData.baseVelocity[i][0]); //x
@@ -258,9 +258,9 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][1]); //y
         wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][2]); //z
         wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][5]); //r
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][4]); //p 
+        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][4]); //p
         wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][3]); //y
-        
+
         for (int k = 0; k < modelSettings.contactNames3DoF.size(); k++){ // LF RF LH RH
             wbcMsg.wbcTraj[i].swingPos.push_back(wbcInterfaceData.swingFeetPosition[i][k][0]);
             wbcMsg.wbcTraj[i].swingPos.push_back(wbcInterfaceData.swingFeetPosition[i][k][1]);
@@ -282,20 +282,20 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
           wbcMsg.wbcTraj[i].actJointPos[j] = q[i][6 + j];
           wbcMsg.wbcTraj[i].actJointVel[j] = v[i][6 + j];
         }
-        
+
     }
     for (uint8_t i = 0; i < 4; i++){ // LF RF LH RH
         wbcMsg.firstGait[i] = wbcInterfaceData.stanceFeet[0][i];
         wbcMsg.secondGait[i]= wbcInterfaceData.stanceFeet[1][i];
         wbcMsg.thirdGait[i] = wbcInterfaceData.stanceFeet[2][i];
     }
-    wbcMsg.switchTime[0] = wbcInterfaceData.switchTime[0]; wbcMsg.switchTime[1] = wbcInterfaceData.switchTime[1]; 
+    wbcMsg.switchTime[0] = wbcInterfaceData.switchTime[0]; wbcMsg.switchTime[1] = wbcInterfaceData.switchTime[1];
 
     for (int i = 0; i < 4; i++)
-        std::cout <<wbcMsg.firstGait[i]<<"\t" << std::endl;
+        // std::cout <<wbcMsg.firstGait[i]<<"\t" << std::endl;
     wbcMsgisdone = true;
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::cerr << "time:" << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()<< std::endl;
+    // std::cerr << "time:" << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()<< std::endl;
 
 }
 
@@ -310,7 +310,7 @@ void FiniteDifferencesActuatedJointAcc(){
     scalar_t delta_t;
 
     for(size_t k = 0; k < N_times; k++){
-        a[k].resize(dofOfRobot); 
+        a[k].resize(dofOfRobot);
 
         // First Time
         if(k == 0){
@@ -350,7 +350,7 @@ void FiniteDifferencesActuatedJointAcc(){
             for(size_t j = 0; j < numOfActuatedJoint; j++){
                 a[k][j + 6] = (mpcData.inputTrajectory_[k - 1][j + dim_inputTrajectory_k_minus - numOfActuatedJoint] - mpcData.inputTrajectory_[k ][j + dim_inputTrajectory_k_plus - numOfActuatedJoint])/
                               (delta_t);
-            }        
+            }
         }
     }
 
@@ -425,7 +425,7 @@ void DesiredTrajectoriesForWBC(){
         wbcInterfaceData.baseVelocity[k].resize(6);
         wbcInterfaceData.baseVelocity[k].head(3) = v[k].head(3);
         wbcInterfaceData.baseVelocity[k].tail(3) = rpyDotTOtwist(q[0][3], q[0][4], q[0][5]) * v[k].segment(3, 3);//X Y Z
-        
+
         // Base Acceleration
         pinocchio::computeCentroidalMapTimeVariation(model, data, q[k], v[k]); //the time derivative of the Centroidal Momentum Matrix
         vector_t hDot = vector_t::Zero(6);
@@ -445,13 +445,13 @@ void DesiredTrajectoriesForWBC(){
         for(size_t j = 0; j < N_contactPoint; j++){
             matrix_t jacobianContactPoint = matrix_t::Zero(6, dofOfRobot);
             matrix_t jacobianDotContactPoint = matrix_t::Zero(6, dofOfRobot);
-            pinocchio::getFrameJacobian(model, data, model.getBodyId(modelSettings.contactNames3DoF[j]), pinocchio::LOCAL_WORLD_ALIGNED, jacobianContactPoint);   
+            pinocchio::getFrameJacobian(model, data, model.getBodyId(modelSettings.contactNames3DoF[j]), pinocchio::LOCAL_WORLD_ALIGNED, jacobianContactPoint);
             pinocchio::getFrameJacobianTimeVariation(model, data, model.getBodyId(modelSettings.contactNames3DoF[j]), pinocchio::LOCAL_WORLD_ALIGNED, jacobianDotContactPoint);
             // Contact Point Velocity
             wbcInterfaceData.swingFeetVelocity[k][j] = (jacobianContactPoint * v[k]).head(3);
             // Contact Point Acceleration rdotdot = J*qdotdot + Jdot*qdot
             wbcInterfaceData.swingFeetAcceleration[k][j] = (jacobianContactPoint * a[k] + jacobianDotContactPoint * v[k]).head(3);
-        } 
+        }
         // //For LOCAL Swing
         // pinocchio::computeJointJacobians(model, data, qTpl);
         // pinocchio::updateFramePlacements(model, data);
@@ -552,7 +552,7 @@ Eigen::Matrix<double, 3, 3> rpyDotTOtwist(double theta_z, double theta_y, double
     translation_Matrix << 0, -sin(theta_z), cos(theta_y) * cos(theta_z),
                           0, cos(theta_z), cos(theta_y) * sin(theta_z),
                           1, 0 , -sin(theta_y);
-                          
+
     return translation_Matrix;
 }
 

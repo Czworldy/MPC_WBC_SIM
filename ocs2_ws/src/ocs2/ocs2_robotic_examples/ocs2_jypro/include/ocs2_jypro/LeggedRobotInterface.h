@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/ModelSettings.h"
 #include "ocs2_jypro/initialization/LeggedRobotInitializer.h"
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
+#include "ocs2_jypro/synchronized_module/LegEndEffectorsPolygonReceiver.h"
 
 /**
  * LeggedRobotInterface class
@@ -87,7 +88,7 @@ class LeggedRobotInterface final : public RobotInterface {
   // ad_vector_t getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
   //                                                                 const PinocchioStateInputMapping<ad_scalar_t>& mapping,
   //                                                                 const ad_vector_t& state);
-
+  std::vector<std::vector<vector3_t>> initPolygon;
  private:
   std::shared_ptr<GaitSchedule> loadGaitSchedule(const std::string& taskFile);
   void setupOptimalConrolProblem(const std::string& taskFile, const std::string& urdfFile, const std::string& referenceFile, bool verbose);
@@ -109,6 +110,9 @@ class LeggedRobotInterface final : public RobotInterface {
   std::unique_ptr<StateInputCost> getCBFFootPlacementConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                   const std::string& modelName, size_t contactPointIndex,
                                                                   const RelaxedBarrierPenalty::Config& barrierPenaltyConfig);
+  std::unique_ptr<StateInputCost> getEndEffectorTrackingCost(const std::string& taskFile, const EndEffectorKinematics<scalar_t>& eeKinematics,
+                                                             const std::string& modelName, size_t contactPointIndex,
+                                                             const std::string& modelFolderCppAd, bool recompileCppAd);
 
   bool display_;
   ModelSettings modelSettings_;

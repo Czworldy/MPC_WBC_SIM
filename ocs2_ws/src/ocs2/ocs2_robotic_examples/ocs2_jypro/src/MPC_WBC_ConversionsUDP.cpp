@@ -62,6 +62,7 @@ struct mpcPolicyData {
 };
 // MPC OUTPUT FOR UDP
 #define LENGTH 10
+#define LENGTH 10
 size_t N_times = LENGTH;
 using vector_foot_t = Eigen::Matrix<Eigen::Matrix<Eigen::Matrix<float, 3, 1 >,4, 1>, LENGTH, 1>;
 using vector_base_t = Eigen::Matrix <Eigen::Matrix<float, 6, 1>, LENGTH, 1>;
@@ -388,6 +389,7 @@ void getGeneralizedVelocities(){
         const auto& Ag = pinocchio::computeCentroidalMap(model, data, q[k]); // Computes the Centroidal Momentum Matrix
         pseudoInverse(Ag.leftCols(6), 0.0001, InverseAb[k]); // InverseAb
         Aj[k] = Ag.rightCols(numOfActuatedJoint); // Aj
+        std::cout << "data.mass[0]: " << data.mass[0] << std::endl;
         v[k].head(6) = InverseAb[k] * (mpcData.stateTrajectory_[k].head(6) * data.mass[0] - Aj[k] * v[k].tail(numOfActuatedJoint));
     }
 }

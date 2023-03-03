@@ -115,7 +115,7 @@ class PinocchioEndEffectorKinematicsCppAd final : public EndEffectorKinematics<s
   const PinocchioStateInputMapping<ad_scalar_t>& mapping_;
   update_pinocchio_interface_callback updateCallback_;
   std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr;
-  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc;
+  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_, velocityFunc_;
  
 
  private:

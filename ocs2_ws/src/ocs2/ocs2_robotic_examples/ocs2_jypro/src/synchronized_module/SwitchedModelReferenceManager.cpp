@@ -37,13 +37,17 @@ namespace legged_robot {
 /******************************************************************************************************/
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
-                                                             std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr,
-                                                             std::shared_ptr<TerrainEstData> terrainEstDataPtr)
+                                                             std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
+                                                             std::shared_ptr<TerrainEstData> terrainEstDataPtr,
+                                                             std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
+                                                             std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
-      terrainEstDataPtr_(std::move(terrainEstDataPtr)) {}
+      terrainEstDataPtr_(std::move(terrainEstDataPtr)),
+      mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
+      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -66,16 +70,16 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
-  
+
   // Normal swing feet trajectory
   swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
 
   // For terrain aware swing feet trajectory planning
-  // swingTrajectoryPtr_->update(modeSchedule, 
-  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(), 
+  // swingTrajectoryPtr_->update(modeSchedule,
+  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(),
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
-  
+
 }
 
 /******************************************************************************************************/
@@ -85,6 +89,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
                                                      TargetFeetPlacement& targetFeetPlacement) {
   const auto timeHorizon = finalTime - initTime;
+  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
   auto& targetState = targetTrajectories.stateTrajectory.back();
   const vector3_t& terrainParams = terrainEstDataPtr_->terrainParams.cast<scalar_t>();
@@ -95,11 +100,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
   std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
 
-  const scalar_t distance2Terrain = 0.4; //For X20
+  const scalar_t distance2Terrain = 0.48; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
-  std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
-  
+  // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
+  // std::cout << "intiState: " << initState.segment(6, 18).transpose() << std::endl;
+
   if(targetTrajectories.timeTrajectory.size() >= 2){
     // targetState(8) = zReference;
     // targetState(10) = terrainRPY[1]; //pitch
@@ -116,8 +122,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     // std::cout << "######## modify target state ########\n"; 
   }
 
+
+
+  //   std::cout << "######## modify target state ########\n";
+  // }
+
   // std::cout << "targetTrajectories:" << targetTrajectories.stateTrajectory.back().segment(6,6).transpose() << std::endl;
- 
+
   // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   // std::cout << modeSchedule << std::endl;
 
@@ -125,33 +136,25 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   // std::cout << "targetFeetPlacement L size:" << targetFeetPlacement.targetFeetPlacemetLeft_.size() << "\n";
   // std::cout << "targetFeetPlacement R size:" << targetFeetPlacement.targetFeetPlacemetRight_.size() << "\n";
-  auto leftFront = targetFeetPlacement.targetFeetPlacemetLeftFront_;
-  auto rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
-  auto leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
-  auto rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
-  ocs2::vector3_t base_pose = initState.segment(6, 3);
-  // base_pose[0] += 0.04;
-  // base_pose[1] -= 0.05;
-
-  std::cout << "base_pose: " << base_pose.transpose() << "\n";
-  for (size_t i = 0; i < leftFront.size(); i++) {
-    leftFront[i] += base_pose;
-    rightFront[i] += base_pose;
-    leftBack[i] += base_pose;
-    rightBack[i] += base_pose;
-  }
-  
-
-  for(const auto& left_i : leftFront) {
-    std::cout << "left_i:" << left_i.transpose() << "\n";
-  }
+  // const auto& leftFront = targetFeetPlacement.targetFeetPlacemetLeftFront_;
+  // const auto& rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
+  // const auto& leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
+  // const auto& rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
+  // for(const auto& left_i : leftFront) {
+  //   std::cout << "left_i:" << left_i.transpose() << "\n";
+  // }
   // for(const auto& right_i : right) {
   //   std::cout << "right_i:" << right_i.transpose() << "\n";
   // }
-  footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
+  // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
+  // std::cout << "mpcPolygonArrayPtr_[0][0][0]: " << (*mpcPolygonArrayPtr_)[0][0][0].transpose() << std::endl;
+
+  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
-  
+
+  // abort();
+
   // Normal swing feet trajectory
   swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
@@ -160,13 +163,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // std::cout << *terrainEstDataPtr_ << std::endl;
   // For terrain aware swing feet trajectory planning
   // this part makes the robot performance worse. something wrong in this part.
-  // swingTrajectoryPtr_->update(modeSchedule, 
-  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(), 
+  // swingTrajectoryPtr_->update(modeSchedule,
+  //                               footPlacementPlannerPtr_->getliftOffHeightSequence(),
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  std::cout << "modifyReferences Done!" << "\n";
-  
+  // std::cout << "modifyReferences Done!" << "\n";
+
 }
 
 }  // namespace legged_robot

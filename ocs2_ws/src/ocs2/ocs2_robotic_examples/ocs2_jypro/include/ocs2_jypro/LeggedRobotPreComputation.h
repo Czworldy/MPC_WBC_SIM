@@ -40,7 +40,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/ModelSettings.h"
 #include "ocs2_jypro/constraint/EndEffectorLinearConstraint.h"
 #include "ocs2_jypro/foot_planner/SwingTrajectoryPlanner.h"
-#include "ocs2_jypro/foot_planner/FootPlacementPlanner.h"
+// #include "ocs2_jypro/foot_planner/FootPlacementPlanner.h"
+#include "ocs2_jypro/foot_planner/FootConstraintsPlanner.h"
+#include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
+
+#include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -50,7 +54,10 @@ class LeggedRobotPreComputation : public PreComputation {
  public:
   LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                             const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
-                            const FootPlacementPlanner& fottPlacementPlanner,
+                            // const FootPlacementPlanner& fottPlacementPlanner,
+                            const FootConstraintsPlanner& footConstraintsPlanner,
+                            std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                            std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                             ModelSettings settings);
   ~LeggedRobotPreComputation() override = default;
 
@@ -61,7 +68,11 @@ class LeggedRobotPreComputation : public PreComputation {
   const std::vector<EndEffectorLinearConstraint::Config>& getEeNormalVelocityConstraintConfigs() const { return eeNormalVelConConfigs_; }
 
   const std::vector<scalar_t>& getSwingTimeLeft() const { return swingTimeLeft_; }
-  const std::vector<Eigen::Matrix<scalar_t, 6, 1>>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
+  // const std::vector<Eigen::Matrix<scalar_t, 6, 1>>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
+  const std::vector<FootConstraints>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
+  const std::vector<vector_t> getEEReference() const { return eeReference_; }
+
+  const std::shared_ptr<TerrainEstData>& getTerrainEstDataPtr() const { return terrainEstDataPtr_; }
 
   PinocchioInterface& getPinocchioInterface() { return pinocchioInterface_; }
   const PinocchioInterface& getPinocchioInterface() const { return pinocchioInterface_; }
@@ -72,12 +83,19 @@ class LeggedRobotPreComputation : public PreComputation {
   PinocchioInterface pinocchioInterface_;
   CentroidalModelInfo info_;
   const SwingTrajectoryPlanner* swingTrajectoryPlannerPtr_;
-  const FootPlacementPlanner* footPlacnementPlannerPtr_;
+  // const FootPlacementPlanner* footPlacnementPlannerPtr_;
+  const FootConstraintsPlanner* footConstraintsPlannerPtr_;
   const ModelSettings settings_;
+
+  std::shared_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
   std::vector<scalar_t> swingTimeLeft_;
-  std::vector<Eigen::Matrix<scalar_t, 6, 1>> footPlacementConstraints_;
+  // std::vector<Eigen::Matrix<scalar_t, 6, 1>> footPlacementConstraints_;
+  std::vector<FootConstraints> footPlacementConstraints_;
+
+  std::vector<vector_t> eeReference_;
+  std::shared_ptr<TerrainEstData> terrainEstDataPtr_;
 };
 
 }  // namespace legged_robot

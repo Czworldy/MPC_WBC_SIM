@@ -9,25 +9,19 @@
 namespace ocs2 {
 
 //X20 (x,y) = (0.3377,0.2033)
-//X20 (x,y) = (0.2921,0.2001, -0.4439) in real
-
-#define __FOOT_X__ 0.29
-#define __FOOT_Y__ 0.17
-#define __FOOT_R__ -0.4439
-using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
+#define __FOOT_X__ 0.30164
+#define __FOOT_Y__ 0.18322
+#define __FOOT_R__ 0.036
 struct TargetFeetPlacement {
-
-
-  TargetFeetPlacement() : TargetFeetPlacement(
-    std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__}},
-    std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}, 
-    std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}},
-    std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}) {}
+ using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
+  TargetFeetPlacement() {init();}
   TargetFeetPlacement(std::vector<vector3_t> leftFront, std::vector<vector3_t> rightFront,
   std::vector<vector3_t> leftBack, std::vector<vector3_t> rightBack)
     : targetFeetPlacemetLeftFront_(std::move(leftFront)), targetFeetPlacemetRightFront_(std::move(rightFront)),
     targetFeetPlacemetLeftBack_(std::move(leftBack)), targetFeetPlacemetRightBack_(std::move(rightBack))
      {}
+  void clear();
+  void init();
 
   std::vector<vector3_t> targetFeetPlacemetLeftFront_;
   std::vector<vector3_t> targetFeetPlacemetRightFront_;
