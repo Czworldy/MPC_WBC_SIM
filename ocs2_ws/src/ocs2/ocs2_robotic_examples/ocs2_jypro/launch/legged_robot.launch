@@ -51,8 +51,6 @@
     <!-- <node pkg="ocs2_jypro" type="legged_robot_target" name="legged_robot_target" -->
 
 
-    <node pkg="ocs2_jypro" type="legged_robot_target_traj" name="legged_robot_target_traj"
-    output="screen" launch-prefix="gnome-terminal --"/>
 
 
 
