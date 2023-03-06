@@ -85,6 +85,7 @@ public:
     vector_joint_t jointVel;
     vector_joint_t jointAcc;
     Eigen::Matrix<float, LENGTH,1> stateTime;
+    Eigen::Matrix<float, 12, 1> inputForce;
 };
  
 // Global Variables
@@ -278,6 +279,7 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
 
         // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait;
         // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData secondgait: " << wbcInterfaceData.secondGait;
+        wbcInterfaceData.inputForce = mpcData.inputTrajectory_[0].head(12).cast<float>();
 
         int res = sendto(send_fd, &wbcInterfaceData, sizeof(wbcInterfaceData), 0, (struct sockaddr*)&send_aadr, (socklen_t)sizeof(send_aadr));
         auto now = std::chrono::steady_clock::now();

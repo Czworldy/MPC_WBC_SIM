@@ -112,8 +112,8 @@ public:
     Eigen::Quaterniond frame_c_quat_in_world;
     Eigen::Matrix<double, 3, 1> frame_c_xyz_in_world;
 
-    std::vector<Eigen::Vector3d> foot_position;
-    std::vector<Eigen::Vector3d> foot_position_for_terrain;
+    // std::vector<Eigen::Vector3d> foot_position;
+    // std::vector<Eigen::Vector3d> foot_position_for_terrain;
     ocs2::legged_robot::TerrainEstData terrainEstData;
 #ifdef USE_TERRAIN
     std::vector<Eigen::Vector3d> foot_position;
@@ -330,7 +330,7 @@ int main(int argc, char **argv) {
         const auto& Hcom = Ag * mpcInputData.v_;
         pinocchio::computeTotalMass(model, data);
         // Centroidal Momtentum
-        std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
+        // std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
         for(uint i = 0; i < 3; i++){
             mpc_input_msg.state.value[i] = Hcom[i] / data.mass[0]; // data.hg.linear()[i];
             mpc_input_msg.state.value[i + 3] = Hcom[i+3] / data.mass[0];  // data.hg.angular()[i];
