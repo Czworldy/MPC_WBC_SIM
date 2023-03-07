@@ -212,15 +212,15 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   // Cost terms
   problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_));
   // add final cost
-  const std::string fileQfMatrix = "/home/yjy/jy_control_test/LQR/S.txt";
-  auto Qf = readMatrix(fileQfMatrix.c_str());
-  if (display_) {
-    std::cerr << "\n #### Final Cost Coefficients: ";
-    std::cerr << "\n #### =============================================================================\n";
-    std::cerr << "Q_final:\n" << Qf << "\n";
-    std::cerr << " #### =============================================================================\n";
-  }
-  problemPtr_->finalCostPtr->add("finalCost", std::unique_ptr<StateCost>(new QuadraticStateCost(Qf)));
+//   const std::string fileQfMatrix = "/home/yjy/jy_control_test/LQR/S.txt";
+//   auto Qf = readMatrix(fileQfMatrix.c_str());
+//   if (display_) {
+//     std::cerr << "\n #### Final Cost Coefficients: ";
+//     std::cerr << "\n #### =============================================================================\n";
+//     std::cerr << "Q_final:\n" << Qf << "\n";
+//     std::cerr << " #### =============================================================================\n";
+//   }
+//   problemPtr_->finalCostPtr->add("finalCost", std::unique_ptr<StateCost>(new QuadraticStateCost(Qf)));
 
     // Constraint terms
     // friction cone settings

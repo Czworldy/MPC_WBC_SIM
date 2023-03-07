@@ -5,7 +5,7 @@
     <arg name="config_name"        default="mpc"/>
     <arg name="target_command"     default="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
     <arg name="gait_command"       default="$(find ocs2_jypro)/config/command/gait.info"/>
-    <arg name="rviz"               default="true" />
+    <arg name="rviz"               default="false" />
     <arg name="multiplot"          default="false"/>
     <arg name="description_name"   default="legged_robot_description"/>
     <!-- <arg name="description_file"   default="$(find JYPro)/urdf/JYPro_ocs2.urdf"/> -->
@@ -42,7 +42,7 @@
     <node pkg="ocs2_jypro" type="legged_robot_mpc" name="legged_robot_mpc"
           output="screen" launch-prefix=""/>
 
-    <node pkg="ocs2_jypro" type="MPC_WBC_ConversionsUDP" name="MPC_WBC_ConversionsUDP"
+    <node pkg="ocs2_jypro" type="MPC_WBC_Conversions" name="MPC_WBC_Conversions"
           output="screen" launch-prefix="gnome-terminal --"/>
 
     <node pkg="ocs2_jypro" type="legged_robot_dummy" name="legged_robot_dummy"
