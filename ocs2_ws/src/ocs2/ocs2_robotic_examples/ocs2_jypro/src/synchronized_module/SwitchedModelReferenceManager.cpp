@@ -117,8 +117,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   // std::cout << "targetTrajectories:" << targetTrajectories.stateTrajectory.back().segment(6,6).transpose() << std::endl;
  
-  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
-  // std::cout << modeSchedule << std::endl;
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  std::cout << modeSchedule << std::endl;
 
   // const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
 

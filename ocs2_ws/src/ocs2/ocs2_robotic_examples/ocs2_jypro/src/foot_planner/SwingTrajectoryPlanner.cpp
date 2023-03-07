@@ -308,11 +308,11 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
         const CubicSpline::Node yEnd{1.0, feetPlacement[j][p].y(), 0.0};
         feetYTrajectories_[j].emplace_back(yStart, yEnd);
       }
-      if(j == 0){
+    }
+    if(j == 0){
         for(const auto& p:feetPlacement[j]){
           std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
         }
-      }
     }
     
     feetHeightTrajectoriesEvents_[j] = eventTimes;

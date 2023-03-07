@@ -121,14 +121,14 @@ rollout
 {
   AbsTolODE                       1e-5
   RelTolODE                       1e-3
-  timeStep                        1e-2
+  timeStep                        1e-3
   maxNumStepsPerSecond            10000
   checkNumericalStability         false
 }
 
 mpc
 {
-  timeHorizon                     0.5
+  timeHorizon                     1
   numPartitions                   3
 
   runtimeMaxNumIterations         5
@@ -266,8 +266,8 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.01
-  delta                  0.002
+  mu                     0.07
+  delta                  0.01
 }
 
 Qee
