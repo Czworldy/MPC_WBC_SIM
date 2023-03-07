@@ -145,13 +145,14 @@ uint numOfContactPoint(4);
 uint dofOfRobot(18);
 bool debug(true);
 Eigen::Quaternion<double> baseQuat;
-Eigen::Matrix<double, 3, 1> baseRPY;
+Eigen::Matrix<double, 3, 1> baseRPY, lastBaseRPY = {0,0,0};
 bool isReset(false);
 
 // Function
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
+// Eigen::Matrix<double, 3, 1> quatToRPY(const Eigen::MatrixBase<double>& q);
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
 QuaternionToRPY yawTotalCounter;
 // Main
@@ -261,10 +262,18 @@ int main(int argc, char **argv) {
         // Pose
         baseQuat = buf.base_orientation_world;
         baseRPY = yawTotalCounter.quaternionToTotalRad(baseQuat);
+        // baseRPY = quaternionTOrpy(baseQuat);
+        // baseRPY = baseQuat.toRotationMatrix().eulerAngles(2, 1, 0);
+        // makeEulerAnglesUnique(baseRPY);
+        // baseRPY = baseQuat.toRotationMatrix().eulerAngles(2, 1, 0);
+        // ocs2::makeEulerAnglesUnique(baseRPY);
+        // const auto yaw = moduloAngleWithReference(baseRPY[0], lastBaseRPY[0]);
+
         // Yaw Pitch Roll
         mpcInputData.q_[3] = baseRPY[2];
         mpcInputData.q_[4] = baseRPY[1];
         mpcInputData.q_[5] = baseRPY[0];
+        // lastBaseRPY = baseRPY;
         //Position
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
@@ -510,6 +519,26 @@ Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q){
     //     rpy[2] += 2*M_PI;
     return rpy;
  }
+
+// /*!
+//  * Convert a quaternion to RPY.  Uses ZYX order (yaw-pitch-roll), but returns
+//  * angles in (roll, pitch, yaw).
+//  */
+
+// Eigen::Matrix<double, 3, 1> quatToRPY(const Eigen::MatrixBase<double>& q) {
+// //  static_assert(T::ColsAtCompileTime == 1 && T::RowsAtCompileTime == 4,
+// //                "Must have 4x1 quat");
+//   Eigen::Matrix<double, 3, 1> rpy;
+//   double as = std::min(-2. * (q[1] * q[3] - q[0] * q[2]), .99999);
+//   rpy(2) =
+//       std::atan2(2 * (q[1] * q[2] + q[0] * q[3]), q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3]);
+//                  //square(q[0]) + square(q[1]) - square(q[2]) - square(q[3]));
+//   rpy(1) = std::asin(as);
+//   rpy(0) =
+//       std::atan2(2 * (q[2] * q[3] + q[0] * q[1]), q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3]);
+//                  //square(q[0]) - square(q[1]) - square(q[2]) + square(q[3]));
+//   return rpy;
+// }
 
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
     matrix3_t translation_Matrix;

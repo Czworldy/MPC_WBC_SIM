@@ -32,10 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_jypro/common/utils.h>
 
 #include <eigen3/unsupported/Eigen/MatrixFunctions>
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
 
 namespace ocs2 {
 namespace legged_robot {
 inline matrix3_t rpyTORotateMat(vector3_t rpy);
+vector3_t xNominalOrientation_ = vector3_t::Zero();
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -55,23 +57,44 @@ LeggedRobotStateInputQuadraticCost* LeggedRobotStateInputQuadraticCost::clone() 
 /******************************************************************************************************/
 std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputDeviation(
     scalar_t time, const vector_t& state, const vector_t& input, const TargetTrajectories& targetTrajectories, const PreComputation& preComp) const {
+  // const auto contactFlags = referenceManagerPtr_->getContactFlags(time);
+  // vector_t xNominal = targetTrajectories.getDesiredState(time);
+  // const vector_t uNominal = weightCompensatingInput(info_, contactFlags);
+  // vector3_t xNominalOrientation = xNominal.segment<3>(9);
+  // vector3_t xOrientation = state.segment<3>(9);
+
+  // makeEulerAnglesUnique(xNominalOrientation);
+  // const auto yaw = moduloAngleWithReference(xNominalOrientation[0], xNominalOrientation_[0]);
+  // xNominalOrientation[0] = yaw;
+  // // makeEulerAnglesUnique(xOrientation);
+  // // std::cout << "xNominalOrientation: " << xNominalOrientation.transpose() << std::endl;
+  // // std::cout << "xOrientation: " << xOrientation.transpose() << std::endl;
+
+  // const matrix3_t R = getRotationMatrixFromZyxEulerAngles(xOrientation);
+  // const matrix3_t RNominal = getRotationMatrixFromZyxEulerAngles(xNominalOrientation);
+  // const vector3_t errVec = rotationErrorInWorld(R, RNominal).reverse(); // cant more than 90 degree.
+  // // const matrix3_t err = (R * RNominal.transpose()).log();
+  // // const vector3_t errVec = vector3_t(err(2, 1), err(0, 2), err(1, 0));
+
+  // xNominal.segment<3>(9) = xNominalOrientation;
+  // vector_t xDeviation = state - xNominal;
+  // // xDeviation.segment<3>(9) = errVec;
+
+  // const auto currentPoseError = xDeviation.segment<6>(6);
+  // std::cout << "currentPoseError: " << currentPoseError.transpose() << std::endl;
+  // xDeviation.segment<6>(6) = 2*currentPoseError;
+  // // std::cout << "xDeviation: " << xDeviation.transpose() << std::endl;
+  // xNominalOrientation_ = xNominalOrientation;
+  // return {xDeviation, input - uNominal};
+
   const auto contactFlags = referenceManagerPtr_->getContactFlags(time);
   const vector_t xNominal = targetTrajectories.getDesiredState(time);
   const vector_t uNominal = weightCompensatingInput(info_, contactFlags);
-
-  const vector3_t xNominalOrientation = xNominal.segment<3>(3);
-  const vector3_t xOrientation = state.segment<3>(3);
-
-  const matrix3_t R = rpyTORotateMat(xOrientation.reverse());
-  const matrix3_t RNominal = rpyTORotateMat(xNominalOrientation.reverse());
-
-  const matrix3_t err = (R * RNominal.transpose()).log();
-  const vector3_t errVec = vector3_t(err(2, 1), err(0, 2), err(1, 0)).reverse();
-
   vector_t xDeviation = state - xNominal;
-  xDeviation.segment<3>(3) = errVec;
-
+  const auto currentPoseError = xDeviation.segment<6>(6);
+  xDeviation.segment<6>(6) = 2*currentPoseError;
   return {xDeviation, input - uNominal};
+
 }
 
 

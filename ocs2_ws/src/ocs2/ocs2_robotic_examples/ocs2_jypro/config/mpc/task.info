@@ -22,7 +22,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.2     ;-0.2
-  swingHeight                   0.25
+  swingHeight                   0.2
   touchdownAfterHorizon         0.2
   swingTimeScale                0.05
 }
@@ -257,7 +257,7 @@ R
 
 frictionConeSoftConstraint
 {
-  frictionCoefficient    0.7
+  frictionCoefficient    0.6
 
   ; relaxed log barrier parameters
   mu                     0.1
@@ -267,8 +267,8 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.03
-  delta                  0.05
+  mu                     0.02
+  delta                  0.1
 }
 
 Qee
