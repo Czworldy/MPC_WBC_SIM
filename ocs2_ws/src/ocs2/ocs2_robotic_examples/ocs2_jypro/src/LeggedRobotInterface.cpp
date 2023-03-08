@@ -160,13 +160,15 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                        modelSettings().contactNames3DoF);
   std::unique_ptr<FootPlacementPlanner> footPlacementPlanner(
       new FootPlacementPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
-  
-  std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_(new legged::LeggedIKSolver(*pinocchioInterfacePtr_, getCentroidalModelInfo(), endEffectorKinematics));
+  vector3_t linkLength = vector3_t(0.12325, 0.3, 0.33);
+  std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_(new LeggedIKSolver(linkLength, 0.292, 0.08));
   
   std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
   // Mode schedule manager
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner), 
-                                                                            std::move(footPlacementPlanner), terrainEstDataPtr);
+                                                                            std::move(footPlacementPlanner), 
+                                                                            leggedIKSolverPtr_,
+                                                                            terrainEstDataPtr);
 
   // Optimal control problem
   problemPtr_.reset(new OptimalControlProblem);
@@ -240,7 +242,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   problemPtr_->preComputationPtr.reset(new LeggedRobotPreComputation(*pinocchioInterfacePtr_, centroidalModelInfo_,
                                                                      *referenceManagerPtr_->getSwingTrajectoryPlanner(), 
                                                                      *referenceManagerPtr_->getFootPlacementPlanner(),
-                                                                     std::move(leggedIKSolverPtr_),
+                                                                     leggedIKSolverPtr_,
                                                                      modelSettings_));
 
   // Rollout

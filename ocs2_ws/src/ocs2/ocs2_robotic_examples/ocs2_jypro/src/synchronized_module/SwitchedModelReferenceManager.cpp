@@ -38,11 +38,13 @@ namespace legged_robot {
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootPlacementPlanner> footPlacementPlannerPtr,
+                                                             std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
+      LeggedIKSolverPtr_(std::move(LeggedIKSolverPtr)),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)) {}
 
 /******************************************************************************************************/
@@ -141,6 +143,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // Normal swing feet trajectory
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
   // swingTrajectoryPtr_->update(modeSchedule, 0.03);
 
 

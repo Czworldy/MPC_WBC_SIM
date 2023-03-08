@@ -97,8 +97,8 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
   }
 
-  // std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
-  // std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
+  std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
+  std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
   // std::cout << "initState:" << initState.segment(6,6).transpose() << std::endl;
   for (size_t j = 0; j < numFeet_; j++) {
       //using current state to calculate foot placement, where are the liffoff height.
@@ -136,6 +136,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
         //   continue; 
         // }
         if (!eesContactFlagStocks[j][p]) { // for all swing phases 
+          // consider after swing phase another swing phase again. Allready consider in the updateFootSchedule function. 
           const int swingStartIndex = startTimesIndices[j][p];
           const int swingFinalIndex = finalTimesIndices[j][p];
           checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
@@ -146,7 +147,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           //TODO: test whether use swingStartTime or swingFinalTime to calculate the desired states.
           //This maybe affect the max velocity of the base motion, and the horizon of MPC.
           //Currently, we use swingFinalTime, MPC horizen = 0.5s. max velocity = 0.2m/s.
-          const vector_t desiredstate = targetTrajectories.getDesiredState((swingFinalTime + swingStartTime)/2);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
 
           pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
           pinocchio::updateFramePlacements(model, data);

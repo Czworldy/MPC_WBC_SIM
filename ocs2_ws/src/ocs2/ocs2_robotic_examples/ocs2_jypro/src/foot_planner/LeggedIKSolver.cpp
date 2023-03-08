@@ -1,174 +1,81 @@
 
-#include <pinocchio/fwd.hpp>  // forward declarations must be included first.
+
 #include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
-
-#include <pinocchio/algorithm/frames.hpp>
-#include <pinocchio/algorithm/crba.hpp>
-#include <pinocchio/algorithm/rnea.hpp>
-#include "pinocchio/algorithm/kinematics.hpp"
-#include "pinocchio/algorithm/jacobian.hpp"
-#include "pinocchio/algorithm/joint-configuration.hpp"
-#include <ocs2_centroidal_model/AccessHelperFunctions.h>
-#include <ocs2_centroidal_model/ModelHelperFunctions.h>
-
-#include <ocs2_centroidal_model/FactoryFunctions.h>
-#include <ocs2_centroidal_model/AccessHelperFunctions.h>
-#include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
-#include <ocs2_centroidal_model/ModelHelperFunctions.h>
-#include <ocs2_core/soft_constraint/StateInputSoftConstraint.h>
-#include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
-#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematicsCppAd.h>
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
 
 // Boost
 #include <ocs2_jypro/common/ModelSettings.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-
-namespace legged
-{
-    std::unique_ptr<LeggedIKSolver> LeggedIKSolver::createLeggedIKSolver(const std::string& taskFile, const std::string& urdfFile, const std::string& referenceFile) {
-        bool verbose = true;
-        // check that task file exists
-        boost::filesystem::path task_file_path(taskFile);
-        if (boost::filesystem::exists(task_file_path))
-            std::cerr << "[LeggedInterface] Loading task file: " << task_file_path << std::endl;
-        else
-            throw std::invalid_argument("[LeggedInterface] Task file not found: " + task_file_path.string());
-
-        // check that urdf file exists
-        boost::filesystem::path urdf_file_path(urdfFile);
-        if (boost::filesystem::exists(urdf_file_path))
-            std::cerr << "[LeggedInterface] Loading Pinocchio model from: " << urdf_file_path << std::endl;
-        else
-            throw std::invalid_argument("[LeggedInterface] URDF file not found: " + urdf_file_path.string());
-
-        // TODO: there may be memory leak happen
-        ModelSettings* modelSettings_ = new ModelSettings(loadModelSettings(taskFile, "model_settings", verbose));
 
 
-        
-        PinocchioInterface* pinocchioInterface = new PinocchioInterface(centroidal_model::createPinocchioInterface(urdfFile, modelSettings_->jointNames));
-
-
-        // CentroidalModelInfo
-        CentroidalModelInfo* centroidalModelInfo_=  new CentroidalModelInfo(centroidal_model::createCentroidalModelInfo(
-            *pinocchioInterface, centroidal_model::loadCentroidalType(taskFile),
-            centroidal_model::loadDefaultJointState(pinocchioInterface->getModel().nq - 6, referenceFile),
-            modelSettings_->contactNames3DoF, modelSettings_->contactNames6DoF));                
-
-
-        CentroidalModelPinocchioMapping* pinocchio_mapping = new CentroidalModelPinocchioMapping(*centroidalModelInfo_);
-        PinocchioEndEffectorKinematics* ee_kinematics = new PinocchioEndEffectorKinematics(*pinocchioInterface, *pinocchio_mapping,
-                                                    modelSettings_->contactNames3DoF);
-        // must set this manually                                                    
-        ee_kinematics -> setPinocchioInterface(*pinocchioInterface);
-
-        return std::unique_ptr<LeggedIKSolver>(new LeggedIKSolver(*pinocchioInterface, *centroidalModelInfo_, *ee_kinematics));    
+namespace ocs2 {
+namespace legged_robot {
+    LeggedIKSolver::LeggedIKSolver(const vector3_t& linkLengths, scalar_t xBodyLength, scalar_t yBodyLength) 
+    : linkLengths_(linkLengths),
+    xBodyLength_(xBodyLength), yBodyLength_(yBodyLength) {
+        _O_B_tfMatrix_.setIdentity();
     }
 
-
-    LeggedIKSolver::LeggedIKSolver(PinocchioInterface& pino_interface, const CentroidalModelInfo& info,
-                const PinocchioEndEffectorKinematics& ee_kinematics) 
-    : pino_interface_(pino_interface)
-    , info_(info)
-    , mapping_(info_)
-    , ee_kinematics_(ee_kinematics.clone())
-    {
-        mapping_.setPinocchioInterface(pino_interface_);
-        ee_kinematics_->setPinocchioInterface(pino_interface_); 
-
-        // setup vectors
-        state_q = vector_t(info_.generalizedCoordinatesNum); state_q.setZero();
-        state_v = vector_t(info_.generalizedCoordinatesNum); state_v.setZero();
-        joint_angs4_ = vector_t(info_.actuatedDofNum);       joint_angs4_.setZero();
-        prev_joint_angs4_ = vector_t(info_.actuatedDofNum);  prev_joint_angs4_.setZero();
-        foot_pos4_ = vector_t(info_.actuatedDofNum);         foot_pos4_.setZero();
+    void LeggedIKSolver::setBodyState(const vector6_t& bodyPose) {
+        const vector3_t& bodyPosition = bodyPose.head(3);
+        const vector3_t& bodyEulerAngles = bodyPose.tail(3);
+        _O_B_tfMatrix_.topLeftCorner(3,3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyEulerAngles);
+        _O_B_tfMatrix_.topRightCorner(3,1) = bodyPosition;
     }
 
-
-    void LeggedIKSolver::setWarmStartPos(vector_t prev_joint_angs, int leg_id) {
-        // TODO: make sure leg_id is 0-3
-        int swap_leg_id = leg_id;
-        // if (leg_id == 1) swap_leg_id = 1;
-        // else if (leg_id == 2) swap_leg_id = 2;
-        prev_joint_angs4_.segment<3>(3*swap_leg_id) = prev_joint_angs;
-    }
-
-    void LeggedIKSolver::setWarmStartPos(vector_t prev_joint_angs4) {
-        prev_joint_angs4_ = prev_joint_angs4;
-    }
-
-
-    void LeggedIKSolver::setBasePos(vector_t orientation_pos) {
-        state_q.head(6) = orientation_pos;
-    }
-
-
-
-    vector_t LeggedIKSolver::solveIK(vector3_t foot_pos, int leg_id) {
-        int swap_leg_id = leg_id;
-        // if (leg_id == 1) swap_leg_id = 1;
-        // else if (leg_id == 2) swap_leg_id = 2;
-
-        Eigen::Matrix<scalar_t, 6, Eigen::Dynamic> jac;
-        Eigen::Matrix<scalar_t, 3, 3> pos_jac;
-        Eigen::Matrix<scalar_t, 3, 3> pos_jjt;
-        jac.setZero(6, info_.generalizedCoordinatesNum);
-        std::vector<vector3_t> pos_measured;
-        Eigen::Vector3d pos_err;
-        bool success = false;
-        const auto& model = pino_interface_.getModel();
-        auto& data = pino_interface_.getData();
-        Eigen::VectorXd v(model.nv); v.setZero();
-
-        // get warm start angle 
-        state_q.segment<3>(6+3*swap_leg_id) = prev_joint_angs4_.segment<3>(3*swap_leg_id);
-
-        for (int i=0;i<IT_MAX;i++) {
-            pinocchio::forwardKinematics(model, data, state_q, state_v);
-            pinocchio::updateFramePlacements(model, data);
-            pinocchio::computeJointJacobians(model, data);
-            // notice pinocchio foot id is aligned with our leg id
-            for (int j = 0; j < 4; j++) {
-                pinocchio::getFrameJacobian(model, data, info_.endEffectorFrameIndices[j],  
-                    pinocchio::LOCAL_WORLD_ALIGNED, jac);
-            }
-            pos_jac = jac.block<3,3>(0, 6+3*swap_leg_id);
-            pos_measured = ee_kinematics_->getPosition(vector_t());
-
-            // std::cout << "angle: " << state_q.segment<3>(6+3*leg_id).transpose() 
-            // << " fk: " << pos_measured[leg_id].transpose() << std::endl;
-            pos_err = foot_pos - pos_measured[leg_id];
-            // std::cout << pos_err << std::endl;
-            if(pos_err.norm() < EPS)
-            {
-                success = true;
-                break;
-            }
-            if (i >= IT_MAX)
-            {
-            success = false;
+    vector3_t LeggedIKSolver::solveIK(const vector3_t& footPositionInWorldFrame, int leg_id) {
+        // transform foot position to shoulder frame
+        const auto& footPositionInBodyFrame = _O_B_tfMatrix_.inverse() * footPositionInWorldFrame.homogeneous();
+        // solve ik
+        //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
+        matrix4_t _B_S_tfMatrix;
+        _B_S_tfMatrix.setIdentity();
+        switch (leg_id) {
+        case 0://LF_FOOT
+            _B_S_tfMatrix(2,2) = -1;
+            _B_S_tfMatrix.topRightCorner(3,1) << xBodyLength_, yBodyLength_, 0;
             break;
-            }
-            pos_jjt.noalias() = pos_jac * pos_jac.transpose();
-            pos_jjt.diagonal().array() += DAMP;
-            v.segment<3>(6+3*swap_leg_id) = pos_jac.transpose() * pos_jjt.ldlt().solve(pos_err);
-            state_q = pinocchio::integrate(model,state_q,v*DT);
-
+        case 1://RF_FOOT
+            _B_S_tfMatrix(2,2) = -1; _B_S_tfMatrix(1,1) = -1;
+            _B_S_tfMatrix.topRightCorner(3,1) << xBodyLength_, -yBodyLength_, 0;
+            break;
+        case 2://LH_FOOT
+            _B_S_tfMatrix(2,2) = -1;
+            _B_S_tfMatrix.topRightCorner(3,1) << -xBodyLength_, yBodyLength_, 0;
+            break;
+        case 3://RH_FOOT
+            _B_S_tfMatrix(1,1) = -1; _B_S_tfMatrix(2,2) = -1;
+            _B_S_tfMatrix.topRightCorner(3,1) << -xBodyLength_, -yBodyLength_, 0;
+            break;
+        default:
+            throw std::runtime_error("LeggedIKSolver::solveIK: leg_id is not valid");
+            break;
         }
-        // std::cout << "\nresult: " << state_q.segment<3>(6+3*leg_id).transpose() << std::endl;
-        // std::cout << "\nfinal error: " << pos_err.transpose() << std::endl;
-        if(success) 
-        {
-            // std::cout << "Convergence achieved!" << std::endl;
-            prev_joint_angs4_.segment<3>(3*leg_id) = state_q.tail(info_.actuatedDofNum);
-        }
-        else 
-        {
-            std::cout << "\nWarning: the iterative algorithm has not reached convergence to the desired precision" << std::endl;
-        }
-        return state_q.segment<3>(6+3*swap_leg_id);        
+        vector3_t footPositionInShoulderFrame = (_B_S_tfMatrix.inverse() * footPositionInBodyFrame).head(3);
+        std::cout << "in shoulder: " << footPositionInShoulderFrame.transpose() << std::endl;   
+        vector3_t angles = inverseKinematics(footPositionInShoulderFrame);
+        // add offset
+        return angles;
     }
 
+    vector3_t LeggedIKSolver::inverseKinematics(const vector3_t& footPositionInShoulderFrame) {
+        vector3_t angles;
+        scalar_t x, y, z;
+        scalar_t l0, l1, l2;
+        scalar_t s1, s2, s3;
+        l0 = linkLengths_[0]; l1 = linkLengths_[1]; l2 = linkLengths_[2];
+        x = footPositionInShoulderFrame[0]; y = footPositionInShoulderFrame[1]; z = footPositionInShoulderFrame[2];
 
-} // namespace legged
+        s1 = atan(y / z) - asin(l0 / sqrt(y*y + z*z));
+
+        s3 = acos((x*x + y*y + z*z - l0*l0 - l1*l1 - l2*l2) / (2 * l1*l2));
+
+        s2 = asin(x / sqrt((l1 + l2*cos(s3))*(l1 + l2*cos(s3)) + l2*sin(s3)*l2*sin(s3))) - atan(l2*sin(s3) / (l1 + l2*cos(s3)));
+        angles << s1, s2, s3;
+
+        return angles;
+    }
+    
+
+
+}// namespace legged_robot
+}// namespace ocs2

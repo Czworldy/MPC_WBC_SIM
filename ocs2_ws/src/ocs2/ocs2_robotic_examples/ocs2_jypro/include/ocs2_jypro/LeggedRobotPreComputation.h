@@ -52,7 +52,7 @@ class LeggedRobotPreComputation : public PreComputation {
   LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                             const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                             const FootPlacementPlanner& fottPlacementPlanner,
-                            std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                            std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
                             ModelSettings settings);
   ~LeggedRobotPreComputation() override = default;
 
@@ -78,7 +78,7 @@ class LeggedRobotPreComputation : public PreComputation {
   const FootPlacementPlanner* footPlacnementPlannerPtr_;
   const ModelSettings settings_;
 
-  std::shared_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_;
+  std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
   std::vector<scalar_t> swingTimeLeft_;

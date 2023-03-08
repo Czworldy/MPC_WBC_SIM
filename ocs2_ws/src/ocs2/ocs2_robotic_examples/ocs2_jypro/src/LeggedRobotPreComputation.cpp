@@ -46,7 +46,7 @@ namespace legged_robot {
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                                                      const FootPlacementPlanner& footPlacementPlanner,
-                                                     std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                                                     std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
       info_(std::move(info)),
@@ -130,17 +130,18 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return reference;
   };
 
-  // auto eeIKSolver = [&](size_t footIndex, const vector3_t& pos) {
-
-  //   leggedIKSolverPtr_->setBasePos(x.segment<6>(6));
-  //   vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
-  //   std::cout << "res: " <<  res.transpose() << std::endl;
-  // };
+  auto eeIKSolver = [&](size_t footIndex, vector3_t pos) {
+    std::cout << "leg: " << footIndex << " pos: " << pos.transpose() << " ";
+    vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
+    std::cout << " res: " <<  res.transpose() << std::endl;
+  };
 
   if (request.contains(Request::Cost)) {
+    std::cout << " base xyz: " <<  x.segment<3>(6).transpose() << std::endl;
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeReference_[i] = eeReferece(i);
-      // eeIKSolver(i, eeReference_[i].segment<3>(0));
+
+      eeIKSolver(i, eeReference_[i].head(3));
     }
     
   }
