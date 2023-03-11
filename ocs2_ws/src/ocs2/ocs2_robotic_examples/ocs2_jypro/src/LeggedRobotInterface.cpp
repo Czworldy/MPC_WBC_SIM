@@ -57,7 +57,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
 #include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
-#include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 
 
 // Boost
@@ -161,7 +160,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   std::unique_ptr<FootPlacementPlanner> footPlacementPlanner(
       new FootPlacementPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
   vector3_t linkLength = vector3_t(0.12325, 0.3, 0.33);
-  std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_(new LeggedIKSolver(linkLength, 0.292, 0.08));
+  leggedIKSolverPtr_ =  std::make_shared<LeggedIKSolver>(linkLength, 0.292, 0.08);
   
   std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
   // Mode schedule manager
@@ -299,7 +298,7 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getBaseTrackingCost(const 
     std::cerr << " #### =============================================================================\n";
   }
 
-  return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_));
+  return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_, leggedIKSolverPtr_));
 }
 
 /******************************************************************************************************/

@@ -58,6 +58,7 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
   swingTimeLeft_.resize(info_.numThreeDofContacts);
   footPlacementConstraints_.resize(info_.numThreeDofContacts);
   eeReference_.resize(info_.numThreeDofContacts);
+  // qReference_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -132,16 +133,18 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
 
   auto eeIKSolver = [&](size_t footIndex, vector3_t pos) {
     std::cout << "leg: " << footIndex << " pos: " << pos.transpose() << " ";
+    leggedIKSolverPtr_->setBodyState(x.segment<6>(6));
     vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
     std::cout << " res: " <<  res.transpose() << std::endl;
+    return res;
   };
 
   if (request.contains(Request::Cost)) {
-    std::cout << " base xyz: " <<  x.segment<3>(6).transpose() << std::endl;
+    // std::cout << " base xyz: " <<  x.segment<3>(6).transpose() << std::endl; // use target trajectory.
     for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
       eeReference_[i] = eeReferece(i);
 
-      eeIKSolver(i, eeReference_[i].head(3));
+      // qReference_[i] = eeIKSolver(i, eeReference_[i].head(3));
     }
     
   }

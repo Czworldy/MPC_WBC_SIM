@@ -51,7 +51,7 @@ namespace legged_robot {
             break;
         }
         vector3_t footPositionInShoulderFrame = (_B_S_tfMatrix.inverse() * footPositionInBodyFrame).head(3);
-        std::cout << "in shoulder: " << footPositionInShoulderFrame.transpose() << std::endl;   
+        std::cout <<"leg: " << leg_id << " in world: " << footPositionInWorldFrame.transpose() << " in shoulder: " << footPositionInShoulderFrame.transpose() << std::endl;   
         vector3_t angles = inverseKinematics(footPositionInShoulderFrame);
         // add offset
         return angles;

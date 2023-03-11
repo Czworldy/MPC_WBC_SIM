@@ -64,7 +64,8 @@ class LeggedRobotPreComputation : public PreComputation {
 
   const std::vector<scalar_t>& getSwingTimeLeft() const { return swingTimeLeft_; }
   const std::vector<Eigen::Matrix<scalar_t, 6, 1>>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
-  const std::vector<vector_t> getEEReference() const { return eeReference_; }
+  const std::vector<vector_t>& getEEReference() const { return eeReference_; }
+  // const std::vector<vector3_t>& getQReference() const { return qReference_; }
 
   PinocchioInterface& getPinocchioInterface() { return pinocchioInterface_; }
   const PinocchioInterface& getPinocchioInterface() const { return pinocchioInterface_; }
@@ -84,6 +85,7 @@ class LeggedRobotPreComputation : public PreComputation {
   std::vector<scalar_t> swingTimeLeft_;
   std::vector<Eigen::Matrix<scalar_t, 6, 1>> footPlacementConstraints_;
   std::vector<vector_t> eeReference_;
+  // std::vector<vector3_t> qReference_;
 };
 
 }  // namespace legged_robot
