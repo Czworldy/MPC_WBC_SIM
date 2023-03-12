@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
+#include "ocs2_jypro/LeggedRobotPreComputation.h"
 
 #include <ocs2_jypro/common/utils.h>
 
@@ -42,8 +43,10 @@ vector3_t xNominalOrientation_ = vector3_t::Zero();
 /******************************************************************************************************/
 /******************************************************************************************************/
 LeggedRobotStateInputQuadraticCost::LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
-                                                                       const SwitchedModelReferenceManager& referenceManager)
-    : LeggedRobotQuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager) {}
+                                                                       const SwitchedModelReferenceManager& referenceManager,
+                                                                       std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr)
+    : LeggedRobotQuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager), 
+    leggedIKSolverPtr_(std::move(leggedIKSolverPtr)) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -88,8 +91,31 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   // return {xDeviation, input - uNominal};
 
   const auto contactFlags = referenceManagerPtr_->getContactFlags(time);
-  const vector_t xNominal = targetTrajectories.getDesiredState(time);
+  vector_t xNominal = targetTrajectories.getDesiredState(time);
   const vector_t uNominal = weightCompensatingInput(info_, contactFlags);
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
+  feet_array_t<vector3_t> referenceQj; //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
+  const auto& getEEReference = preCompLegged.getEEReference();
+
+    std::cout << "time: " << time << " base xyz: " <<  xNominal.segment<3>(6).transpose() << std::endl; // use target trajectory.
+
+  leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
+  for (size_t i = 0; i < 4; i++) {
+    if(contactFlags[i] == 1)
+      referenceQj[i] = xNominal.segment<3>(12+3*i);
+    else{
+      referenceQj[i] = leggedIKSolverPtr_->solveIK(getEEReference[i], i);
+      if(referenceQj[i].hasNaN()){
+        referenceQj[i] = xNominal.segment<3>(12+3*i);
+        std::cerr << "######### IK solver Failed #########\n";
+      }
+    }
+  }
+  
+  Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
+  qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
+  std::cout << "qj: " << qj.transpose() << "\n";
+  xNominal.tail(12) = qj;
   vector_t xDeviation = state - xNominal;
   const auto currentPoseError = xDeviation.segment<6>(6);
   xDeviation.segment<6>(6) = 2*currentPoseError;

@@ -97,8 +97,8 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
     std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
   }
 
-  // std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
-  // std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
+  std::cout << "startTimesIndices: " << toDelimitedString(startTimesIndices[0]) << std::endl;
+  std::cout << "finalTimesIndices: " << toDelimitedString(finalTimesIndices[0]) << std::endl;
   // std::cout << "initState:" << initState.segment(6,6).transpose() << std::endl;
   for (size_t j = 0; j < numFeet_; j++) {
       //using current state to calculate foot placement, where are the liffoff height.
@@ -113,15 +113,14 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       //(THIS DOES WORK IN 0.5s PLANNING, BUT NOT SURE IN LONGER PLANNING TIME(1.0s))
       const scalar_array_t liftOffHeightSequence(modeSequence.size(), initFootPosition[2]);
       liftOffHeightSequence_[j] = liftOffHeightSequence;
+    if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
+    // if(1){
 
-    // if (eesContactFlagStocks[j][initIndex]) { // currently stance leg
-    if(1){
-
-      vector3_t currentSwingLegPlacement;
-      if(!eesContactFlagStocks[j][initIndex]){ // current swing leg
-        const size_t previousIndex = lookup::findIndexInTimeArray(feetPlacementEvents_[j], initTime);
-        currentSwingLegPlacement = feetPlacement_[j][previousIndex]; 
-      }
+      // vector3_t currentSwingLegPlacement;
+      // if(!eesContactFlagStocks[j][initIndex]){ // current swing leg
+      //   const size_t previousIndex = lookup::findIndexInTimeArray(feetPlacementEvents_[j], lastInitTime_);
+      //   currentSwingLegPlacement = feetPlacement_[j][previousIndex]; 
+      // }
       feetPlacement_[j].clear();
       feetPlacement_[j].reserve(modeSequence.size());
 
@@ -130,13 +129,14 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
       touchDownHeightSequence_[j].reserve(modeSequence.size());
 
       //TODO this line i think should change every prerun.
-      feetPlacementEvents_[j] = eventTimes;
+      // feetPlacementEvents_[j] = eventTimes;
       for (int p = 0; p < modeSequence.size(); ++p) {
-        if(!eesContactFlagStocks[j][initIndex] && p == initIndex){ // if current leg is swing leg then skip // use previous foot placement
-          feetPlacement_[j].emplace_back(currentSwingLegPlacement);          
-          continue; 
-        }
+        // if(!eesContactFlagStocks[j][initIndex] && p == initIndex){ // if current leg is swing leg then skip // use previous foot placement
+        //   feetPlacement_[j].emplace_back(currentSwingLegPlacement);          
+        //   continue; 
+        // }
         if (!eesContactFlagStocks[j][p]) { // for all swing phases 
+          // consider after swing phase another swing phase again. Allready consider in the updateFootSchedule function. 
           const int swingStartIndex = startTimesIndices[j][p];
           const int swingFinalIndex = finalTimesIndices[j][p];
           checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
@@ -147,7 +147,7 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
           //TODO: test whether use swingStartTime or swingFinalTime to calculate the desired states.
           //This maybe affect the max velocity of the base motion, and the horizon of MPC.
           //Currently, we use swingFinalTime, MPC horizen = 0.5s. max velocity = 0.2m/s.
-          const vector_t desiredstate = targetTrajectories.getDesiredState((swingFinalTime + swingStartTime)/2);
+          const vector_t desiredstate = targetTrajectories.getDesiredState(swingFinalTime);
 
           pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
           pinocchio::updateFramePlacements(model, data);
@@ -167,30 +167,57 @@ void FootPlacementPlanner::update(const ModeSchedule& modeSchedule, const Target
         }
         else{// for a stance leg
           // feetPlacement_[j].emplace_back(0,0,0);
-          size_t index; 
-          for(index = p; index >= initIndex; index--){ // search for lastest swing phase
-              if(finalTimesIndices[j][index] != 0){
-                break;
-              }
+          // size_t index; 
+          // for(index = p; index >= initIndex; index--){ // search for lastest swing phase
+          //     if(finalTimesIndices[j][index] != 0){
+          //       break;
+          //     }
+          // }
+          // // according to the lastest swing phase final time decide the desired state 
+          // const vector_t desiredstate = targetTrajectories.getDesiredState(eventTimes[index]); 
+
+          // // const auto& model = pinocchioInterface_.getModel();
+          // // auto& data = pinocchioInterface_.getData();
+          // pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
+          // pinocchio::updateFramePlacements(model, data);
+
+          // const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
+
+          // vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          // scalar_t footplacementZ = footplacement[2];
+          // feetPlacement_[j].emplace_back(footplacement);  
+          // touchDownHeightSequence_[j].emplace_back(footplacementZ);    
+
+          vector3_t footplacement;
+          if(feetPlacement_[j].empty()){
+            pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(initState, centroidalModelInfo_));
+            pinocchio::updateFramePlacements(model, data);
+
+            const auto feetPosition = endEffectorKinematicsPtr_->getPosition(initState)[j];
+            vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
           }
-          // according to the lastest swing phase final time decide the desired state 
-          const vector_t desiredstate = targetTrajectories.getDesiredState(eventTimes[index]); 
-
-          // const auto& model = pinocchioInterface_.getModel();
-          // auto& data = pinocchioInterface_.getData();
-          pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(desiredstate, centroidalModelInfo_));
-          pinocchio::updateFramePlacements(model, data);
-
-          const auto feetPosition = endEffectorKinematicsPtr_->getPosition(desiredstate)[j];
-
-          vector3_t footplacement = choiceCloestFootPlacement(j, feetPosition);
+          else{
+            footplacement = feetPlacement_[j].back();
+          }
           scalar_t footplacementZ = footplacement[2];
           feetPlacement_[j].emplace_back(footplacement);  
           touchDownHeightSequence_[j].emplace_back(footplacementZ);    
-
         }
       }
     }
+    else{
+      //copy the previous leg placement according to the current event time.
+      std::vector<vector3_t> feetPlacementTemp;
+      for (int p = 0; p < eventTimes.size(); ++p) {
+        size_t index = lookup::findIndexInTimeArray(feetPlacementEvents_[j], eventTimes[p]);
+        feetPlacementTemp.emplace_back(feetPlacement_[j][index]);
+        // touchDownHeightSequence_[j].emplace_back(touchDownHeightSequence_[j][index]);
+      }
+      feetPlacement_[j] = feetPlacementTemp; 
+
+    }
+    feetPlacementEvents_[j] = eventTimes;
+    lastInitTime_ = initTime;
   }
 
   //debug print

@@ -56,7 +56,7 @@ class LeggedRobotPreComputation : public PreComputation {
                             const SwingTrajectoryPlanner& swingTrajectoryPlanner, 
                             // const FootPlacementPlanner& fottPlacementPlanner,
                             const FootConstraintsPlanner& footConstraintsPlanner,
-                            std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                            std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
                             std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                             ModelSettings settings);
   ~LeggedRobotPreComputation() override = default;
@@ -68,11 +68,11 @@ class LeggedRobotPreComputation : public PreComputation {
   const std::vector<EndEffectorLinearConstraint::Config>& getEeNormalVelocityConstraintConfigs() const { return eeNormalVelConConfigs_; }
 
   const std::vector<scalar_t>& getSwingTimeLeft() const { return swingTimeLeft_; }
-  // const std::vector<Eigen::Matrix<scalar_t, 6, 1>>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
   const std::vector<FootConstraints>& getFootPlacementConstraint() const { return footPlacementConstraints_; }
-  const std::vector<vector_t> getEEReference() const { return eeReference_; }
+  const std::vector<vector_t>& getEEReference() const { return eeReference_; }
 
-  const std::shared_ptr<TerrainEstData>& getTerrainEstDataPtr() const { return terrainEstDataPtr_; }
+   const std::shared_ptr<TerrainEstData>& getTerrainEstDataPtr() const { return terrainEstDataPtr_; }
+  // const std::vector<vector3_t>& getQReference() const { return qReference_; }
 
   PinocchioInterface& getPinocchioInterface() { return pinocchioInterface_; }
   const PinocchioInterface& getPinocchioInterface() const { return pinocchioInterface_; }
@@ -87,7 +87,7 @@ class LeggedRobotPreComputation : public PreComputation {
   const FootConstraintsPlanner* footConstraintsPlannerPtr_;
   const ModelSettings settings_;
 
-  std::shared_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_;
+  std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
   std::vector<scalar_t> swingTimeLeft_;
@@ -95,6 +95,7 @@ class LeggedRobotPreComputation : public PreComputation {
   std::vector<FootConstraints> footPlacementConstraints_;
 
   std::vector<vector_t> eeReference_;
+  // std::vector<vector3_t> qReference_;
   std::shared_ptr<TerrainEstData> terrainEstDataPtr_;
 };
 

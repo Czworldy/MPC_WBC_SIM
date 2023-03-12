@@ -78,6 +78,7 @@ class FootPlacementPlanner{
    const CentroidalModelInfo& centroidalModelInfo_;
 
    const size_t numFeet_; 
+   scalar_t lastInitTime_ = 0;
    std::vector<vector3_t> leftFrontPoints_;
    std::vector<vector3_t> rightFrontPoints_;
    std::vector<vector3_t> leftBackPoints_;

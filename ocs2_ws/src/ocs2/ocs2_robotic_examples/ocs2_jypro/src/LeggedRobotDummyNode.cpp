@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
   // MRT
   MRT_ROS_Interface mrt(robotName);
-  mrt.initRollout(&interface.getRollout());
+  // mrt.initRollout(&interface.getRollout());
   mrt.launchNodes(nodeHandle);
 
   // Visualization

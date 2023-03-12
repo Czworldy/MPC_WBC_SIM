@@ -38,6 +38,7 @@ namespace legged_robot {
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
+                                                             std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                              std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                                              std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
@@ -45,6 +46,7 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
+      LeggedIKSolverPtr_(std::move(LeggedIKSolverPtr)),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
       mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {}
@@ -156,8 +158,11 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // abort();
 
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, -0.44);
+  // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
+  // swingTrajectoryPtr_->update(modeSchedule, 0.03);
 
 
   // std::cout << *terrainEstDataPtr_ << std::endl;
