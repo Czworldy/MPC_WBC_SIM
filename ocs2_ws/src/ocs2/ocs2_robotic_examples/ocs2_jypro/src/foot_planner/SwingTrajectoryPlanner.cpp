@@ -264,9 +264,9 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
             break;
           }
         }
-        if(j == 0){
-          std::cout << "p = " << p << " m = " << m << std::endl;
-        }
+        // if(j == 0){
+        //   std::cout << "p = " << p << " m = " << m << std::endl;
+        // }
         const int swingStartIndex = startTimesIndices[j][p];
         const int swingFinalIndex = finalTimesIndices[j][p];
         checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
@@ -319,11 +319,11 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
         feetYTrajectories_[j].emplace_back(yStart, yEnd);
       }
     }
-    if(j == 0){
-        for(const auto& p:feetPlacement[j]){
-          std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
-        }
-    }
+    // if(j == 0){
+    //     for(const auto& p:feetPlacement[j]){
+    //       std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
+    //     }
+    // }
     
     feetHeightTrajectoriesEvents_[j] = eventTimes;
   }

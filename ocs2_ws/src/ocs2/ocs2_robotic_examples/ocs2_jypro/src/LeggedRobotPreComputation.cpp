@@ -140,10 +140,10 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
   };
 
   auto eeIKSolver = [&](size_t footIndex, vector3_t pos) {
-    std::cout << "leg: " << footIndex << " pos: " << pos.transpose() << " ";
+    // std::cout << "leg: " << footIndex << " pos: " << pos.transpose() << " ";
     leggedIKSolverPtr_->setBodyState(x.segment<6>(6));
     vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
-    std::cout << " res: " <<  res.transpose() << std::endl;
+    // std::cout << " res: " <<  res.transpose() << std::endl;
     return res;
   };
 

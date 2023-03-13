@@ -97,7 +97,7 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   feet_array_t<vector3_t> referenceQj; //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
   const auto& getEEReference = preCompLegged.getEEReference();
 
-    std::cout << "time: " << time << " base xyz: " <<  xNominal.segment<3>(6).transpose() << std::endl; // use target trajectory.
+    // std::cout << "time: " << time << " base xyz: " <<  xNominal.segment<3>(6).transpose() << std::endl; // use target trajectory.
 
   leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
   for (size_t i = 0; i < 4; i++) {
@@ -114,7 +114,7 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   
   Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
   qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
-  std::cout << "qj: " << qj.transpose() << "\n";
+  // std::cout << "qj: " << qj.transpose() << "\n";
   xNominal.tail(12) = qj;
   vector_t xDeviation = state - xNominal;
   const auto currentPoseError = xDeviation.segment<6>(6);

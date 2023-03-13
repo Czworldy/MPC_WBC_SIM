@@ -1,5 +1,5 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      true
+useFeetPlacementConstraint      false
 
 legged_robot_interface
 {
@@ -14,7 +14,7 @@ model_settings
   phaseTransitionStanceTime     0.4
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       true
+  recompileLibrariesCppAd       false
   modelFolderCppAd              /tmp/ocs2
 }
 
@@ -56,7 +56,7 @@ defaultModeSequenceTemplate
 ; multiple_shooting settings
 multiple_shooting
 {
-  nThreads                              1
+  nThreads                              3
   dt                                    0.015
   sqpIteration                          1
   deltaTol                              1e-4
@@ -199,9 +199,9 @@ Q
   (5,5)   10.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;
-  (6,6)   250.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
-  (7,7)   250.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
-  (8,8)   250.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
+  (6,6)   700.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
+  (7,7)   700.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
+  (8,8)   700.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
   (9,9)   100.0    ; theta_base_z
   (10,10) 200.0    ; theta_base_y
   (11,11) 200.0    ; theta_base_x
@@ -268,7 +268,7 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.07
-  delta                  0.01
+  delta                  0.5
 }
 
 Qee
