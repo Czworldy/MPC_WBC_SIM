@@ -27,8 +27,14 @@ void FootPlacementVisualizer::preSolverRun(scalar_t initTime, scalar_t finalTime
       const auto point = getPointMsg(position);
       feetMsgs[i].push_back(point);
     }
+<<<<<<< HEAD
     auto line = getLineMsg(std::move(feetMsgs[i]), feetColorMap_[i], trajectoryLineWidth_);
     line.header.frame_id = "BASE";
+=======
+    const auto& line = getLineMsg(std::move(feetMsgs[i]), feetColorMap_[i], trajectoryLineWidth_);
+    line.header.frame_id = "BASE";
+
+>>>>>>> b9fcf3f96f398d9ece284f0e58b957af48416962
     footPlacementMarkerArray.markers.emplace_back(line);
     footPlacementMarkerArray.markers.back().ns = "EE design Trajectories";
   }
