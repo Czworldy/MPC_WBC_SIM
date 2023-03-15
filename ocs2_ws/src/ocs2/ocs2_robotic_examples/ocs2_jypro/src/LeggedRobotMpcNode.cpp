@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
   auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainReceiver>(nodeHandle,
       interface.getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
 
-  // auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
+  auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *interface.getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
 
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
-  // mpc.getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
+  mpc.getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
 
   // Launch MPC ROS node

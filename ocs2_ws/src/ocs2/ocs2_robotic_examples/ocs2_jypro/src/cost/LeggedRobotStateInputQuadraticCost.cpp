@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 inline matrix3_t rpyTORotateMat(vector3_t rpy);
+static Eigen::Vector2d integralError_ = Eigen::Vector2d::Zero();
 vector3_t xNominalOrientation_ = vector3_t::Zero();
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -118,19 +119,19 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   xNominal.tail(12) = qj;
   vector_t xDeviation = state - xNominal;
   const auto currentPoseError = xDeviation.segment<2>(6);
-  static Eigen::Vector2d integralError;
-  integralError += currentPoseError*0.01;
-  if(integralError[0] > 0.5)
-    integralError[0] = 0.5;
-  if(integralError[0] < -0.5)
-    integralError[0] = -0.5;
-  if(integralError[1] > 0.5)
-    integralError[1] = 0.5;
-  if(integralError[1] < -0.5)
-    integralError[1] = -0.5;
-  std::cout << "currentPoseError: " << currentPoseError.transpose() << std::endl;
+  // // static Eigen::Vector2d integralError;
+  // integralError_ = integralError_+currentPoseError*0.01;
+  // if(integralError_[0] > 1)
+  //   integralError_[0] = 1;
+  // if(integralError_[0] < -1)
+  //   integralError_[0] = -1;
+  // if(integralError_[1] > 1)
+  //   integralError_[1] = 1;
+  // if(integralError_[1] < -1)
+  //   integralError_[1] = -1;
+  // std::cout << "integralError_: " << integralError_.transpose() << std::endl;
 
-  xDeviation.segment<2>(6) = 2*currentPoseError + integralError;
+  xDeviation.segment<2>(6) = currentPoseError + 10*integralError_;
   return {xDeviation, input - uNominal};
 
 }
