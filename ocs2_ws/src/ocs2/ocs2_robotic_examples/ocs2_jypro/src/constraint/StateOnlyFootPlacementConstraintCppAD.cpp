@@ -226,11 +226,11 @@ VectorFunctionQuadraticApproximation StateOnlyFootPlacementConstraint::getQuadra
 
   // std::cout << "Constraints time: " << time << "\n";
 
-  if(contactPointIndex_ == 0){
-    std::cout << "f: " << constraint.f.transpose() << "\n";
-    std::cout << "footConstraintA: " << footConstraint.A << "\n";
-    std::cout << "footConstraintb: " << footConstraint.b.transpose() << "\n";
-  }
+  // if(contactPointIndex_ == 0){
+  //   std::cout << "f: " << constraint.f.transpose() << "\n";
+  //   std::cout << "footConstraintA: " << footConstraint.A << "\n";
+  //   std::cout << "footConstraintb: " << footConstraint.b.transpose() << "\n";
+  // }
 
   const size_t numCppadOut = 3;
 

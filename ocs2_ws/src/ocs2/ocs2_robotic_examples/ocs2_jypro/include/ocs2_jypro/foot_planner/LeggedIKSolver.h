@@ -17,6 +17,7 @@ class LeggedIKSolver {
         // solve ik for individual leg
         vector3_t solveIK(const vector3_t& footPositionInWorldFrame, int leg_id);
         void setBodyState(const vector6_t& bodyPose);
+        const matrix4_t& getBodyTfMatrix() const {return _O_B_tfMatrix_;}
         
     private:
         vector3_t inverseKinematics(const vector3_t& footPositionInShoulderFrame);

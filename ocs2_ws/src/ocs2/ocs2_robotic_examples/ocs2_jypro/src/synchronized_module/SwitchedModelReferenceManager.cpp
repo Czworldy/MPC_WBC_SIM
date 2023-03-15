@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
+// #include <ocs2_pinocchio_interface/PinocchioInterface.h>
+#include <ocs2_centroidal_model/ModelHelperFunctions.h>
 
 namespace ocs2 {
 namespace legged_robot {
@@ -39,6 +41,9 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
                                                              std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
+                                                             const CentroidalModelPinocchioMapping& mapping,
+                                                             PinocchioInterface& pinocchioInterface,
+                                                             const CentroidalModelInfo& centroidalModelInfo,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                              std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                                              std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
@@ -47,9 +52,12 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
       LeggedIKSolverPtr_(std::move(LeggedIKSolverPtr)),
+      mappingPtr_(mapping.clone()),
+      pinocchioInterface_(pinocchioInterface),
+      centroidalModelInfo_(centroidalModelInfo),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
-      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {}
+      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) { mappingPtr_->setPinocchioInterface(pinocchioInterface_); }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -150,8 +158,47 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // }
   // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
   // std::cout << "mpcPolygonArrayPtr_[0][0][0]: " << (*mpcPolygonArrayPtr_)[0][0][0].transpose() << std::endl;
+  LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
+  const auto& _O_B_tfMatrix =  LeggedIKSolverPtr_->getBodyTfMatrix();
+  feet_array_t<vector3_t> hipNominalPoints;
+  const vector3_t height = vector3_t(0.0, 0.0, -0.44);
+  //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
+  hipNominalPoints[0] = (_O_B_tfMatrix * (vector3_t(__FOOT_X__, __FOOT_Y__, 0.0)  .homogeneous())).head(3) + height ;
+  hipNominalPoints[1] = (_O_B_tfMatrix * (vector3_t(__FOOT_X__, -__FOOT_Y__, 0.0) .homogeneous())).head(3) + height ;
+  hipNominalPoints[2] = (_O_B_tfMatrix * (vector3_t(-__FOOT_X__, __FOOT_Y__, 0.0) .homogeneous())).head(3) + height ;
+  hipNominalPoints[3] = (_O_B_tfMatrix * (vector3_t(-__FOOT_X__, -__FOOT_Y__, 0.0).homogeneous())).head(3) + height ;
+  const vector_t q = initState.segment<18>(6);
+  updateCentroidalDynamics(pinocchioInterface_, centroidalModelInfo_, q);
+  // mappingPtr_->setPinocchioInterface(pinocchioInterface_);
+  auto& data = pinocchioInterface_.getData();
+  
+
+  const auto currentqVelocity = mappingPtr_->getPinocchioJointVelocity(initState, vector_t::Zero(24));
+  const auto currentVelocity = currentqVelocity.head(3);
+  std::cout << "currentVelocity: " << currentVelocity.transpose() << std::endl;
+  // std::cout << "momentum: " << initState.segment<6>(0).transpose() << std::endl;
+
+
+  const vector3_t positionAfter =  targetTrajectories.getDesiredState(initTime+0.1).segment<3>(6);
+  const vector3_t positionNow =  targetTrajectories.getDesiredState(initTime).segment<3>(6);
+  const vector3_t commandedVelocity =  (positionAfter - positionNow) * 10;
+  // std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
+
+  if(useDefaultHeuristicFootholds_){
+    for(int leg = 0; leg < 4; leg++ ){
+      vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity);
+      (*mpcNominalFeetholdsPtr_)[leg].clear();
+      (*mpcNominalFeetholdsPtr_)[leg].push_back(hipNominalPoints[leg]);
+      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
+      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
+    }
+  }
+
+  std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
+
 
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
+  std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
 
@@ -161,7 +208,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
-  LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
+
   // swingTrajectoryPtr_->update(modeSchedule, 0.03);
 
 
@@ -173,7 +220,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  // std::cout << "modifyReferences Done!" << "\n";
+  std::cout << "modifyReferences Done!" << "\n";
 
 }
 

@@ -294,6 +294,7 @@ int main(int argc, char **argv) {
         // mpcInputData.v_[5] = buf.base_angular_vel_world[0]; 
         // Velocity
         mpcInputData.v_.head(3) = buf.base_linear_vel_world;
+        std::cout << "base_linear_vel_world: " << buf.base_linear_vel_world.transpose() << "\n";
         // Terrain
         #ifdef USE_TERRAIN
         mpcInputData.terrainRotMat = buf.terrain_orientation.toRotationMatrix();
@@ -472,18 +473,18 @@ int main(int argc, char **argv) {
                 std::cout << mpc_input_msg.state.value[i] << " ";
             }
             std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
-            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
+            // std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
             std::cout << "\nActuated Joints:" << std::endl;
-            std::cout << "\nActuated Joints:" << std::endl;
+            // std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
-            std::cout << "\nMPC Input:___________ " << std::endl;
+            // std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){

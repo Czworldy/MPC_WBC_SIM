@@ -45,9 +45,10 @@ vector3_t xNominalOrientation_ = vector3_t::Zero();
 /******************************************************************************************************/
 LeggedRobotStateInputQuadraticCost::LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
                                                                        const SwitchedModelReferenceManager& referenceManager,
-                                                                       std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr)
+                                                                       std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
+                                                                       bool useIKresult)
     : LeggedRobotQuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager), 
-    leggedIKSolverPtr_(std::move(leggedIKSolverPtr)) {}
+    leggedIKSolverPtr_(std::move(leggedIKSolverPtr)), useIKresult_(useIKresult) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -99,24 +100,28 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   const auto& getEEReference = preCompLegged.getEEReference();
 
     // std::cout << "time: " << time << " base xyz: " <<  xNominal.segment<3>(6).transpose() << std::endl; // use target trajectory.
-
-  leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
-  for (size_t i = 0; i < 4; i++) {
-    if(contactFlags[i] == 1)
-      referenceQj[i] = xNominal.segment<3>(12+3*i);
-    else{
-      referenceQj[i] = leggedIKSolverPtr_->solveIK(getEEReference[i], i);
-      if(referenceQj[i].hasNaN()){
+  if(useIKresult_){
+    leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
+    for (size_t i = 0; i < 4; i++) {
+      if(contactFlags[i] == 1)
         referenceQj[i] = xNominal.segment<3>(12+3*i);
-        std::cerr << "######### IK solver Failed #########\n";
+      else{
+        referenceQj[i] = leggedIKSolverPtr_->solveIK(getEEReference[i], i);
+        if(referenceQj[i].hasNaN()){
+          referenceQj[i] = xNominal.segment<3>(12+3*i);
+          // std::cerr << "######### IK solver Failed #########\n";
+        }
       }
     }
-  }
   
-  Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
-  qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
+    Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
+
+    qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
+    xNominal.tail(12) = qj;
+    std::cout << "IK result: " << qj.transpose() << "\n";
+  }
   // std::cout << "qj: " << qj.transpose() << "\n";
-  xNominal.tail(12) = qj;
+
   vector_t xDeviation = state - xNominal;
   const auto currentPoseError = xDeviation.segment<2>(6);
   // // static Eigen::Vector2d integralError;

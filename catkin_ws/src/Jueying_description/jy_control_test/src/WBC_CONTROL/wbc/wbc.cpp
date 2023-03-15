@@ -141,14 +141,14 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     A_cost.topRows(task->getDimTaskEq()) = task->get_A()*10;
     b_cost.topRows(task->getDimTaskEq()) = task->get_b()*10;
     task = (*_task_list)[5];
-    A_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A();
-    b_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b();
+    A_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A()*5;
+    b_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b()*5;
     task = (*_task_list)[6];
     A_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A();
     b_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b();
     task = (*_task_list)[7];
-    A_cost.bottomRows(task->getDimTaskEq()) = task->get_A()*0.1;
-    b_cost.bottomRows(task->getDimTaskEq()) = task->get_b()*0.1;
+    A_cost.bottomRows(task->getDimTaskEq()) = task->get_A()*0.01;
+    b_cost.bottomRows(task->getDimTaskEq()) = task->get_b()*0.01;
 
     H_cost = A_cost.transpose()*A_cost;
     c_cost = -A_cost.transpose()*b_cost;
