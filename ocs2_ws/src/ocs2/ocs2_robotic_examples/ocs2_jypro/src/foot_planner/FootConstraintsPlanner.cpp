@@ -73,6 +73,16 @@ const FootConstraints &FootConstraintsPlanner::getFootPolygonConstraint(size_t l
     return feetPlacementConstraints_[leg][index];
 }
 
+vector3_t FootConstraintsPlanner::getCurrentEEPosition(size_t leg, const vector_t& initState) {
+    const auto &model = pinocchioInterface_.getModel();
+    auto &data = pinocchioInterface_.getData();
+    // NOTE: centroidalModelInfo_ cannot be empty , otherwise the following line will throw an exception.
+    pinocchio::forwardKinematics(model, data, centroidal_model::getGeneralizedCoordinates(initState, centroidalModelInfo_));
+    pinocchio::updateFramePlacements(model, data);
+    const auto initFootPosition = endEffectorKinematicsPtr_->getPosition(initState)[leg];
+    return initFootPosition;
+}
+
 void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const TargetTrajectories &targetTrajectories,
                                     scalar_t initTime, const vector_t &initState) {
     const auto &modeSequence = modeSchedule.modeSequence;

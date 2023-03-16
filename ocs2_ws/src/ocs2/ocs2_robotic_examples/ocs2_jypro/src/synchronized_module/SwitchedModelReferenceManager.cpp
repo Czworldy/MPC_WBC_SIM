@@ -26,7 +26,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
+#include <pinocchio/fwd.hpp>  // forward declarations must be included first.
 
+#include <pinocchio/algorithm/centroidal-derivatives.hpp>
+#include <pinocchio/algorithm/centroidal.hpp>
+#include <pinocchio/algorithm/frames.hpp>
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
 // #include <ocs2_pinocchio_interface/PinocchioInterface.h>
 #include <ocs2_centroidal_model/ModelHelperFunctions.h>
@@ -161,7 +165,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
   const auto& _O_B_tfMatrix =  LeggedIKSolverPtr_->getBodyTfMatrix();
   feet_array_t<vector3_t> hipNominalPoints;
-  const vector3_t height = vector3_t(0.0, 0.0, -0.44);
+  const vector3_t height = vector3_t(0.0, 0.0, -0.476);
   //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
   hipNominalPoints[0] = (_O_B_tfMatrix * (vector3_t(__FOOT_X__, __FOOT_Y__, 0.0)  .homogeneous())).head(3) + height ;
   hipNominalPoints[1] = (_O_B_tfMatrix * (vector3_t(__FOOT_X__, -__FOOT_Y__, 0.0) .homogeneous())).head(3) + height ;
@@ -184,30 +188,51 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const vector3_t commandedVelocity =  (positionAfter - positionNow) * 10;
   // std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
-  if(useDefaultHeuristicFootholds_){
-    for(int leg = 0; leg < 4; leg++ ){
-      vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity);
-      (*mpcNominalFeetholdsPtr_)[leg].clear();
-      (*mpcNominalFeetholdsPtr_)[leg].push_back(hipNominalPoints[leg]);
-      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
-      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
-    }
-  }
+
 
   std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
 
-  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
-  std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
-  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
 
   // abort();
 
   // Normal swing feet trajectory
   // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  feet_array_t<vector3_t> feetCurrentEEPositions;
+  feet_array_t<std::vector<vector3_t>> feetTargeEEPositions;
+  for(int leg = 0; leg < 4; leg++){
+    feetCurrentEEPositions[leg] = footPlacementPlannerPtr_->getCurrentEEPosition(leg, initState);
+  }
+  if(useDefaultHeuristicFootholds_){
+    for(int leg = 0; leg < 4; leg++ ){
+      vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.15*currentVelocity;
+      (*mpcNominalFeetholdsPtr_)[leg].clear();
+      (*mpcNominalFeetholdsPtr_)[leg].push_back(hipNominalPoints[leg]);
+      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
+      feetTargeEEPositions[leg].clear();
+      feetTargeEEPositions[leg].push_back(footHold);
+      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
+
+      footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.3*currentVelocity;
+      feetTargeEEPositions[leg].push_back(footHold);
+      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
+
+
+      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
+    }
+    // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); //这种情况下target需要有两个点
+
+  }
+  // else{
+  //   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
+  // }
+  footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
+  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
+  // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
+
 
   // swingTrajectoryPtr_->update(modeSchedule, 0.03);
 

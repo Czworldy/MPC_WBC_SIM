@@ -1,6 +1,7 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
 useFeetPlacementConstraint      false
 useIKresult                     false
+useEndEffectorTrackingCost      false
 
 legged_robot_interface
 {
@@ -23,7 +24,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.2     ;-0.2
-  swingHeight                   0.2
+  swingHeight                   0.1
   touchdownAfterHorizon         0.2
   swingTimeScale                0.05
 }
@@ -166,7 +167,7 @@ initialState
    ;; Base Pose: [position, orientation] ;;
    (6,0)  0.0  ; p_base_x
    (7,0)  -0.0    ; p_base_y
-   (8,0)  0.44    ; p_base_z
+   (8,0)  0.47    ; p_base_z
    (9,0)  0.00    ; theta_base_z
    (10,0) 0.00   ; theta_base_y
    (11,0) 0.00  ; theta_base_x
@@ -208,18 +209,18 @@ Q
   (11,11) 200.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;; 不能太低
-  (12,12) 1.0     ; LF_HAA
-  (13,13) 1.0     ; LF_HFE
-  (14,14) 1.0     ; LF_KFE
-  (15,15) 1.0     ; LH_HAA
-  (16,16) 1.0     ; LH_HFE
-  (17,17) 1.0     ; LH_KFE
-  (18,18) 1.0     ; RF_HAA
-  (19,19) 1.0     ; RF_HFE
-  (20,20) 1.0     ; RF_KFE
-  (21,21) 1.0     ; RH_HAA
-  (22,22) 1.0     ; RH_HFE
-  (23,23) 1.0     ; RH_KFE
+  (12,12) 5.0     ; LF_HAA
+  (13,13) 5.0     ; LF_HFE
+  (14,14) 5.0     ; LF_KFE
+  (15,15) 5.0     ; LH_HAA
+  (16,16) 5.0     ; LH_HFE
+  (17,17) 5.0     ; LH_KFE
+  (18,18) 5.0     ; RF_HAA
+  (19,19) 5.0     ; RF_HFE
+  (20,20) 5.0     ; RF_KFE
+  (21,21) 5.0     ; RH_HAA
+  (22,22) 5.0     ; RH_HFE
+  (23,23) 5.0     ; RH_KFE
 }
 
 ; control weight matrix

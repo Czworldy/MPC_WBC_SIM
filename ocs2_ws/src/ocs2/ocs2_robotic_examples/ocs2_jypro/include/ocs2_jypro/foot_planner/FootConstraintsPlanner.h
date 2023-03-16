@@ -32,6 +32,7 @@ class FootConstraintsPlanner{
 
    void update(const ModeSchedule& modeSchedule, const TargetTrajectories& targetTrajectories,
                     scalar_t initTime, const vector_t& initState);
+   vector3_t getCurrentEEPosition(size_t leg, const vector_t& initstate);
 
    vector3_t getFootPlacementNominal(size_t leg,  scalar_t time) const;
    const FootConstraints& getFootPolygonConstraint(size_t leg,  scalar_t time) const;

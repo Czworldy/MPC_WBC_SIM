@@ -60,7 +60,12 @@ class SwingTrajectoryPlanner {
               const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
               scalar_t initTime);
               
-  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement);
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
+              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors);
+
+  //use in no feethold from upper planner.
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<vector3_t>& currentFeetEndEffectors,
+              scalar_t initTime, const feet_array_t<std::vector<vector3_t>>& targetFeetEndEffectors); 
 
   scalar_t getZvelocityConstraint(size_t leg, scalar_t time) const;
 

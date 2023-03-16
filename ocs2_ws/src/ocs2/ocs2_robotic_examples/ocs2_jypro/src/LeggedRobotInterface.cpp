@@ -180,13 +180,14 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
   (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
 
-  initPolygon.reserve(2);
+  initPolygon.reserve(3);
   std::vector<vector3_t> Polygon;
   Polygon.reserve(4);
   Polygon.push_back(vector3_t(1.5, 0, 0));
   Polygon.push_back(vector3_t(0, 1.5, 0));
   Polygon.push_back(vector3_t(-1.5, 0, 0));
   Polygon.push_back(vector3_t(0, -1.5, 0));
+  initPolygon.push_back(Polygon);
   initPolygon.push_back(Polygon);
   initPolygon.push_back(Polygon);
   (*mpcPolygonArrayPtr)[0] = initPolygon;
@@ -263,10 +264,6 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                     modelSettings_.recompileLibrariesCppAd, modelSettings_.verboseCppAd));
     // }
 
-        // problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
-        //                           getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
-        //                           modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
-        // std::cout << "add done!\n";
         problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                             getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
@@ -277,6 +274,14 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
                                               i, barrierPenaltyConfig_));
     }
+    bool useEndEffectorTrackingCost = false;
+    loadData::loadPtreeValue(pt, useEndEffectorTrackingCost, "useEndEffectorTrackingCost", true);
+    if(useEndEffectorTrackingCost){
+      problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
+                                  getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
+                                  modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
+    }
+
 
 
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
