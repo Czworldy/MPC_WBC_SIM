@@ -38,6 +38,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_mpc/SystemObservation.h>
 #include <ocs2_ros_interfaces/command/TargetTrajectoriesRosPublisher.h>
+#include <ocs2_pinocchio_interface/PinocchioInterface.h>
+#include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
+
+
 
 namespace ocs2 {
 
@@ -55,7 +59,8 @@ class TargetTrajectoriesPublisher final {
      * @param [in] defaultJointState: defaultJointState.
      */
     TargetTrajectoriesPublisher(::ros::NodeHandle &nodeHandle, const std::string &topicPrefix,
-                                   const vector_t &defaultJointState);
+                                   const vector_t &defaultJointState, PinocchioInterface& pinocchioInterfacePtr,
+                                   const CentroidalModelInfo& centroidalModelInfo);
 
 
     /**
@@ -73,6 +78,10 @@ class TargetTrajectoriesPublisher final {
     const vector_t defaultJointState_;
 
     std::unique_ptr<TargetTrajectoriesRosPublisher> targetTrajectoriesPublisherPtr_;
+    PinocchioInterface& pinocchioInterface_;
+    std::shared_ptr<CentroidalModelPinocchioMapping> mappingPtr_;
+    const CentroidalModelInfo& centroidalModelInfo_;
+
 
     ::ros::Subscriber observationSubscriber_, joySubscriber_;
     mutable std::mutex latestObservationMutex_, latestJoyMsgsMutex_;

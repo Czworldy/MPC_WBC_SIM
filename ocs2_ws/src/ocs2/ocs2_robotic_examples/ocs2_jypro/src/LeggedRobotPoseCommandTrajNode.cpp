@@ -31,9 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/LoadData.h>
+#include <ocs2_centroidal_model/CentroidalModelInfo.h>
+#include "ocs2_centroidal_model/FactoryFunctions.h"
 
 #include <ocs2_jypro/command/TargetTrajectoriesPublisher.h>
 #include "sensor_msgs/Joy.h"
+#include "ocs2_jypro/common/ModelSettings.h"
+
 
 using namespace ocs2;
 
@@ -68,8 +72,22 @@ int main(int argc, char *argv[]) {
 
     std::cout << "defaultJointState: " << defaultJointState.transpose() << std::endl;
 
+    std::unique_ptr<PinocchioInterface> pinocchioInterfacePtr;
+    CentroidalModelInfo centroidalModelInfo;
+
+    legged_robot::ModelSettings modelSettings;
+
+
+    std::string urdfFilePath, taskFile;
+    nodeHandle.getParam("/urdfFile", urdfFilePath);
+    nodeHandle.getParam("/taskFile", taskFile);
+    pinocchioInterfacePtr.reset(new PinocchioInterface(ocs2::centroidal_model::createPinocchioInterface(urdfFilePath, modelSettings.jointNames)));
+    centroidalModelInfo = ocs2::centroidal_model::createCentroidalModelInfo(
+        *pinocchioInterfacePtr, ocs2::centroidal_model::loadCentroidalType(taskFile),
+        ocs2::centroidal_model::loadDefaultJointState(12, targetCommandFile), modelSettings.contactNames3DoF,
+        modelSettings.contactNames6DoF);
     // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
-    TargetTrajectoriesPublisher targetPoseCommand(nodeHandle, robotName, defaultJointState);
+    TargetTrajectoriesPublisher targetPoseCommand(nodeHandle, robotName, defaultJointState, *pinocchioInterfacePtr, centroidalModelInfo);
 
     const std::string commandMsg = "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by spaces";
     targetPoseCommand.publishKeyboardCommand(commandMsg);
