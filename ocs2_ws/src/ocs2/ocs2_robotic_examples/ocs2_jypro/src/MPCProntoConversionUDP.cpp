@@ -470,18 +470,14 @@ int main(int argc, char **argv) {
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
                 std::cout << mpc_input_msg.state.value[i] << " ";
-                std::cout << mpc_input_msg.state.value[i] << " ";
             }
             std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
-            // std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i + 6] << " ";
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
             std::cout << "\nActuated Joints:" << std::endl;
             // std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.state.value[i + 12] << " ";
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
             // std::cout << "\nMPC Input:___________ " << std::endl;
@@ -501,7 +497,7 @@ int main(int argc, char **argv) {
             std::cout << int(mpcInputData.stance_bool_[3]) << "\n";
             std::cout << double(mpc_input_msg.mode) << std::endl;
             std::cout << "terrain Parameters: " << buf.terrainEstData.terrainParams.transpose() << std::endl;
-            // std::cout << "time: " << mpc_input_msg.time << std::endl;
+            std::cout << "time: " << mpc_input_msg.time << std::endl;
         }
         // rate.sleep();
     }
