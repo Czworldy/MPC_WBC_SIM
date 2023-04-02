@@ -207,7 +207,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   for(int leg = 0; leg < 4; leg++){
     feetCurrentEEPositions[leg] = footPlacementPlannerPtr_->getCurrentEEPosition(leg, initState);
   }
-  if(useDefaultHeuristicFootholds_){
+  if(0){
     for(int leg = 0; leg < 4; leg++ ){
       vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.15*currentVelocity;
       (*mpcNominalFeetholdsPtr_)[leg].clear();

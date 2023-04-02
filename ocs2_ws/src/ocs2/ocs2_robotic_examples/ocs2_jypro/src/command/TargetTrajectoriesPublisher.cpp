@@ -159,7 +159,7 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
     const vector_t q = observation.state.tail(18);
     updateCentroidalDynamics(pinocchioInterface_, centroidalModelInfo_, q);
     const auto currentqVelocity = mappingPtr_->getPinocchioJointVelocity(observation.state, observation.input);
-
+    std::cout << "currentqVelocity: " << currentqVelocity.transpose() << "\n";
     int pointCounter = 0;
     for (const auto &state : receivedTargetTrajectories_.stateTrajectory) {
         Eigen::Vector3d pose_xy;
@@ -176,14 +176,19 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
     for (const auto& input : receivedTargetTrajectories_.inputTrajectory) {
         Eigen::Vector2d input_xy;
         input_xy << input(0), input(1);
-        const auto commandVelInOdomFrame = TransformMat * input_xy.homogeneous();
+        const auto commandVelInOdomFrame = TransformMat.topLeftCorner(2,2) * input_xy;
+
         vector_t commandGeneralizedVelocity = vector_t::Zero(18);
         commandGeneralizedVelocity(0) = currentqVelocity(0) + commandVelInOdomFrame(0);  // X 
         commandGeneralizedVelocity(1) = currentqVelocity(1) + commandVelInOdomFrame(1);  // Y 
         commandGeneralizedVelocity(3) = currentqVelocity(3) + input(2);  // Yaw
+        std::cout << "cmd vel:" << input_xy.transpose() << " " << "commandVelInOdomFrame:"
+            << commandVelInOdomFrame.transpose() << " " 
+            << "final vel: " << commandGeneralizedVelocity.head(4).transpose() << "\n";
 
-        const auto commandMometum = getCentroidalMomentumMatrix(pinocchioInterface_) * commandGeneralizedVelocity;
-
+        const auto commandMometum = getCentroidalMomentumMatrix(pinocchioInterface_) * commandGeneralizedVelocity / centroidalModelInfo_.robotMass;
+        // std::cout << "commandMometum: " << commandMometum.transpose() << "\n";
+        // std::cout << "centroidalModelInfo_.robotMass: " << centroidalModelInfo_.robotMass << "\n";
         stateTrajectory[pointCounter].head(6) = commandMometum;
 
     }
