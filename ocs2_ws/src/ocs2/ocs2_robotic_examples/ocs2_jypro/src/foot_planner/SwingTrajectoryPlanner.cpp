@@ -301,11 +301,11 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
           const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * 0};
           feetXTrajectories_[j].emplace_back(xStart, xEnd);
 
           const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][m].y(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * 0};
           feetYTrajectories_[j].emplace_back(yStart, yEnd);
           // }
         }
@@ -316,11 +316,11 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
           const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][p].x(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * 0};
           feetXTrajectories_[j].emplace_back(xStart, xEnd);
 
           const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][p].y(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * 0};
           feetYTrajectories_[j].emplace_back(yStart, yEnd);
         }
         

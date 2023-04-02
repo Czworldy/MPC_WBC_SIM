@@ -114,11 +114,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
   // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
 
-  const scalar_t distance2Terrain = 0.48; //For X20
+  const scalar_t distance2Terrain = 0.41; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
   // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
   // std::cout << "intiState: " << initState.segment(6, 18).transpose() << std::endl;
+
+  // std::cout << targetTrajectories;
 
   if(targetTrajectories.timeTrajectory.size() >= 2){
     // targetState(8) = zReference;
