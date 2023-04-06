@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
        nodeHandle.advertise<ocs2_msgs::FootholdRegionGroup>("/foothold_planner/FootholdRegionGroup", 1);
   ros::Publisher desiredFeetPlacementPoint_ = nodeHandle.advertise<visualization_msgs::Marker>("/legged_robot/desiredFeetPlacementPoint", 1);
   
-  std::default_random_engine e(3);
+  std::default_random_engine e(1130);
       visualization_msgs::Marker feetPlacement;
 
 
-  std::normal_distribution<ocs2::scalar_t> n(0,0.05);
+  std::normal_distribution<ocs2::scalar_t> n(0,0.12);
 
   std::vector<vector3_t> leftPoints;
   std::vector<vector3_t> rightPoints;
@@ -55,40 +55,39 @@ int main(int argc, char** argv) {
       if(i < 3){
         leftpoint[0] = 0.2*i - 0.308;
         rightpoint[0] = 0.2*i - 0.308;
-        double random = n(e);
+        // double random = n(e);
         // leftpoint[1] += random;
         // rightpoint[1] += random;
       }
-      else if (i == 4 || i == 5 || i == 3){
-        leftpoint[0] = 0.25*(i - 3) + 0.308;
-        rightpoint[0] = 0.25*(i - 3) + 0.308;
+      else if (i >= 3){
+        leftpoint[0] = 0.35*(i - 3) + 0.308;
+        rightpoint[0] = 0.35*(i - 3) + 0.308;
         // leftpoint[2] = 0.03+0.06*(i-3);
         // rightpoint[2] = 0.03+0.06*(i-3);
         double random = n(e);
-        // leftpoint[1] += random;
-        // rightpoint[1] += random;
+        leftpoint[1] += random;
+        rightpoint[1] += random;
       }
-      if(i > 5 && i < 10){
-        leftpoint[0] = 1 + 0.23*(i -5) - 0.05;
-        rightpoint[0] = 1 + 0.23*(i -5) - 0.05;
-        leftpoint[1] = __FOOT_Y__;
-        rightpoint[1] = -__FOOT_Y__;
-        leftpoint[2] = 0.08 * (i-5);
-        rightpoint[2] = 0.08 * (i-5);
+      // if(i > 5 && i < 10){
+      //   leftpoint[0] = 1 + 0.23*(i -5) - 0.05;
+      //   rightpoint[0] = 1 + 0.23*(i -5) - 0.05;
+      //   leftpoint[1] = __FOOT_Y__;
+      //   rightpoint[1] = -__FOOT_Y__;
+      //   leftpoint[2] = 0.08 * (i-5);
+      //   rightpoint[2] = 0.08 * (i-5);
 
-      }
+      // }
 
+      // if(i >= 10){
+      //   leftpoint[0] = 1.87 + 0.25*(i - 9);
+      //   rightpoint[0] = 1.87 + 0.25*(i - 9);
 
-      if(i >= 10){
-        leftpoint[0] = 1.87 + 0.25*(i - 9);
-        rightpoint[0] = 1.87 + 0.25*(i - 9);
+      //   leftpoint[1] = __FOOT_Y__;
+      //   rightpoint[1] = -__FOOT_Y__;
 
-        leftpoint[1] = __FOOT_Y__;
-        rightpoint[1] = -__FOOT_Y__;
-
-        leftpoint[2] = 0.08 * 4;
-        rightpoint[2] = 0.08 * 4;
-      }
+      //   leftpoint[2] = 0.08 * 4;
+      //   rightpoint[2] = 0.08 * 4;
+      // }
 
       if (i == 0 || i == 3)
       {
