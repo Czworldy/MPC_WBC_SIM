@@ -460,6 +460,11 @@ int main(int argc, char **argv) {
         mpc_terrain_sync_input_msg.feetHeight[2] = buf.terrainEstData.feetHeight[2];
         mpc_terrain_sync_input_msg.feetHeight[3] = buf.terrainEstData.feetHeight[3];
 
+        mpc_terrain_sync_input_msg.contact[0] = (uint8_t)mpcInputData.stance_bool_[0];
+        mpc_terrain_sync_input_msg.contact[1] = (uint8_t)mpcInputData.stance_bool_[1];
+        mpc_terrain_sync_input_msg.contact[2] = (uint8_t)mpcInputData.stance_bool_[2];
+        mpc_terrain_sync_input_msg.contact[3] = (uint8_t)mpcInputData.stance_bool_[3];
+
         mpc_terrain_sync_input.publish(mpc_terrain_sync_input_msg);
         mpc_input.publish(mpc_input_msg);
 

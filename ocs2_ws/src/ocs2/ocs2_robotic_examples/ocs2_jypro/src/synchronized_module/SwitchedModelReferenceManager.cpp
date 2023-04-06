@@ -110,6 +110,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   vector3_t terrainNormal = terrainParams;
   terrainNormal(2) = 1;
 
+  std::cout << *terrainEstDataPtr_;
+
   vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
   // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
   // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
