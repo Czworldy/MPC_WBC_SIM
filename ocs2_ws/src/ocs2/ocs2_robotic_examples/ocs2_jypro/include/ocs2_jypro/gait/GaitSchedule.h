@@ -61,6 +61,8 @@ class GaitSchedule {
 
   const ModeSchedule& getModeSchedule() const { return modeSchedule_; }
 
+  void setModeSchedule(const ModeSchedule modeSchedule) { modeSchedule_ = modeSchedule; }
+
  private:
   /**
    * Extends the switch information from lowerBoundTime to upperBoundTime based on the template mode sequence.

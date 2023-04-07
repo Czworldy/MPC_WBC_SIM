@@ -61,7 +61,7 @@ class SwingTrajectoryPlanner {
               scalar_t initTime);
               
   void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
-              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors);
+              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors, bool isLateTouchdown);
 
   //use in no feethold from upper planner.
   void update(const ModeSchedule& modeSchedule, const feet_array_t<vector3_t>& currentFeetEndEffectors,

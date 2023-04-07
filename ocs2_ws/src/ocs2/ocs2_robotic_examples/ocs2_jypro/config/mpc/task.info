@@ -24,7 +24,7 @@ swing_trajectory_config
 {
   liftOffVelocity               0.2
   touchDownVelocity            -0.4     ;-0.2
-  swingHeight                   0.12
+  swingHeight                   0.17
   touchdownAfterHorizon         0.2
   swingTimeScale                0.15
 }
@@ -209,18 +209,18 @@ Q
   (11,11) 200.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;; 不能太低
-  (12,12) 5.0     ; LF_HAA
-  (13,13) 5.0     ; LF_HFE
-  (14,14) 5.0     ; LF_KFE
-  (15,15) 5.0     ; LH_HAA
-  (16,16) 5.0     ; LH_HFE
-  (17,17) 5.0     ; LH_KFE
-  (18,18) 5.0     ; RF_HAA
-  (19,19) 5.0     ; RF_HFE
-  (20,20) 5.0     ; RF_KFE
-  (21,21) 5.0     ; RH_HAA
-  (22,22) 5.0     ; RH_HFE
-  (23,23) 5.0     ; RH_KFE
+  (12,12) 10.0     ; LF_HAA
+  (13,13) 10.0     ; LF_HFE
+  (14,14) 10.0     ; LF_KFE
+  (15,15) 10.0     ; LH_HAA
+  (16,16) 10.0     ; LH_HFE
+  (17,17) 10.0     ; LH_KFE
+  (18,18) 10.0     ; RF_HAA
+  (19,19) 10.0     ; RF_HFE
+  (20,20) 10.0     ; RF_KFE
+  (21,21) 10.0     ; RH_HAA
+  (22,22) 10.0     ; RH_HFE
+  (23,23) 10.0     ; RH_KFE
 }
 
 ; control weight matrix

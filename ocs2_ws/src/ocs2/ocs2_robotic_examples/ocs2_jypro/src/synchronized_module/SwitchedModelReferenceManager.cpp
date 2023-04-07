@@ -105,43 +105,64 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   //get current measure contact mode
   const size_t currentMode = stanceLeg2ModeNumber(terrainEstDataPtr_->stanceLegs);
+  //update gait table and get predictive mode
+  const auto timeHorizon = finalTime - initTime;
+  // modeSchedule = tempModeSchedule_;
+  modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
+  tempModeSchedule_ = modeSchedule;
 
-  // check if the contact mismatch.
+  if(isLateTouchdown_){
+    if(initTime - lateTouchdownTime_ > 0.03) {
+      isLateTouchdown_ = false;
+    }
+  }
+  // isLateTouchdown_ = false;
+
   std::cout << "################### Current modeSchedule ###################" << std::endl;
   std::cout << modeSchedule;
-  const int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
+  const int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
   const auto& mode = modeSchedule.modeSequence[modeIndex];
   std::cout << "modeIndex: " << modeIndex << "\t";
   std::cout << "actual mode: " << currentMode << " predictive mode:" << mode  << std::endl;
 
-  const auto timeHorizon = finalTime - initTime;
-  modeSchedule = tempModeSchedule_;
-  modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
-  tempModeSchedule_ = modeSchedule;
 
-
-  if (mode != currentMode) {
+  if (mode != currentMode && isLateTouchdown_ == false) {
     const contact_flag_t& predictiveContactFlags = modeNumber2StanceLeg(mode);
     const contact_flag_t& actualContactFlags = terrainEstDataPtr_->stanceLegs;
-    contact_flag_t insertContactFlags = actualContactFlags;
-    bool isLateTouchdown = false;
+    contact_flag_t insertContactFlags = {true, true, true, true}; // default insert mode is all legs in contact, prevent the mode is zero.
     for(int leg = 0; leg < 4; leg++) {
       if (predictiveContactFlags[leg] == true && actualContactFlags[leg] == false) { //late touchdown
         std::cout << "late touchdown: leg " << leg << " predictive contact: " << predictiveContactFlags[leg] 
                   << " actual contact: " << actualContactFlags[leg] << std::endl;
         insertContactFlags[leg] = false;
-        isLateTouchdown = true;
+        isLateTouchdown_ = true;
+        lateTouchdownTime_ = initTime;
       }
     }
-    // update the predictive mode
-    if(isLateTouchdown) {
-      // modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, initTime);
-      // modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags));
+    // insert the new mode
+    if(isLateTouchdown_) {
+      // delay the mode after the late touchdown
+      for(int i = modeIndex; i < modeSchedule.eventTimes.size(); i++) {
+        modeSchedule.eventTimes[i] += 0.05;
+      }
+      for(int i = 0; i < modeIndex; i++) {
+        modeSchedule.eventTimes[i] -= 0.02;
+      }
+
+      const auto& modeAfterRecover = modeSchedule.modeSequence[modeIndex+1];
+
+      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, initTime - 0.01); // recover mode start time
+      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex + 1, initTime + 0.05); // recover mode end time
+      modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags));
+      modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 2, modeAfterRecover);
+      std::cout << "################### After modeSchedule ###################" << std::endl;
+      std::cout << modeSchedule;
+      // gaitSchedulePtr_->setModeSchedule(modeSchedule);
     }
   }
 
-  std::cout << "################### After modeSchedule ###################" << std::endl;
-  std::cout << modeSchedule;
+
+
 
   auto& targetState = targetTrajectories.stateTrajectory.back();
   const vector3_t& terrainParams = terrainEstDataPtr_->terrainParams.cast<scalar_t>();
@@ -165,14 +186,14 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     // targetState(8) = zReference;
     // targetState(10) = terrainRPY[1]; //pitch
     // targetState(11) = terrainRPY[0]; //roll
-    for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
-      stateTrajectory(8) = zReference;
-      stateTrajectory(10) = terrainRPY[1]; //pitch
-      stateTrajectory(11) = terrainRPY[0]; //roll
-    }
-    // targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
-    // targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
-    // targetTrajectories.stateTrajectory[1][8] = zReference; // z
+    // for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
+    //   stateTrajectory(8) = zReference;
+    //   stateTrajectory(10) = terrainRPY[1]; //pitch
+    //   stateTrajectory(11) = terrainRPY[0]; //roll
+    // }
+    targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
+    targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
+    targetTrajectories.stateTrajectory[1][8] = zReference; // z
 
     // std::cout << "######## modify target state ########\n"; 
   }
@@ -270,8 +291,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
   // }
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
-  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
+  footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions, isLateTouchdown_); // 默认的情况下不用这个函数？
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
 
 

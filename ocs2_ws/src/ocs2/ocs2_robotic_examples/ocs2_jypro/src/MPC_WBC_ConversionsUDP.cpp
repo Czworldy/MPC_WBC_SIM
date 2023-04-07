@@ -275,9 +275,9 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         DesiredTrajectoriesForWBC();
 
         // std::cerr << "\n[dqwang: mpcPolicyCallback] DesiredTrajectoriesForWBC Done!\n";
-        std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData state times start: " << wbcInterfaceData.stateTime[0] << "\n";
+        std::cerr << "[dqwang: mpcPolicyCallback] wbcInterfaceData state times start: " << wbcInterfaceData.stateTime[0] << "\n";
 
-        // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait;
+        std::cerr << "[dqwang: mpcPolicyCallback] wbcInterfaceData firstgait: " << wbcInterfaceData.firstGait.transpose() << "\n";
         // std::cerr << "\n[dqwang: mpcPolicyCallback] wbcInterfaceData secondgait: " << wbcInterfaceData.secondGait;
         wbcInterfaceData.inputForce = mpcData.inputTrajectory_[0].head(12).cast<float>();
 
@@ -391,7 +391,7 @@ void getGeneralizedVelocities(){
         const auto& Ag = pinocchio::computeCentroidalMap(model, data, q[k]); // Computes the Centroidal Momentum Matrix
         pseudoInverse(Ag.leftCols(6), 0.0001, InverseAb[k]); // InverseAb
         Aj[k] = Ag.rightCols(numOfActuatedJoint); // Aj
-        std::cout << "data.mass[0]: " << data.mass[0] << std::endl;
+        // std::cout << "data.mass[0]: " << data.mass[0] << std::endl;
         v[k].head(6) = InverseAb[k] * (mpcData.stateTrajectory_[k].head(6) * data.mass[0] - Aj[k] * v[k].tail(numOfActuatedJoint));
     }
 }
