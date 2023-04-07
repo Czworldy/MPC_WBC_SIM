@@ -96,6 +96,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   PinocchioInterface& pinocchioInterface_;
   const CentroidalModelInfo& centroidalModelInfo_;
   bool useDefaultHeuristicFootholds_ = true;
+  ModeSchedule tempModeSchedule_;
 };
 
 }  // namespace legged_robot

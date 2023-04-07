@@ -102,15 +102,52 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState,
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
                                                      TargetFeetPlacement& targetFeetPlacement) {
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  //get current measure contact mode
+  const size_t currentMode = stanceLeg2ModeNumber(terrainEstDataPtr_->stanceLegs);
+
+  // check if the contact mismatch.
+  std::cout << "################### Current modeSchedule ###################" << std::endl;
+  std::cout << modeSchedule;
+  const int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime);
+  const auto& mode = modeSchedule.modeSequence[modeIndex];
+  std::cout << "modeIndex: " << modeIndex << "\t";
+  std::cout << "actual mode: " << currentMode << " predictive mode:" << mode  << std::endl;
+
   const auto timeHorizon = finalTime - initTime;
-  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  modeSchedule = tempModeSchedule_;
   modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
+  tempModeSchedule_ = modeSchedule;
+
+
+  if (mode != currentMode) {
+    const contact_flag_t& predictiveContactFlags = modeNumber2StanceLeg(mode);
+    const contact_flag_t& actualContactFlags = terrainEstDataPtr_->stanceLegs;
+    contact_flag_t insertContactFlags = actualContactFlags;
+    bool isLateTouchdown = false;
+    for(int leg = 0; leg < 4; leg++) {
+      if (predictiveContactFlags[leg] == true && actualContactFlags[leg] == false) { //late touchdown
+        std::cout << "late touchdown: leg " << leg << " predictive contact: " << predictiveContactFlags[leg] 
+                  << " actual contact: " << actualContactFlags[leg] << std::endl;
+        insertContactFlags[leg] = false;
+        isLateTouchdown = true;
+      }
+    }
+    // update the predictive mode
+    if(isLateTouchdown) {
+      // modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, initTime);
+      // modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags));
+    }
+  }
+
+  std::cout << "################### After modeSchedule ###################" << std::endl;
+  std::cout << modeSchedule;
+
   auto& targetState = targetTrajectories.stateTrajectory.back();
   const vector3_t& terrainParams = terrainEstDataPtr_->terrainParams.cast<scalar_t>();
   vector3_t terrainNormal = terrainParams;
   terrainNormal(2) = 1;
 
-  std::cout << *terrainEstDataPtr_;
 
   vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
   // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
@@ -183,7 +220,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   const auto currentqVelocity = mappingPtr_->getPinocchioJointVelocity(initState, vector_t::Zero(24));
   const auto currentVelocity = currentqVelocity.head(3);
-  std::cout << "currentVelocity: " << currentVelocity.transpose() << std::endl;
+  // std::cout << "currentVelocity: " << currentVelocity.transpose() << std::endl;
   // std::cout << "momentum: " << initState.segment<6>(0).transpose() << std::endl;
 
 
@@ -194,7 +231,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
 
 
-  std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
+  // std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
 
 
@@ -249,7 +286,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << "modifyReferences Done!" << "\n";
 
 }
 
