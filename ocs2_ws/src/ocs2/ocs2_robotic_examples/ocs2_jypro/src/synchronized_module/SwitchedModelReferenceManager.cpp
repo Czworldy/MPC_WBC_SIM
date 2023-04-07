@@ -112,54 +112,65 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   tempModeSchedule_ = modeSchedule;
 
   if(isLateTouchdown_){
-    if(initTime - lateTouchdownTime_ > 0.03) {
+    if(initTime - lateTouchdownTime_ > 0.1) {
       isLateTouchdown_ = false;
     }
   }
   // isLateTouchdown_ = false;
 
-  std::cout << "################### Current modeSchedule ###################" << std::endl;
+  std::cout << "### Current modeSchedule:" << std::endl;
   std::cout << modeSchedule;
-  const int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
+  int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
   const auto& mode = modeSchedule.modeSequence[modeIndex];
   std::cout << "modeIndex: " << modeIndex << "\t";
   std::cout << "actual mode: " << currentMode << " predictive mode:" << mode  << std::endl;
+  if(modeIndex > 0) {
+    if(modeSchedule.eventTimes[modeIndex] - initTime > initTime - modeSchedule.eventTimes[modeIndex-1]) {
+      modeIndex--;
+    }
+  }
 
 
   if (mode != currentMode && isLateTouchdown_ == false) {
     const contact_flag_t& predictiveContactFlags = modeNumber2StanceLeg(mode);
     const contact_flag_t& actualContactFlags = terrainEstDataPtr_->stanceLegs;
-    contact_flag_t insertContactFlags = {true, true, true, true}; // default insert mode is all legs in contact, prevent the mode is zero.
+    insertContactFlags_ = {true, true, true, true}; // default insert mode is all legs in contact, prevent the mode is zero.
     for(int leg = 0; leg < 4; leg++) {
       if (predictiveContactFlags[leg] == true && actualContactFlags[leg] == false) { //late touchdown
-        std::cout << "late touchdown: leg " << leg << " predictive contact: " << predictiveContactFlags[leg] 
-                  << " actual contact: " << actualContactFlags[leg] << std::endl;
-        insertContactFlags[leg] = false;
+        std::cout << "################# late touchdown: leg " << leg << " #################" << std::endl;
+        insertContactFlags_[leg] = false;
         isLateTouchdown_ = true;
         lateTouchdownTime_ = initTime;
+        insertContactTimes_ = 2;
       }
     }
+  }
+
+  if(mode == currentMode){
+    isLateTouchdown_ = false;
+  }
     // insert the new mode
-    if(isLateTouchdown_) {
+  if(isLateTouchdown_ && (insertContactTimes_ > 0) && (mode != currentMode)) {
       // delay the mode after the late touchdown
       for(int i = modeIndex; i < modeSchedule.eventTimes.size(); i++) {
         modeSchedule.eventTimes[i] += 0.05;
       }
-      for(int i = 0; i < modeIndex; i++) {
-        modeSchedule.eventTimes[i] -= 0.02;
-      }
+      // for(int i = 0; i < modeIndex; i++) {
+      //   modeSchedule.eventTimes[i] -= 0.02;
+      // }
 
-      const auto& modeAfterRecover = modeSchedule.modeSequence[modeIndex+1];
+      const auto& modeAfterRecover = modeSchedule.modeSequence[modeIndex+1]; // maybe change to closet mode according to time.
 
-      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, initTime - 0.01); // recover mode start time
-      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex + 1, initTime + 0.05); // recover mode end time
-      modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags));
+      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, lateTouchdownTime_ - 0.01); // recover mode start time
+      modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex + 1, lateTouchdownTime_ + 0.05); // recover mode end time
+      modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags_));
       modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 2, modeAfterRecover);
-      std::cout << "################### After modeSchedule ###################" << std::endl;
+      std::cout << "### After modeSchedule:" << std::endl;
       std::cout << modeSchedule;
+      insertContactTimes_--;
       // gaitSchedulePtr_->setModeSchedule(modeSchedule);
     }
-  }
+  
 
 
 
@@ -192,7 +203,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     //   stateTrajectory(11) = terrainRPY[0]; //roll
     // }
     targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
-    targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
+    targetTrajectories.stateTrajectory[1][11] = 0.5*terrainRPY[0]; // roll
     targetTrajectories.stateTrajectory[1][8] = zReference; // z
 
     // std::cout << "######## modify target state ########\n"; 

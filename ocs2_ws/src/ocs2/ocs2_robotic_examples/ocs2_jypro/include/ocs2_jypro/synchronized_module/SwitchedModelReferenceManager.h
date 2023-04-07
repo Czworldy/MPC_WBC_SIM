@@ -100,6 +100,8 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   ModeSchedule tempModeSchedule_;
   bool isLateTouchdown_ = false;
   scalar_t lateTouchdownTime_ = 0.0;
+  contact_flag_t insertContactFlags_ = {true, true, true, true};
+  int insertContactTimes_ = 0;
 
 };
 
