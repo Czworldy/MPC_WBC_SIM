@@ -85,6 +85,7 @@ add_library(${PROJECT_NAME}
                           src/WBC_CONTROL/wbc_ctrl/TaskSet/NoContactMotion.cpp
                           src/WBC_CONTROL/wbc_ctrl/TaskSet/TorqueLimits.cpp
                           src/WBC_CONTROL/wbc_ctrl/TaskSet/SwingLegMotion.cpp
+                          src/WBC_CONTROL/wbc_ctrl/TaskSet/SwingLegJointMotion.cpp
 
                           src/PARAMETER/UserParameter.cpp
                           src/WBC_CONTROL/wbc/wbc.cpp

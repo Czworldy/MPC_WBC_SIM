@@ -1,4 +1,4 @@
-#include "CoMAngularMotion.h"
+#include "WBC_CONTROL/wbc_ctrl/TaskSet/CoMAngularMotion.h"
 
 //TODO：未测试函数计算是否正确
 
@@ -24,22 +24,22 @@ bool CoMAngularMotion<T>::UpdateTask(const DVec<T>& pos_des,
     Kp = user_p_.Kp_ori;
     Kd = user_p_.Kd_ori;
 
-    if(!contactState[legID::LF]){
-        Kp = user_p_.Kp_ori_lf;
-        Kd = user_p_.Kd_ori_lf;
-    }
-    if(!contactState[legID::LB]){
-        Kp = user_p_.Kp_ori_lb;
-        Kd = user_p_.Kd_ori_lb;
-    }
-    if(!contactState[legID::RF]){
-        Kp = user_p_.Kp_ori_rf;
-        Kd = user_p_.Kd_ori_rf;
-    }
-    if(!contactState[legID::RB]){
-        Kp = user_p_.Kp_ori_rb;
-        Kd = user_p_.Kd_ori_rb;
-    }
+    // if(!contactState[legID::LF]){
+    //     Kp = user_p_.Kp_ori_lf;
+    //     Kd = user_p_.Kd_ori_lf;
+    // }
+    // if(!contactState[legID::LB]){
+    //     Kp = user_p_.Kp_ori_lb;
+    //     Kd = user_p_.Kd_ori_lb;
+    // }
+    // if(!contactState[legID::RF]){
+    //     Kp = user_p_.Kp_ori_rf;
+    //     Kd = user_p_.Kd_ori_rf;
+    // }
+    // if(!contactState[legID::RB]){
+    //     Kp = user_p_.Kp_ori_rb;
+    //     Kd = user_p_.Kd_ori_rb;
+    // }
     
     Update_size();
     Update_A();
@@ -106,7 +106,7 @@ bool CoMAngularMotion<T>::Update_b(){
 //     Q_CoM = _robot_sys->Q.cast<T>();
 //     QDot_CoM = _robot_sys->QDot.cast<T>();
 //     JDotQDot = _robot_sys->getCoM6DJDotQDot().cast<T>();
-//     //ROS_INFO_STREAM("JDotQDot: \n" << JDotQDot);
+//     //printf_STREAM("JDotQDot: \n" << JDotQDot);
 
 
 //     Vec31<T> roll_point;
@@ -121,24 +121,24 @@ bool CoMAngularMotion<T>::Update_b(){
 //     TK::b_[1] = -user_p_.Kd_ori[1]*QDot_CoM[4] + user_p_.Kp_ori[1]* rot_err(0,2);// - JDotQDot[4];
 //     TK::b_[2] = -user_p_.Kd_ori[2]*QDot_CoM[5] + user_p_.Kp_ori[2]* rot_err(1,0) ;//- JDotQDot[5];
 //     iter++;
-//     ROS_INFO_STREAM("roll_____________________: "<<Q_CoM[3] );
+//     printf_STREAM("roll_____________________: "<<Q_CoM[3] );
 // }
 
 template<typename T>
 void CoMAngularMotion<T>::TaskPrint(){
-    ROS_INFO("TASK_PRINT_COMANGULARMOTION");
+    printf("TASK_PRINT_COMANGULARMOTION");
 }
 
 template<typename T>
 bool CoMAngularMotion<T>::UpdateTask(){
-    ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
 bool CoMAngularMotion<T>::UpdateTask(const DVec<T>& pos_des, 
                                      const DVec<T>& vel_des,
                                      const DVec<T>& acc_des){
-    ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                                 
+    printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!"); return true;                                                
 }
 
 template<typename T>
@@ -146,14 +146,14 @@ bool CoMAngularMotion<T>::UpdateTask(const Vec31<T>* pos_des,
                                      const Vec31<T>* vel_des,
                                      const Vec31<T>* acc_des,
                                      const Vec41<T>& contact_state){
-    ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");    
+    printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;    
 }
 
 template<typename T>
-bool CoMAngularMotion<T>::Update_D(){}
+bool CoMAngularMotion<T>::Update_D(){return true;}
 
 template<typename T>
-bool CoMAngularMotion<T>::Update_f(){ }
+bool CoMAngularMotion<T>::Update_f(){return true; }
 
 
 template class CoMAngularMotion<double>;
@@ -189,8 +189,8 @@ template class CoMAngularMotion<float>;
 
 
 
-// #include "CoMAngularMotion.h"
-// #include "utility.h"
+// #include "WBC_CONTROL/wbc_ctrl/TaskSet/CoMAngularMotion.h"
+// #include "Math/utility.h"
 
 // //TODO：未测试函数计算是否正确
 
@@ -240,7 +240,7 @@ template class CoMAngularMotion<float>;
 //     Q_CoM = _robot_sys->Q.cast<T>();
 //     QDot_CoM = _robot_sys->QDot.cast<T>();
 //     JDotQDot = _robot_sys->getCoM6DJDotQDot().cast<T>();
-//     //ROS_INFO_STREAM("JDotQDot: \n" << JDotQDot);
+//     //printf_STREAM("JDotQDot: \n" << JDotQDot);
 //     rot_cur = rpyTORotateMat(Q_CoM[3],Q_CoM[4], Q_CoM[5]);
 //     rot_des = rpyTORotateMat(angle_d_[0],angle_d_[1],angle_d_[2]);
 //     rot_err =  rot_des * rot_cur.transpose();
@@ -252,12 +252,12 @@ template class CoMAngularMotion<float>;
 
 // template<typename T>
 // void CoMAngularMotion<T>::TaskPrint(){
-//     ROS_INFO("TASK_PRINT_COMANGULARMOTION");
+//     printf("TASK_PRINT_COMANGULARMOTION");
 // }
 
 // template<typename T>
 // bool CoMAngularMotion<T>::UpdateTask(){
-//     ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+//     printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 // }
 
 // template<typename T>
@@ -265,12 +265,12 @@ template class CoMAngularMotion<float>;
 //                                                                                      const DVec<T>& vel_des,
 //                                                                                      const DVec<T>& acc_des,
 //                                                                                      const UserParameter<T> & user_param){
-//     ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+//     printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 // }
 
 // template<typename T>
 // bool CoMAngularMotion<T>::UpdateTask(const UserParameter<T> & user_param){
-//     ROS_INFO("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+//     printf("COMANGULARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 // }
 
 // template<typename T>

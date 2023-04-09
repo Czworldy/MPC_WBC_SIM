@@ -3,7 +3,7 @@
 
 template<typename T>
 UserParameter<T>::UserParameter(){
-    const std::string filename = "/home/yjy/nuclear_pro/x20_sim_220909/catkin_ws/src/Jueying_description/jy_control_test/include/PARAMETER/UserParameter.info";
+    const std::string filename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
     const std::string pdCfg = "PD";
     const std::string wbcCfg = "WBC";
     const std::string safeGuardCfg = "SafeGuard";
@@ -36,12 +36,15 @@ UserParameter<T>::UserParameter(){
         Kp_foot[i] = kp_foot[i];
     }
     std::vector<T> kd_body_lf, kp_body_lf, kd_ori_lf, kp_ori_lf, kd_foot_lf, kp_foot_lf;
+    std::vector<T> kd_LegJoint_lf, kp_LegJoint_lf;
     loadData::loadStdVector(filename, wbcCfg + ".Kd_body_lf", kd_body_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_body_lf", kp_body_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_ori_lf",  kd_ori_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_ori_lf",  kp_ori_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_foot_lf", kd_foot_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_foot_lf", kp_foot_lf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_LegJoint_lf", kd_LegJoint_lf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_LegJoint_lf", kp_LegJoint_lf, verbose);
     for(int i(0); i < 3; i++) {
         Kd_body_lf[i] = kd_body_lf[i];
         Kp_body_lf[i] = kp_body_lf[i];
@@ -49,14 +52,21 @@ UserParameter<T>::UserParameter(){
         Kp_ori_lf[i] = kp_ori_lf[i];
         Kd_foot_lf[i] = kd_foot_lf[i];
         Kp_foot_lf[i] = kp_foot_lf[i];
+
+        Kd_LegJoint_lf[i] = kd_LegJoint_lf[i];
+        Kp_LegJoint_lf[i] = kp_LegJoint_lf[i];
     }
+
     std::vector<T> kd_body_rf, kp_body_rf, kd_ori_rf, kp_ori_rf, kd_foot_rf, kp_foot_rf;
+    std::vector<T> kd_LegJoint_rf, kp_LegJoint_rf;
     loadData::loadStdVector(filename, wbcCfg + ".Kd_body_rf", kd_body_rf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_body_rf", kp_body_rf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_ori_rf",  kd_ori_rf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_ori_rf",  kp_ori_rf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_foot_rf", kd_foot_rf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_foot_rf", kp_foot_rf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_LegJoint_rf", kd_LegJoint_rf, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_LegJoint_rf", kp_LegJoint_rf, verbose);
     for(int i(0); i < 3; i++) {
         Kd_body_rf[i] = kd_body_rf[i];
         Kp_body_rf[i] = kp_body_rf[i];
@@ -64,14 +74,21 @@ UserParameter<T>::UserParameter(){
         Kp_ori_rf[i] = kp_ori_rf[i];
         Kd_foot_rf[i] = kd_foot_rf[i];
         Kp_foot_rf[i] = kp_foot_rf[i];
+
+        Kd_LegJoint_rf[i] = kd_LegJoint_rf[i];
+        Kp_LegJoint_rf[i] = kp_LegJoint_rf[i];
     }
+
     std::vector<T> kd_body_lb, kp_body_lb, kd_ori_lb, kp_ori_lb, kd_foot_lb, kp_foot_lb;
+    std::vector<T> kd_LegJoint_lb, kp_LegJoint_lb;
     loadData::loadStdVector(filename, wbcCfg + ".Kd_body_lb", kd_body_lb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_body_lb", kp_body_lb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_ori_lb",  kd_ori_lb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_ori_lb",  kp_ori_lb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_foot_lb", kd_foot_lb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_foot_lb", kp_foot_lb, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_LegJoint_lb", kd_LegJoint_lb, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_LegJoint_lb", kp_LegJoint_lb, verbose);
     for(int i(0); i < 3; i++) {
         Kd_body_lb[i] = kd_body_lb[i];
         Kp_body_lb[i] = kp_body_lb[i];
@@ -79,14 +96,21 @@ UserParameter<T>::UserParameter(){
         Kp_ori_lb[i] = kp_ori_lb[i];
         Kd_foot_lb[i] = kd_foot_lb[i];
         Kp_foot_lb[i] = kp_foot_lb[i];
+
+        Kd_LegJoint_lb[i] = kd_LegJoint_lb[i];
+        Kp_LegJoint_lb[i] = kp_LegJoint_lb[i];
     }
+
     std::vector<T> kd_body_rb, kp_body_rb, kd_ori_rb, kp_ori_rb, kd_foot_rb, kp_foot_rb;
+    std::vector<T> kd_LegJoint_rb, kp_LegJoint_rb;
     loadData::loadStdVector(filename, wbcCfg + ".Kd_body_rb", kd_body_rb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_body_rb", kp_body_rb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_ori_rb",  kd_ori_rb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_ori_rb",  kp_ori_rb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kd_foot_rb", kd_foot_rb, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_foot_rb", kp_foot_rb, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kd_LegJoint_rb", kd_LegJoint_rb, verbose);
+    loadData::loadStdVector(filename, wbcCfg + ".Kp_LegJoint_rb", kp_LegJoint_rb, verbose);
     for(int i(0); i < 3; i++) {
         Kd_body_rb[i] = kd_body_rb[i];
         Kp_body_rb[i] = kp_body_rb[i];
@@ -94,7 +118,11 @@ UserParameter<T>::UserParameter(){
         Kp_ori_rb[i] = kp_ori_rb[i];
         Kd_foot_rb[i] = kd_foot_rb[i];
         Kp_foot_rb[i] = kp_foot_rb[i];
+
+        Kd_LegJoint_rb[i] = kd_LegJoint_rb[i];
+        Kp_LegJoint_rb[i] = kp_LegJoint_rb[i];
     }
+
     std::vector<T> kd_joint_lf, kp_joint_lf, kd_joint_rf, kp_joint_rf, kd_joint_lh, kp_joint_lh, kd_joint_rh, kp_joint_rh;
     loadData::loadStdVector(filename, wbcCfg + ".Kd_joint_lf", kd_joint_lf, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".Kp_joint_lf", kp_joint_lf, verbose);
@@ -114,7 +142,6 @@ UserParameter<T>::UserParameter(){
         Kd_joint_rh[i] = kd_joint_rh[i];
         Kp_joint_rh[i] = kp_joint_rh[i];
     }
-
     std::vector<T> nContact, hContact, iContact;
     loadData::loadStdVector(filename, wbcCfg + ".NContact", nContact, verbose);
     loadData::loadStdVector(filename, wbcCfg + ".HContact", hContact, verbose);

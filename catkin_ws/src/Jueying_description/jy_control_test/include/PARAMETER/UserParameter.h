@@ -9,13 +9,14 @@ struct HierNWeig
 {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Eigen::Matrix<int, 2, 1> hierarchy;
-        Eigen::Matrix<T, 7, 1>  weight;
+        Eigen::Matrix<T, 8, 1>  weight;
 };
 
 
 template<typename T>
 class UserParameter{
         public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         //******************WBC*************************
         Vec31<T> Kp_body, Kd_body;
         Vec31<T> Kp_ori, Kd_ori;
@@ -24,18 +25,22 @@ class UserParameter{
         Vec31<T> Kp_body_lf, Kd_body_lf;
         Vec31<T> Kp_ori_lf, Kd_ori_lf;
         Vec31<T> Kp_foot_lf, Kd_foot_lf;
+        Vec31<T> Kp_LegJoint_lf, Kd_LegJoint_lf; // WBC LegJointMotionControl Task
 
         Vec31<T> Kp_body_lb, Kd_body_lb;
         Vec31<T> Kp_ori_lb, Kd_ori_lb;
         Vec31<T> Kp_foot_lb, Kd_foot_lb;
+        Vec31<T> Kp_LegJoint_lb, Kd_LegJoint_lb; // WBC LegJointMotionControl Task
 
         Vec31<T> Kp_body_rf, Kd_body_rf;
         Vec31<T> Kp_ori_rf, Kd_ori_rf;
         Vec31<T> Kp_foot_rf, Kd_foot_rf;
+        Vec31<T> Kp_LegJoint_rf, Kd_LegJoint_rf; // WBC LegJointMotionControl Task
 
         Vec31<T> Kp_body_rb, Kd_body_rb;
         Vec31<T> Kp_ori_rb, Kd_ori_rb;
         Vec31<T> Kp_foot_rb, Kd_foot_rb;
+        Vec31<T> Kp_LegJoint_rb, Kd_LegJoint_rb; // WBC LegJointMotionControl Task
 
         Vec31<T> Kp_joint_lf, Kd_joint_lf;
         Vec31<T> Kp_joint_rf, Kd_joint_rf;

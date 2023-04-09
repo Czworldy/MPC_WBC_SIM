@@ -2,8 +2,8 @@
 #define TASK_H
 
 #include <cppTypes.h>
-#include<UserParameter.h>
-#include<ros/ros.h>
+#include<PARAMETER/UserParameter.h>
+// #include<ros/ros.h>
 #define TK Task<T>
 
 template<typename T>
@@ -37,17 +37,30 @@ class Task{
         //CoMLinearMotion
         virtual bool UpdateTask(const DVec<T>& pos_des, 
                                 const DVec<T>& vel_des,
-                                const DVec<T>& acc_des) = 0;
+                                const DVec<T>& acc_des){ return true; }
                                 
         virtual bool UpdateTask(const DVec<T>& pos_des, 
                                 const DVec<T>& vel_des,
                                 const DVec<T>& acc_des,
-                                const Vec41<T>& contact_state) = 0;
+                                const Vec41<T>& contact_state){ return true; }
         //SwingLegMotion
         virtual bool UpdateTask(const Vec31<T>* pos_des, 
                                 const Vec31<T>* vel_des,
                                 const Vec31<T>* acc_des,
-                                const Vec41<T>& contact_state) = 0;
+                                const Vec41<T>& contact_state){ return true; }
+
+        // ContactForceLimits
+        virtual bool UpdateTask(const Eigen::Quaternion<T>& terrainOri){
+            printf("[Task] UpdateTask(const EigenQuat<T>& terrainOri) is not implemented\n");
+            abort();
+            return true;
+        };
+
+        virtual bool UpdateTask(const Vec12<T>& contactForce, const Vec41<T>& contactState){
+            printf("[Task] UpdateTask(const Vec12<T>& contactForce, const Vec41<T>& contactState) is not implemented\n");
+            abort();
+            return true;
+        }
 
     protected:
 

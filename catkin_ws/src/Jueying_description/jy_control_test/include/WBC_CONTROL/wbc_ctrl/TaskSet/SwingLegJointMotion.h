@@ -1,14 +1,14 @@
-#ifndef SWINGLEGMOTION_H
-#define SWINGLEGMOTION_H
+#ifndef SWINGLEGJOINTMOTION_H
+#define SWINGLEGJOINTMOTION_H
 
-#include<WBC_CONTROL/wbc/task.h>
+#include <WBC_CONTROL/wbc/task.h>
 #include"WBC_CONTROL/dynamics/quadruped_dynamics_model.h"
 
 template <typename T>
-class SwingLegMotion: public Task<T>{
+class SwingLegJointMotion: public Task<T>{
     public:
-        SwingLegMotion(QuadrupedDynamicsModel* model);
-        virtual ~SwingLegMotion();
+        SwingLegJointMotion(QuadrupedDynamicsModel* model);
+        virtual ~SwingLegJointMotion();
 
         virtual bool UpdateTask(const Vec31<T>* pos_des, 
                                 const Vec31<T>* vel_des,
@@ -26,6 +26,7 @@ class SwingLegMotion: public Task<T>{
                                 const DVec<T>& vel_des,
                                 const DVec<T>& acc_des,
                                 const Vec41<T>& contact_state);
+               
 
         virtual void TaskPrint();
 

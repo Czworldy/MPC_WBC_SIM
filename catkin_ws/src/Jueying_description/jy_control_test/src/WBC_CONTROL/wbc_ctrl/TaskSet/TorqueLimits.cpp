@@ -1,4 +1,4 @@
-#include "TorqueLimits.h"
+#include "WBC_CONTROL/wbc_ctrl/TaskSet/TorqueLimits.h"
 
 template <typename T>
 TorqueLimits<T>::TorqueLimits(QuadrupedDynamicsModel* model)
@@ -58,14 +58,14 @@ bool TorqueLimits<T>::Update_f(){
 
 template<typename T>
 void TorqueLimits<T>::TaskPrint(){
-    ROS_INFO("TASK_PRINT_TORQUELIMITS");
+    printf("TASK_PRINT_TORQUELIMITS");
 }
 
 template<typename T>
 bool TorqueLimits<T>::UpdateTask(const DVec<T>& pos_des, 
                                  const DVec<T>& vel_des,
                                  const DVec<T>& acc_des){
-    ROS_INFO("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
@@ -73,7 +73,7 @@ bool TorqueLimits<T>::UpdateTask(const DVec<T>& pos_des,
                                  const DVec<T>& vel_des,
                                  const DVec<T>& acc_des,
                                  const Vec41<T>& contact_state){
-    ROS_INFO("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");               
+    printf("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");     return true;          
 }
 
 template<typename T>
@@ -81,14 +81,14 @@ bool TorqueLimits<T>::UpdateTask(const Vec31<T>* pos_des,
                                  const Vec31<T>* vel_des,
                                  const Vec31<T>* acc_des,
                                  const Vec41<T>& contact_state){
-    ROS_INFO("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");               
+    printf("TorqueLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");   return true;            
 }
 
 template<typename T>
-bool TorqueLimits<T>::Update_A(){ }
+bool TorqueLimits<T>::Update_A(){return true; }
 
 template<typename T>
-bool TorqueLimits<T>::Update_b(){ }
+bool TorqueLimits<T>::Update_b(){ return true;}
 
 
 template class TorqueLimits<double>; 

@@ -1,6 +1,6 @@
 #pragma GCC optimize(2)
-#include <quadruped_dynamics_model.h>
-#include<utility.h>
+#include <WBC_CONTROL/dynamics/quadruped_dynamics_model.h>
+#include<Math/utility.h>
 #include<iostream>
 #include"Math/utility.h"
 
@@ -10,24 +10,24 @@ QuadrupedDynamicsModel::QuadrupedDynamicsModel(){
     initParameters();
     generate();
 
-    ROS_INFO_STREAM("Degree of freedom overview: "<<Utils::GetModelDOFOverview(*quadmodel));
-    ROS_INFO_STREAM("Model Hierarchy: "<<Utils::GetModelHierarchy(*quadmodel));
-    ROS_INFO("Finished QuadrupedDynamicsModel init!");
-    ROS_INFO_STREAM("Q_SIZE "<< quadmodel->q_size);
-    ROS_INFO_STREAM("QDOT_SIZE "<< quadmodel->qdot_size);
-    ROS_INFO_STREAM("BODYID "<< body_id[0]);
-    ROS_INFO_STREAM("BODYID "<< body_id[1]);
-    ROS_INFO_STREAM("BODYID "<< body_id[2]);
-    ROS_INFO_STREAM("BODYID "<< body_id[3]);
-    ROS_INFO_STREAM("BODYID "<< body_id[4]);
-    ROS_INFO_STREAM("BODYID "<< body_id[5]);
-    ROS_INFO_STREAM("BODYID "<< body_id[6]);
-    ROS_INFO_STREAM("BODYID "<< body_id[7]);
-    ROS_INFO_STREAM("BODYID "<< body_id[8]);
-    ROS_INFO_STREAM("BODYID "<< body_id[9]);
-    ROS_INFO_STREAM("BODYID "<< body_id[10]);
-    ROS_INFO_STREAM("BODYID "<< body_id[11]);
-    ROS_INFO_STREAM("BODYID "<< body_id[12]);
+    // ROS_INFO_STREAM("Degree of freedom overview: "<<Utils::GetModelDOFOverview(*quadmodel));
+    // ROS_INFO_STREAM("Model Hierarchy: "<<Utils::GetModelHierarchy(*quadmodel));
+    // ROS_INFO("Finished QuadrupedDynamicsModel init!");
+    // ROS_INFO_STREAM("Q_SIZE "<< quadmodel->q_size);
+    // ROS_INFO_STREAM("QDOT_SIZE "<< quadmodel->qdot_size);
+    // ROS_INFO_STREAM("BODYID "<< body_id[0]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[1]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[2]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[3]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[4]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[5]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[6]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[7]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[8]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[9]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[10]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[11]);
+    // ROS_INFO_STREAM("BODYID "<< body_id[12]);
 
     Q = VectorNd::Zero(quadmodel->q_size);
     QDot = VectorNd::Zero(quadmodel->qdot_size);
@@ -89,7 +89,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     quat_world_to_c = rotMat_world_to_c;
     xyz_c_to_world = state.frame_c_xyz_in_world;
 
-    Q.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world);
+    Q.head(3) = state.bodyPosition;
     Eigen::Quaterniond quat_base_in_c(quat_world_to_c * state.bodyOrientation);
     // Q[3]  = quat_base_in_c.x();
     // Q[4]  = quat_base_in_c.y();
@@ -106,7 +106,7 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     QDot.segment(3,3) = state.bodyVelocity.segment(3,3); 
     QDot.tail(JYPro::num_act_joint) = state.qd_leg; 
 
-    Q_c_frame.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world);
+    Q_c_frame.head(3) = rotMat_world_to_c * (state.bodyPosition - xyz_c_to_world); // to check
     quat_base_in_c = quat_world_to_c * state.bodyOrientation;
     Q_c_frame[3]  = quat_base_in_c.x();
     Q_c_frame[4]  = quat_base_in_c.y();
@@ -119,7 +119,8 @@ void QuadrupedDynamicsModel::setState(const FBModelState<double>& state){
     Q_c_frame.segment(6, JYPro::num_act_joint) = state.q_leg;
 
     QDot_c_frame.head(3) = rotMat_world_to_c * state.bodyVelocity.head(3);
-    QDot_c_frame.segment(3,3) = state.bodyVelocity.segment(3,3); 
+    // std::cout << "QDot_c_frame.head(3) = " << QDot_c_frame.head(3).transpose() << std::endl;
+    QDot_c_frame.segment(3,3) = rotMat_world_to_c * state.bodyVelocity.segment(3,3); 
     QDot_c_frame.tail(JYPro::num_act_joint) = state.qd_leg; 
 
     contact_state = state.contact_state_;
@@ -402,8 +403,9 @@ void QuadrupedDynamicsModel::CoM6DJacobian_c_frame(){
     // std::cerr << "_JCoM_c_frame" << _JCoM_c_frame << "\n";
     // Jcom_c_frame.topRows(3) = _JCoM_c_frame.bottomRows(3);
     // Jcom_c_frame.bottomRows(3) = _JCoM_c_frame.topRows(3);
-    Jcom_c_frame.topRows(3) = rotMat_world_to_c * _JCoM_tmp.bottomRows(3);
-    Jcom_c_frame.bottomRows(3) = rotMat_world_to_c * _JCoM_tmp.topRows(3);
+    Jcom_c_frame.topRows(3) = rotMat_world_to_c * _JCoM_tmp.bottomRows(3);// linear
+    Jcom_c_frame.bottomRows(3) = rotMat_world_to_c * _JCoM_tmp.topRows(3);// angular
+    // Jcom_c_frame.bottomRows(3) =  _JCoM_tmp.topRows(3);// angular
 }
 
 const DMat<double>& QuadrupedDynamicsModel::swingFootJacobian(size_t foot_id){
@@ -511,9 +513,45 @@ DVec<double> QuadrupedDynamicsModel::swingFootVelocity_c_frame (size_t foot_id){
 }
 
 Vec31<double> QuadrupedDynamicsModel::hipPosition(size_t hip_id){//for motion plan
+    if(hip_id == 0){
+        Vector3d hip_in_base_lf(-0.177, 0.33, 0);
+        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_lf);
+    }
+    if(hip_id == 1){
+        Vector3d hip_in_base_lb(-0.177, -0.33, 0);
+        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_lb);
+    }
+    if(hip_id == 2){
+        Vector3d hip_in_base_rb(0.177, -0.33, 0);
+        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_rb);
+    }
+    if(hip_id == 3){
+        Vector3d hip_in_base_rf(0.177, 0.33, 0);
+        hip_position = CalcBodyToBaseCoordinates(*quadmodel, Q, body_id[Base], hip_in_base_rf);
+    }
+
+    return hip_position;
 }
 
 Vec31<double> QuadrupedDynamicsModel::hipVelocity(size_t hip_id){// for motion plan
+    if(hip_id == 0){
+        Vector3d hip_in_base_lf(-0.135, 0.33, 0);
+        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_lf);
+    }
+    if(hip_id == 1){
+        Vector3d hip_in_base_lb(-0.135, -0.33, 0);
+        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_lb);
+    }
+    if(hip_id == 2){
+        Vector3d hip_in_base_rb(0.135, -0.33, 0);
+        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_rb);
+    }
+    if(hip_id == 3){
+        Vector3d hip_in_base_rf(0.135, 0.33, 0);
+        hip_velocity = CalcPointVelocity(*quadmodel, Q, QDot, body_id[Base], hip_in_base_rf);
+    }
+
+    return hip_velocity;
 }
 
 Vec31<double> QuadrupedDynamicsModel::footPosition(size_t foot_id){
@@ -568,7 +606,7 @@ const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot_c_frame(){
 
 
 void QuadrupedDynamicsModel::initParameters(){
-    BodyMass[Base]     = 26.398;
+    BodyMass[Base]     = 32.398;
     BodyMass[LF_Hip]   = 1.5767;
     BodyMass[LF_Thigh] = 3.0063;
     BodyMass[LF_Shank] = 0.54849;

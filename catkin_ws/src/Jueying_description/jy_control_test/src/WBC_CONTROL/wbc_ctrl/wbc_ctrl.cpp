@@ -1,5 +1,5 @@
 #pragma GCC optimize(2)
-#include "wbc_ctrl.h"
+#include "WBC_CONTROL/wbc_ctrl/wbc_ctrl.h"
 #include "time.h"
 
 template<typename T>
@@ -13,6 +13,7 @@ WBC_Ctrl<T>::WBC_Ctrl(QuadrupedDynamicsModel *model){
     _comLinearMotion = new CoMLinearMotion<T>(_model);
     _comAngularMotion = new CoMAngularMotion<T>(_model);
     _swingLegMotion = new SwingLegMotion<T>(_model);
+    _swingLegJointMotion = new SwingLegJointMotion<T>(_model);
     _contactForceMin = new ContactForceMin<T>(_model);
 
     _wbc = new WBC<T>(param_);
@@ -41,7 +42,7 @@ template<typename T>
 void WBC_Ctrl<T>::run(void* input, ControlFSMData<T>& data, DVec<T>&tau){
 
     _UpdateModel(data.bodyStateEst, data.legStateEst);
-    _AllTaskUpdate(input);
+    _AllTaskUpdate(input, data.bodyStateEst);
     _ComputeWBC();
     tau = tau_;
 }
@@ -61,7 +62,7 @@ void WBC_Ctrl<T>::_UpdateModel(const BodyStateEstData<T> & bodyEst,
     for(size_t i(0); i<3; i++){
         state_.bodyPosition[i] = bodyEst.base_pos_world[i];
         state_.bodyVelocity[i] = bodyEst.base_linear_vel_world[i];
-        state_.bodyVelocity[i+3] = bodyEst.base_angular_vel_body[i];
+        state_.bodyVelocity[i+3] = bodyEst.base_angular_vel_world[i];
 
         for(size_t leg(0); leg<4; ++leg){
             state_.q_leg[3*leg+i] = legEst[leg].q[i];
@@ -95,19 +96,19 @@ void WBC_Ctrl<T>::_UpdateModel(const BodyStateEstData<T> & bodyEst,
     CJ_ = _model->getContactJacobian().cast<T>();
     N_ = _model->getNolinearEffect().cast<T>();
 
-    // ROS_INFO_STREAM("MassMatrix: \n"<< H_);
+    // printf_STREAM("MassMatrix: \n"<< H_);
 
 }
 
 template<typename T>
-void WBC_Ctrl<T>::_AllTaskUpdate(void* input){
+void WBC_Ctrl<T>::_AllTaskUpdate(void* input, const BodyStateEstData<T> & bodyEst){
      _input_data = static_cast<LocomotionCtrlData<T>* >(input);
 
     _ClearUp();
 
     _eomTask->UpdateTask();
     _noContactMotion-> UpdateTask();
-    _contactForceLimits-> UpdateTask();
+    _contactForceLimits-> UpdateTask(bodyEst.terrain_orientation);
     _torqueLimits-> UpdateTask();
     _comLinearMotion-> UpdateTask(_input_data->pBody_des,
                                   _input_data->vBody_des,
@@ -123,8 +124,14 @@ void WBC_Ctrl<T>::_AllTaskUpdate(void* input){
                                  _input_data->vFoot_des,
                                  _input_data->aFoot_des,
                                  _input_data->contact_state);
+    // _swingLegJointMotion->UpdateTask(_input_data->pLegJoint_des,
+    //                                 _input_data->vLegJoint_des,
+    //                                 _input_data->aLegJoint_des,
+    //                                 _input_data->contact_state);
 
-    _contactForceMin->UpdateTask();
+    // _contactForceMin->UpdateTask();
+    _contactForceMin->UpdateTask(_input_data->contact_force,
+                                 _input_data->contact_state);
 
     taskList.push_back(_eomTask);
     taskList.push_back(_torqueLimits);
@@ -133,6 +140,7 @@ void WBC_Ctrl<T>::_AllTaskUpdate(void* input){
     taskList.push_back(_comLinearMotion);
     taskList.push_back(_comAngularMotion);
     taskList.push_back(_swingLegMotion);
+    // taskList.push_back(_swingLegJointMotion);
     taskList.push_back(_contactForceMin);
 
 }

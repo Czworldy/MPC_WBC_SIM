@@ -1,4 +1,4 @@
-#include "SwingLegMotion.h"
+#include "WBC_CONTROL/wbc_ctrl/TaskSet/SwingLegMotion.h"
 #include <vector>
 
 template<typename T>
@@ -162,19 +162,19 @@ bool SwingLegMotion<T>::Update_b(){
 
 template<typename T>
 void SwingLegMotion<T>::TaskPrint(){
-    ROS_INFO("TASK_PRINT_SWINGLEGMOTION");
+    printf("TASK_PRINT_SWINGLEGMOTION");
 }
 
 template<typename T>
 bool SwingLegMotion<T>::UpdateTask(){
-    ROS_INFO("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
 bool SwingLegMotion<T>::UpdateTask(const DVec<T>& pos_des, 
                                    const DVec<T>& vel_des,
                                    const DVec<T>& acc_des){
-    ROS_INFO("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
@@ -182,14 +182,14 @@ bool SwingLegMotion<T>::UpdateTask(const DVec<T>& pos_des,
                                    const DVec<T>& vel_des,
                                    const DVec<T>& acc_des,
                                    const Vec41<T>& contact_state){
-    ROS_INFO("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("SwingLegMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
-bool SwingLegMotion<T>::Update_D(){}
+bool SwingLegMotion<T>::Update_D(){return true;}
 
 template<typename T>
-bool SwingLegMotion<T>::Update_f(){}
+bool SwingLegMotion<T>::Update_f(){return true;}
 
 template class SwingLegMotion<double>;
 template class SwingLegMotion<float>;

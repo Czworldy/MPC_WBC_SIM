@@ -1,4 +1,4 @@
-#include "NoContactMotion.h"
+#include "WBC_CONTROL/wbc_ctrl/TaskSet/NoContactMotion.h"
 #include "cppTypes.h"
 #include <iostream>
 
@@ -43,9 +43,9 @@ bool NoContactMotion<T>::Update_A(){
 template<typename T>
 bool NoContactMotion<T>::Update_b(){
     TK::b_ = -_robot_sys->getCJDotQDot().cast<T>();
-    // ROS_INFO_STREAM("CJDOTQDOT: \n"<<_robot_sys->getCJDotQDot());
-    // ROS_INFO_STREAM("NO_CONTACT_MOTION_b: \n"<<TK::b_);
-    // ROS_INFO_STREAM("dim_contact_:"<<TK::dim_task_eq_);
+    // printf_STREAM("CJDOTQDOT: \n"<<_robot_sys->getCJDotQDot());
+    // printf_STREAM("NO_CONTACT_MOTION_b: \n"<<TK::b_);
+    // printf_STREAM("dim_contact_:"<<TK::dim_task_eq_);
     // for(int i(0); i<TK::b_.rows();i++){
     //     cout<<"THIS IS B"<<TK::b_[i]<<endl;
     // }
@@ -56,7 +56,7 @@ bool NoContactMotion<T>::Update_b(){
 
 template<typename T>
 void NoContactMotion<T>::TaskPrint(){
-    ROS_INFO("TASK_PRINT_NOCONTACTMOTION");
+    printf("TASK_PRINT_NOCONTACTMOTION");
 }
 
 
@@ -64,7 +64,7 @@ template<typename T>
 bool NoContactMotion<T>::UpdateTask(const DVec<T>& pos_des, 
                                     const DVec<T>& vel_des,
                                     const DVec<T>& acc_des){
-    ROS_INFO("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    printf("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
 }
 
 template<typename T>
@@ -72,7 +72,7 @@ bool NoContactMotion<T>::UpdateTask(const DVec<T>& pos_des,
                                     const DVec<T>& vel_des,
                                     const DVec<T>& acc_des,
                                     const Vec41<T>& contact_state){
-ROS_INFO("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                   
+printf("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");       return true;           
 }
 
 template<typename T>
@@ -80,14 +80,14 @@ bool NoContactMotion<T>::UpdateTask(const Vec31<T>* pos_des,
                                     const Vec31<T>* vel_des,
                                     const Vec31<T>* acc_des,
                                     const Vec41<T>& contact_state){
-ROS_INFO("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                   
+printf("NoContactMotion ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");      return true;             
 }
 
 template<typename T>
-bool NoContactMotion<T>::Update_D(){ }
+bool NoContactMotion<T>::Update_D(){return true;}
 
 template<typename T>
-bool NoContactMotion<T>::Update_f(){ }
+bool NoContactMotion<T>::Update_f(){return true;}
 
 template class NoContactMotion<double>;
 template class NoContactMotion<float>;

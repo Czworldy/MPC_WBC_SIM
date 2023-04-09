@@ -1,9 +1,9 @@
 #pragma GCC optimize(2)
-#include "quadruped_dynamics_model.h"
+#include "WBC_CONTROL/dynamics/quadruped_dynamics_model.h"
 #include "ros/ros.h"
-#include "task.h"
+#include "WBC_CONTROL/wbc/task.h"
 
-#include "wbc_ctrl.h"
+#include "WBC_CONTROL/wbc_ctrl/wbc_ctrl.h"
 #include "time.h"
 
 int main(int argc, char**argv)

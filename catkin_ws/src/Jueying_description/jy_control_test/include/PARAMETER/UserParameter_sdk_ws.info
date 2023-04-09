@@ -1,0 +1,471 @@
+cycle_time                0.001
+
+WBC
+{
+    mu                     0.6
+    TauMax
+    {
+        [0]                126.1
+        [1]                111.4
+        [2]                195.8
+        [3]                126.1
+        [4]                111.4
+        [5]                195.8
+        [6]                126.1
+        [7]                111.4
+        [8]                195.8
+        [9]                126.1
+        [10]               111.4
+        [11]               195.8
+    }
+    TauMin
+    {
+        [0]                -126.1
+        [1]                -111.4
+        [2]                -195.8
+        [3]                -126.1
+        [4]                -111.4
+        [5]                -195.8
+        [6]                -126.1
+        [7]                -111.4
+        [8]                -195.8
+        [9]                -126.1
+        [10]               -111.4
+        [11]               -195.8
+    }
+
+    Kd_body
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_body
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_ori
+    {
+        [0]                 10
+        [1]                 10
+        [2]                 10
+    }
+
+    Kp_ori
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_foot
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_foot
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_body_lf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_body_lf
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_ori_lf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_ori_lf
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_foot_lf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_foot_lf
+    {
+        [0]                 400
+        [1]                 400
+        [2]                 700 
+    }
+
+    Kd_body_rf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_body_rf
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_ori_rf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_ori_rf
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_foot_rf
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_foot_rf
+    {
+        [0]                 400
+        [1]                 400
+        [2]                 700 
+    }
+
+
+    Kd_body_lb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_body_lb
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_ori_lb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_ori_lb
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_foot_lb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_foot_lb
+    {
+        [0]                 400
+        [1]                 400
+        [2]                 700 
+    }
+
+    Kd_body_rb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_body_rb
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_ori_rb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_ori_rb
+    {
+        [0]                 100
+        [1]                 100
+        [2]                 100 
+    }
+
+    Kd_foot_rb
+    {
+        [0]                 20
+        [1]                 20
+        [2]                 30
+    }
+
+    Kp_foot_rb
+    {
+        [0]                 400
+        [1]                 400
+        [2]                 700 
+    }
+
+    Kd_joint_lf
+    {
+        [0]                 0.1
+        [1]                 1
+        [2]                 2
+    }
+
+    Kp_joint_lf
+    {
+        [0]                 40
+        [1]                 40
+        [2]                 70
+    }
+
+    Kd_joint_rf
+    {
+        [0]                 0.1
+        [1]                 1
+        [2]                 2
+    }
+
+    Kp_joint_rf
+    {
+        [0]                 40
+        [1]                 40
+        [2]                 70
+    }
+
+    Kd_joint_lh
+    {
+        [0]                 0.1
+        [1]                 1
+        [2]                 2
+    }
+
+    Kp_joint_lh
+    {
+        [0]                 40
+        [1]                 40
+        [2]                 70
+    }
+
+    Kd_joint_rh
+    {
+        [0]                 0.1
+        [1]                 1
+        [2]                 2
+    }
+
+    Kp_joint_rh
+    {
+        [0]                 40
+        [1]                 40
+        [2]                 70
+    }
+
+    NContact
+    {
+        [0]                 0
+        [1]                 0
+        [2]                 1
+    }
+
+
+    HContact
+    {
+        [0]                 1
+        [1]                 0
+        [2]                 0
+    }
+
+    IContact
+    {
+        [0]                 0
+        [1]                 1
+        [2]                 0
+    }
+
+    hierarchy
+    {
+        [0]                 4
+        [1]                 3
+    }
+
+    weight
+    {
+        [0]                  1
+        [1]                  1
+        [2]                  1
+        [3]                  1
+        [4]                  10
+        [5]                  5
+        [6]                  2
+        [7]                  0.1
+    }
+
+    Kd_LegJoint_lf
+    {
+        [0]                 50
+        [1]                 50
+        [2]                 50 
+    }
+
+    Kp_LegJoint_lf
+    {
+        [0]                 500
+        [1]                 500
+        [2]                 500 
+    }
+
+    Kd_LegJoint_rf
+    {
+        [0]                 50
+        [1]                 50
+        [2]                 50 
+    }
+
+    Kp_LegJoint_rf
+    {
+        [0]                 500
+        [1]                 500
+        [2]                 500 
+    }
+
+
+    Kd_LegJoint_lb
+    {
+        [0]                 50
+        [1]                 50
+        [2]                 50 
+    }
+
+    Kp_LegJoint_lb
+    {
+        [0]                 500
+        [1]                 500
+        [2]                 500 
+    }
+
+    Kd_LegJoint_rb
+    {
+        [0]                 50
+        [1]                 50
+        [2]                 50 
+    }
+
+    Kp_LegJoint_rb
+    {
+        [0]                 500
+        [1]                 500
+        [2]                 500 
+    }
+
+
+}
+
+PD 
+{
+    Kd_lf_haa_pd             5
+    Kp_lf_haa_pd             100
+    Kd_lf_hfe_pd             8
+    Kp_lf_hfe_pd             450
+    Kd_lf_kfe_pd             12
+    Kp_lf_kfe_pd             700
+
+    Kd_rf_haa_pd             5
+    Kp_rf_haa_pd             100
+    Kd_rf_hfe_pd             8
+    Kp_rf_hfe_pd             450
+    Kd_rf_kfe_pd             12
+    Kp_rf_kfe_pd             700
+
+    Kd_lh_haa_pd             5
+    Kp_lh_haa_pd             100
+    Kd_lh_hfe_pd             8
+    Kp_lh_hfe_pd             450
+    Kd_lh_kfe_pd             12
+    Kp_lh_kfe_pd             800
+
+    Kd_rh_haa_pd             5
+    Kp_rh_haa_pd             100
+    Kd_rh_hfe_pd             8
+    Kp_rh_hfe_pd             450
+    Kd_rh_kfe_pd             12
+    Kp_rh_kfe_pd             800
+}
+
+SafeGuard
+{
+    x_delta                  0.3
+    y_delta                  0.3
+    z_delta                  0.3
+    roll_delta               0.3
+    pitch_delta              0.3
+    yaw_delta                0.3
+
+    Kd_lf_haa_pd_safe        5
+    Kp_lf_haa_pd_safe        10
+    Kd_lf_hfe_pd_safe        8
+    Kp_lf_hfe_pd_safe        45
+    Kd_lf_kfe_pd_safe        12
+    Kp_lf_kfe_pd_safe        70
+
+    Kd_rf_haa_pd_safe        5
+    Kp_rf_haa_pd_safe        10
+    Kd_rf_hfe_pd_safe        8
+    Kp_rf_hfe_pd_safe        45
+    Kd_rf_kfe_pd_safe        12
+    Kp_rf_kfe_pd_safe        70
+
+    Kd_lh_haa_pd_safe        5
+    Kp_lh_haa_pd_safe        10
+    Kd_lh_hfe_pd_safe        8
+    Kp_lh_hfe_pd_safe        45
+    Kd_lh_kfe_pd_safe        12
+    Kp_lh_kfe_pd_safe        80
+
+    Kd_rh_haa_pd_safe        5
+    Kp_rh_haa_pd_safe        10
+    Kd_rh_hfe_pd_safe        8
+    Kp_rh_hfe_pd_safe        45
+    Kd_rh_kfe_pd_safe        12
+    Kp_rh_kfe_pd_safe        80
+}
