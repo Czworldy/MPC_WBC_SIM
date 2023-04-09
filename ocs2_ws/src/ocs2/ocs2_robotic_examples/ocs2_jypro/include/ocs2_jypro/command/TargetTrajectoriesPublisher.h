@@ -84,6 +84,7 @@ class TargetTrajectoriesPublisher final {
 
 
     ::ros::Subscriber observationSubscriber_, joySubscriber_;
+    ::ros::Publisher  TargetTrajectoriesVisualizerPublisher_;
     mutable std::mutex latestObservationMutex_, latestJoyMsgsMutex_;
     SystemObservation latestObservation_;
 

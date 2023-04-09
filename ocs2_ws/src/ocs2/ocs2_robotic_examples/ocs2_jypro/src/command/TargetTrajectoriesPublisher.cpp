@@ -38,8 +38,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
 #include <ocs2_centroidal_model/ModelHelperFunctions.h>
 
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseArray.h>
 
 // #include <Eigen/Core>
 // #include <Eigen/Dense>
@@ -86,6 +88,8 @@ TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &node
 
     // Trajectories publisher
     targetTrajectoriesPublisherPtr_.reset(new TargetTrajectoriesRosPublisher(nodeHandle, topicPrefix));
+    // for Visualization
+    TargetTrajectoriesVisualizerPublisher_ = nodeHandle.advertise<geometry_msgs::PoseArray>("legged_robot_targetvisualizer", 2);
 }
 
 /******************************************************************************************************/
@@ -110,8 +114,27 @@ void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &comm
             // publish TargetTrajectories
             targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
             this->isJoyMsgsCome = false;
+            // for visualization
+            // create pose_array (along trajectory)
+            geometry_msgs::PoseArray teb_poses;
+            teb_poses.header.frame_id = "odom";
+            teb_poses.header.stamp = ros::Time::now();
+            
+            // fill path msgs with teb configurations
+            for (int i=0; i < targetTrajectories.timeTrajectory.size(); i++)
+            {
+                geometry_msgs::PoseStamped pose;
+                pose.header.frame_id = "odom";
+                pose.header.stamp = ros::Time::now();
+                pose.pose.position.x = targetTrajectories.stateTrajectory[i][6];
+                pose.pose.position.y = targetTrajectories.stateTrajectory[i][7];
+                pose.pose.position.z = 0.4;
+                pose.pose.orientation = tf::createQuaternionMsgFromYaw(targetTrajectories.stateTrajectory[i][9]);
+                teb_poses.poses.push_back(pose.pose);
+            }
+            TargetTrajectoriesVisualizerPublisher_.publish(teb_poses);
         }
-        rate.sleep();
+        // rate.sleep();
     } // end of while loop
 }
 
