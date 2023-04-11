@@ -96,7 +96,7 @@ TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &node
 /******************************************************************************************************/
 /******************************************************************************************************/
 void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &commadMsg) {
-    ::ros::Rate rate(10);
+    ::ros::Rate rate(1);
     while (ros::ok() && ros::master::check()) {
         ::ros::spinOnce();
         if (isJoyMsgsCome && isMpcPolicyCome) {
@@ -128,13 +128,13 @@ void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &comm
                 pose.header.stamp = ros::Time::now();
                 pose.pose.position.x = targetTrajectories.stateTrajectory[i][6];
                 pose.pose.position.y = targetTrajectories.stateTrajectory[i][7];
-                pose.pose.position.z = 0.4;
+                pose.pose.position.z = 0.05;
                 pose.pose.orientation = tf::createQuaternionMsgFromYaw(targetTrajectories.stateTrajectory[i][9]);
                 teb_poses.poses.push_back(pose.pose);
             }
             TargetTrajectoriesVisualizerPublisher_.publish(teb_poses);
         }
-        // rate.sleep();
+        rate.sleep();
     } // end of while loop
 }
 

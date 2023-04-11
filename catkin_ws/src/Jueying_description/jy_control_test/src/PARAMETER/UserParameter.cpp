@@ -3,7 +3,7 @@
 
 template<typename T>
 UserParameter<T>::UserParameter(){
-    const std::string filename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
+    const std::string filename = "/home/yjy/nuclear_pro/x20_sim_20230312/MPC_WBC_SIM/catkin_ws/src/Jueying_description/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
     const std::string pdCfg = "PD";
     const std::string wbcCfg = "WBC";
     const std::string safeGuardCfg = "SafeGuard";

@@ -768,7 +768,7 @@ void QuadrupedDynamicsModel::generate(){
 
 
     if (!Addons::URDFReadFromFile (
-                "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf", quadmodel, true, false)) {
+                "/home/yjy/nuclear_pro/x20_sim_20230312/MPC_WBC_SIM/ocs2_ws/src/X20/urdf/X20_rsm.urdf", quadmodel, true, false)) {
         std::cerr << "Error loading model aliengo.urdf" << std::endl;
         abort();
     }
