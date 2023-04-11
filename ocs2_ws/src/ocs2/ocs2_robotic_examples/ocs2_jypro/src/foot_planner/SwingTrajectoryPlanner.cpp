@@ -257,6 +257,16 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
     feetYTrajectories_[j].reserve(modeSequence.size());
     for (int p = 0; p < modeSequence.size(); ++p) {
       if (!eesContactFlagStocks[j][p]) {  // for a swing leg
+        //TODO consider after swing phase another swing phase again.
+        int m = p;
+        for(; m >= 0; m--){
+          if(eesContactFlagStocks[j][m]){
+            break;
+          }
+        }
+        // if(j == 0){
+        //   std::cout << "p = " << p << " m = " << m << std::endl;
+        // }
         const int swingStartIndex = startTimesIndices[j][p];
         const int swingFinalIndex = finalTimesIndices[j][p];
         checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
@@ -267,17 +277,17 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
         const scalar_t scaling = swingTrajectoryScaling(swingStartTime, swingFinalTime, config_.swingTimeScale);
 
         if (p >= 1){
-          const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][p-1].z(), scaling * config_.liftOffVelocity};
+          const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity};
           const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), scaling * config_.touchDownVelocity};
           const scalar_t midHeight = std::min(feetPlacement[j][p-1].z(), feetPlacement[j][p].z()) + scaling * config_.swingHeight;
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
-          const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][p-1].x(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), scaling * config_.liftOffVelocity};
+          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * 0};
           feetXTrajectories_[j].emplace_back(xStart, xEnd);
 
-          const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][p-1].y(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][m].y(), scaling * config_.liftOffVelocity};
+          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * 0};
           feetYTrajectories_[j].emplace_back(yStart, yEnd);
         }
         else{
@@ -287,11 +297,11 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
           const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][p].x(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), scaling * 0};
           feetXTrajectories_[j].emplace_back(xStart, xEnd);
 
           const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][p].y(), scaling * config_.liftOffVelocity};
-          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * config_.touchDownVelocity};
+          const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), scaling * 0};
           feetYTrajectories_[j].emplace_back(yStart, yEnd);
         }
         
@@ -308,12 +318,12 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
         const CubicSpline::Node yEnd{1.0, feetPlacement[j][p].y(), 0.0};
         feetYTrajectories_[j].emplace_back(yStart, yEnd);
       }
-      if(j == 0){
-        for(const auto& p:feetPlacement[j]){
-          std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
-        }
-      }
     }
+    // if(j == 0){
+    //     for(const auto& p:feetPlacement[j]){
+    //       std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
+    //     }
+    // }
     
     feetHeightTrajectoriesEvents_[j] = eventTimes;
   }

@@ -42,11 +42,11 @@
     <node pkg="ocs2_jypro" type="legged_robot_mpc" name="legged_robot_mpc"
           output="screen" launch-prefix=""/>
 
-          <!-- <node respawn="true" pkg="joy"
+          <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
       <param name="dev" type="string" value="/dev/input/js0" />
-      <param name="deadzone" value="0.1" />
-      </node> -->
+      <param name="deadzone" value="0.05" />
+      </node>
 
 
 </launch>

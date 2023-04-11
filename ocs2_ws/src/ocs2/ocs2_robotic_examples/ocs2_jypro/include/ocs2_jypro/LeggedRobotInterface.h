@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/ModelSettings.h"
 #include "ocs2_jypro/initialization/LeggedRobotInitializer.h"
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
+#include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 #include "ocs2_jypro/synchronized_module/LegEndEffectorsPolygonReceiver.h"
 
 /**
@@ -129,6 +130,7 @@ class LeggedRobotInterface final : public RobotInterface {
   rollout::Settings rolloutSettings_;
   std::unique_ptr<RolloutBase> rolloutPtr_;
   std::unique_ptr<LeggedRobotInitializer> initializerPtr_;
+  std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_;
 
   vector_t initialState_;
 };

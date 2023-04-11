@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/gait/GaitSchedule.h"
 #include "ocs2_jypro/gait/MotionPhaseDefinition.h"
 #include "ocs2_jypro/BodyPositionEstimator/BodyPositionEstimator.h"
+#include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 #include "ocs2_jypro/synchronized_module/LegEndEffectorsPolygonReceiver.h"
 
 namespace ocs2 {
@@ -51,6 +52,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
  public:
   SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                 std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
+                                std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
                                 std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                 std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                 std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr);
@@ -77,6 +79,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
                         ModeSchedule& modeSchedule, TargetFeetPlacement& targetFeetPlacement) override;
 
+  std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr_;
   std::shared_ptr<GaitSchedule> gaitSchedulePtr_;
   std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr_;
   std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr_;

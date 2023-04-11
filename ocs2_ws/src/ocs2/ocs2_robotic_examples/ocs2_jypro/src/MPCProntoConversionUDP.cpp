@@ -145,13 +145,14 @@ uint numOfContactPoint(4);
 uint dofOfRobot(18);
 bool debug(true);
 Eigen::Quaternion<double> baseQuat;
-Eigen::Matrix<double, 3, 1> baseRPY;
+Eigen::Matrix<double, 3, 1> baseRPY, lastBaseRPY = {0,0,0};
 bool isReset(false);
 
 // Function
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 using matrix3_t = Eigen::Matrix<double, 3, 3>;
 Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q);
+// Eigen::Matrix<double, 3, 1> quatToRPY(const Eigen::MatrixBase<double>& q);
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x);
 QuaternionToRPY yawTotalCounter;
 // Main
@@ -193,7 +194,7 @@ int main(int argc, char **argv) {
     ros::ServiceClient mpcResetServiceClient_ = nh.serviceClient<ocs2_msgs::reset>("/legged_robot_mpc_reset");
     ocs2_msgs::mpc_observation mpc_input_msg;
     ocs2_msgs::mpc_terrain mpc_terrain_sync_input_msg;
-    ros::Rate rate(200);
+    ros::Rate rate(200);   
 
     mpc_input = nh.advertise<ocs2_msgs::mpc_observation>("/legged_robot_mpc_observation", 1);
     mpc_terrain_sync_input = nh.advertise<ocs2_msgs::mpc_terrain>("/legged_robot_mpc_terrain", 1);
@@ -261,10 +262,18 @@ int main(int argc, char **argv) {
         // Pose
         baseQuat = buf.base_orientation_world;
         baseRPY = yawTotalCounter.quaternionToTotalRad(baseQuat);
+        // baseRPY = quaternionTOrpy(baseQuat);
+        // baseRPY = baseQuat.toRotationMatrix().eulerAngles(2, 1, 0);
+        // makeEulerAnglesUnique(baseRPY);
+        // baseRPY = baseQuat.toRotationMatrix().eulerAngles(2, 1, 0);
+        // ocs2::makeEulerAnglesUnique(baseRPY);
+        // const auto yaw = moduloAngleWithReference(baseRPY[0], lastBaseRPY[0]);
+
         // Yaw Pitch Roll
         mpcInputData.q_[3] = baseRPY[2];
         mpcInputData.q_[4] = baseRPY[1];
         mpcInputData.q_[5] = baseRPY[0];
+        // lastBaseRPY = baseRPY;
         //Position
         mpcInputData.q_.head(3) = buf.base_pos_world;
         // mpcInputData.q_[2] = 0;
@@ -330,7 +339,7 @@ int main(int argc, char **argv) {
         const auto& Hcom = Ag * mpcInputData.v_;
         pinocchio::computeTotalMass(model, data);
         // Centroidal Momtentum
-        std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
+        // std::cout << "robot mass data.mass[0]: " << data.mass[0] << std::endl;
         for(uint i = 0; i < 3; i++){
             mpc_input_msg.state.value[i] = Hcom[i] / data.mass[0]; // data.hg.linear()[i];
             mpc_input_msg.state.value[i + 3] = Hcom[i+3] / data.mass[0];  // data.hg.angular()[i];
@@ -459,22 +468,22 @@ int main(int argc, char **argv) {
             std::cout << "MPC State:____________ " << std::endl;
             std::cout << "Centrodial Momentum: x y z roll pitch yaw" <<std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i] << " ";
+                // std::cout << mpc_input_msg.state.value[i] << " ";
                 std::cout << mpc_input_msg.state.value[i] << " ";
             }
-            std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
+            // std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             std::cout << "\nBody Pose: x y z yaw pitch roll" << std::endl;
             for(uint i = 0; i < 6; i++){
-                std::cout << mpc_input_msg.state.value[i + 6] << " ";
+                // std::cout << mpc_input_msg.state.value[i + 6] << " ";
                 std::cout << mpc_input_msg.state.value[i + 6] << " ";
             }
-            std::cout << "\nActuated Joints:" << std::endl;
+            // std::cout << "\nActuated Joints:" << std::endl;
             std::cout << "\nActuated Joints:" << std::endl;
             for(uint i = 0; i < numOfActuatedJoint; i++){
-                std::cout << mpc_input_msg.state.value[i + 12] << " ";
+                // std::cout << mpc_input_msg.state.value[i + 12] << " ";
                 std::cout << mpc_input_msg.state.value[i + 12] << " ";
             }
-            std::cout << "\nMPC Input:___________ " << std::endl;
+            // std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "\nMPC Input:___________ " << std::endl;
             std::cout << "Contact Point Forces: " << std::endl;
             for(uint i = 0; i < mpc_input_msg.input.value.size() - numOfActuatedJoint; i++){
@@ -510,6 +519,26 @@ Eigen::Matrix<double, 3, 1> quaternionTOrpy(Eigen::Quaternion<double> q){
     //     rpy[2] += 2*M_PI;
     return rpy;
  }
+
+// /*!
+//  * Convert a quaternion to RPY.  Uses ZYX order (yaw-pitch-roll), but returns
+//  * angles in (roll, pitch, yaw).
+//  */
+
+// Eigen::Matrix<double, 3, 1> quatToRPY(const Eigen::MatrixBase<double>& q) {
+// //  static_assert(T::ColsAtCompileTime == 1 && T::RowsAtCompileTime == 4,
+// //                "Must have 4x1 quat");
+//   Eigen::Matrix<double, 3, 1> rpy;
+//   double as = std::min(-2. * (q[1] * q[3] - q[0] * q[2]), .99999);
+//   rpy(2) =
+//       std::atan2(2 * (q[1] * q[2] + q[0] * q[3]), q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3]);
+//                  //square(q[0]) + square(q[1]) - square(q[2]) - square(q[3]));
+//   rpy(1) = std::asin(as);
+//   rpy(0) =
+//       std::atan2(2 * (q[2] * q[3] + q[0] * q[1]), q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3]);
+//                  //square(q[0]) - square(q[1]) - square(q[2]) + square(q[3]));
+//   return rpy;
+// }
 
 matrix3_t rpyDotTOtwist(double theta_z, double theta_y, double theta_x){
     matrix3_t translation_Matrix;

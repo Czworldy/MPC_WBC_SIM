@@ -46,7 +46,7 @@ namespace legged_robot {
 LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchioInterface, CentroidalModelInfo info,
                                                      const SwingTrajectoryPlanner& swingTrajectoryPlanner,
                                                      const FootConstraintsPlanner& footConstraintsPlanner,
-                                                     std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr,
+                                                     std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
                                                      std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                      ModelSettings settings)
     : pinocchioInterface_(std::move(pinocchioInterface)),
@@ -60,6 +60,7 @@ LeggedRobotPreComputation::LeggedRobotPreComputation(PinocchioInterface pinocchi
   swingTimeLeft_.resize(info_.numThreeDofContacts);
   footPlacementConstraints_.resize(info_.numThreeDofContacts);
   eeReference_.resize(info_.numThreeDofContacts);
+  // qReference_.resize(info_.numThreeDofContacts);
 }
 
 /******************************************************************************************************/
@@ -138,20 +139,23 @@ void LeggedRobotPreComputation::request(RequestSet request, scalar_t t, const ve
     return reference;
   };
 
-  // auto eeIKSolver = [&](size_t footIndex, const vector3_t& pos) {
+  auto eeIKSolver = [&](size_t footIndex, vector3_t pos) {
+    // std::cout << "leg: " << footIndex << " pos: " << pos.transpose() << " ";
+    leggedIKSolverPtr_->setBodyState(x.segment<6>(6));
+    vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
+    // std::cout << " res: " <<  res.transpose() << std::endl;
+    return res;
+  };
 
-  //   leggedIKSolverPtr_->setBasePos(x.segment<6>(6));
-  //   vector3_t res = leggedIKSolverPtr_->solveIK(pos, footIndex);
-  //   std::cout << "res: " <<  res.transpose() << std::endl;
-  // };
+  if (request.contains(Request::Cost)) {
+    // std::cout << " base xyz: " <<  x.segment<3>(6).transpose() << std::endl; // use target trajectory.
+    for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
+      eeReference_[i] = eeReferece(i);
 
-  // if (request.contains(Request::Cost)) {
-  //   for (size_t i = 0; i < info_.numThreeDofContacts; i++) {
-  //     eeReference_[i] = eeReferece(i);
-  //     // eeIKSolver(i, eeReference_[i].segment<3>(0));
-  //   }
-
-  // }
+      // qReference_[i] = eeIKSolver(i, eeReference_[i].head(3));
+    }
+    
+  }
 }
 
 }  // namespace legged_robot

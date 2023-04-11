@@ -5,6 +5,8 @@
 #include <ocs2_msgs/RegionForFoot.h>
 
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
+#include <ocs2_mpc/SystemObservation.h>
+
 
 #include <ros/ros.h>
 #include <mutex>
@@ -27,7 +29,8 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
     void postSolverRun(const PrimalSolution& primalSolution) override{};
   private:
     /* data */
-    feet_array_t<ros::Subscriber> mpcPolygonMsgSubscriber_;
+    feet_array_t<::ros::Subscriber> mpcPolygonMsgSubscriber_;
+    ::ros::Subscriber observationSubscriber_;
     std::mutex receivedPolygonMsgMutex_;
     bool polygonsUpdated_ = false;
 
@@ -43,6 +46,8 @@ class LegEndEffectorsPolygonReceiver : public SolverSynchronizedModule
     std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcTransformedNominalFeetholdsPtr_;
 
     // feet_array_t<std::vector<ocs2::Polygon>>> transformedPolygons_;
+    mutable std::mutex latestObservationMutex_;
+    SystemObservation latestObservation_;
 
 
     void mpcPolygonMsgCallback(const ocs2_msgs::RegionForFoot::ConstPtr& msg);

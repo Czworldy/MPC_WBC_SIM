@@ -38,6 +38,7 @@ namespace legged_robot {
 SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr,
                                                              std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                                              std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
+                                                             std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                              std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                                              std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
@@ -45,6 +46,7 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
       footPlacementPlannerPtr_(std::move(footPlacementPlannerPtr)),
+      LeggedIKSolverPtr_(std::move(LeggedIKSolverPtr)),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
       mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {}
@@ -97,13 +99,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   terrainNormal(2) = 1;
 
   vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
-  std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
-  std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
+  // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
+  // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
 
-  const scalar_t distance2Terrain = 0.48; //For X20
+  const scalar_t distance2Terrain = 0.33; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
-  // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
+  std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
   // std::cout << "intiState: " << initState.segment(6, 18).transpose() << std::endl;
 
   if(targetTrajectories.timeTrajectory.size() >= 2){
@@ -113,7 +115,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
       stateTrajectory(8) = zReference;
       stateTrajectory(10) = terrainRPY[1]; //pitch
-      stateTrajectory(11) = terrainRPY[0]; //roll
+      stateTrajectory(11) = 0.3*terrainRPY[0]; //roll
     }
     // targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
     // targetTrajectories.stateTrajectory[1][11] = terrainRPY[0]; // roll
@@ -156,8 +158,11 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // abort();
 
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, -0.44);
+  // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement());
+  LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
+  // swingTrajectoryPtr_->update(modeSchedule, 0.03);
 
 
   // std::cout << *terrainEstDataPtr_ << std::endl;
@@ -168,7 +173,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  // std::cout << "modifyReferences Done!" << "\n";
+  std::cout << "modifyReferences Done!" << "\n";
 
 }
 

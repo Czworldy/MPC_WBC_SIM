@@ -22,12 +22,10 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   kdl_parser
   robot_state_publisher
   pronto_msgs
-  teb_local_planner
 )
 
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
-  teb_local_planner
 )
 
 find_package(Boost REQUIRED COMPONENTS
@@ -39,9 +37,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(pinocchio REQUIRED pinocchio)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wfatal-errors -Wl,--no-as-needed")
-
 
 ###################################
 ## catkin specific configuration ##

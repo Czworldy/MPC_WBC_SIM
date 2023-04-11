@@ -128,6 +128,7 @@ int main(int argc, char* argv[]) {
   targetRotationVelocity = pt.get<scalar_t>("targetRotationVelocity");
   comHeight = pt.get<scalar_t>("comHeight");
   ocs2::loadData::loadEigenMatrix(targetCommandFile, "defaultJointState", defaultJointState);
+  std::cout << "defaultJointState: " << defaultJointState.transpose() << "\n";
 
   // ros node handle
 

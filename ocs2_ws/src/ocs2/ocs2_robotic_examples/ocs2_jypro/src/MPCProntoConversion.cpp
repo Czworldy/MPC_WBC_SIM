@@ -38,6 +38,12 @@
 
 #include "BodyPositionEstimator.h"
 
+#include <ocs2_core/reference/TargetTrajectories.h>
+#include <ocs2_msgs/reset.h>
+#include "ocs2_ros_interfaces/common/RosMsgConversions.h"
+
+
+
 using namespace ocs2;
 
 struct MPCInputData {
@@ -66,6 +72,7 @@ bool grfLHMsg(false);
 bool grfRHMsg(false);
 int  prontoCallbackData_count = 0;
 int  prontoData_count = 0;
+bool isReset = false;
 
 
 // Functions
@@ -106,6 +113,8 @@ int main(int argc, char **argv)
     grf_RF = nh.subscribe("/state_estimator_pronto/rf_grf", 1, &grf_RF_callback);
     grf_LH = nh.subscribe("/state_estimator_pronto/lh_grf", 1, &grf_LH_callback);
     grf_RH = nh.subscribe("/state_estimator_pronto/rh_grf", 1, &grf_RH_callback);
+
+    ros::ServiceClient mpcResetServiceClient_ = nh.serviceClient<ocs2_msgs::reset>("/legged_robot_mpc_reset");
 
     mpcInputData.q_.resize(dofOfRobot);
     mpcInputData.v_.resize(dofOfRobot);
@@ -172,6 +181,31 @@ int main(int argc, char **argv)
             for(uint i = 0; i < numOfActuatedJoint; i++){
                 mpc_input_msg.input.value[3 * numOfContactPoint + i] = mpcInputData.v_[6 + i];
             }
+        if(!isReset) {
+            // Initial state
+            vector_t state = vector_t::Zero(6 + dofOfRobot);
+            vector_t input = vector_t::Zero(3 * numOfContactPoint + numOfActuatedJoint);
+
+            state.tail(dofOfRobot) = mpcInputData.q_;
+            // state(8) = 0.51; //z = 0.48
+            state.tail(12) << -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
+
+            // Initial command
+            TargetTrajectories initTargetTrajectories({0.0}, {state}, {input});
+
+            ocs2_msgs::reset resetSrv;
+            resetSrv.request.reset = static_cast<uint8_t>(true);
+            resetSrv.request.targetTrajectories = ros_msg_conversions::createTargetTrajectoriesMsg(initTargetTrajectories);
+
+            while (!mpcResetServiceClient_.waitForExistence(ros::Duration(5.0)) && ::ros::ok() && ::ros::master::check()) {
+                ROS_ERROR_STREAM("Failed to call  service to reset MPC, retrying...");
+            }
+
+            mpcResetServiceClient_.call(resetSrv);
+            ROS_INFO_STREAM("MPC node has been reset.");
+
+            isReset = true;
+        }
 
             // mpc_time_msg 
             mpc_input_msg.time = ros::Time::now().toSec();

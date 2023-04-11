@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/misc/Display.h>
 #include <ocs2_core/soft_constraint/StateInputSoftConstraint.h>
 #include <ocs2_core/soft_constraint/StateSoftConstraint.h>
+#include <ocs2_core/cost/QuadraticStateCost.h>
 #include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematicsCppAd.h>
 
@@ -57,7 +58,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
+#include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
 #include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
+#include "ocs2_jypro/LoadMatrixFromFile.h"
+
 
 // Boost
 #include <boost/filesystem/operations.hpp>
@@ -156,15 +160,15 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     std::unique_ptr<SwingTrajectoryPlanner> swingTrajectoryPlanner(
         new SwingTrajectoryPlanner(loadSwingTrajectorySettings(taskFile, "swing_trajectory_config"), 4));
 
-    // Foot placement planner
-    CentroidalModelPinocchioMapping pinocchioMapping(getCentroidalModelInfo());
-    PinocchioEndEffectorKinematics endEffectorKinematics(*pinocchioInterfacePtr_, pinocchioMapping,
-                                                         modelSettings().contactNames3DoF);
-    std::unique_ptr<FootConstraintsPlanner> footPlacementPlanner(
-        new FootConstraintsPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
-
-    std::unique_ptr<legged::LeggedIKSolver> leggedIKSolverPtr_(new legged::LeggedIKSolver(*pinocchioInterfacePtr_, getCentroidalModelInfo(), endEffectorKinematics));
-
+  // Foot placement planner
+  CentroidalModelPinocchioMapping pinocchioMapping(getCentroidalModelInfo());
+  PinocchioEndEffectorKinematics endEffectorKinematics(*pinocchioInterfacePtr_, pinocchioMapping,
+                                                       modelSettings().contactNames3DoF);
+  std::unique_ptr<FootConstraintsPlanner> footPlacementPlanner(
+      new FootConstraintsPlanner(*pinocchioInterfacePtr_, endEffectorKinematics, getCentroidalModelInfo(), 4));
+  vector3_t linkLength = vector3_t(0.12325, 0.3, 0.33);
+  leggedIKSolverPtr_ =  std::make_shared<LeggedIKSolver>(linkLength, 0.292, 0.08);
+  
   std::shared_ptr<TerrainEstData> terrainEstDataPtr = std::make_shared<TerrainEstData>();
 
   auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
@@ -187,7 +191,9 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   (*mpcPolygonArrayPtr)[3] = initPolygon;
   // Mode schedule manager
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner),
-                                                                         std::move(footPlacementPlanner), terrainEstDataPtr, mpcPolygonArrayPtr,
+                                                                         std::move(footPlacementPlanner), 
+                                                                         leggedIKSolverPtr_,
+                                                                         terrainEstDataPtr, mpcPolygonArrayPtr,
                                                                          mpcNominalFootholdPtr);
 
     // Optimal control problem
@@ -206,8 +212,18 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
     problemPtr_->dynamicsPtr = std::move(dynamicsPtr);
 
-    // Cost terms
-    problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_));
+  // Cost terms
+  problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_));
+  // add final cost
+//   const std::string fileQfMatrix = "/home/yjy/jy_control_test/LQR/S.txt";
+//   auto Qf = readMatrix(fileQfMatrix.c_str());
+//   if (display_) {
+//     std::cerr << "\n #### Final Cost Coefficients: ";
+//     std::cerr << "\n #### =============================================================================\n";
+//     std::cerr << "Q_final:\n" << Qf << "\n";
+//     std::cerr << " #### =============================================================================\n";
+//   }
+//   problemPtr_->finalCostPtr->add("finalCost", std::unique_ptr<StateCost>(new QuadraticStateCost(Qf)));
 
     // Constraint terms
     // friction cone settings
@@ -240,9 +256,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                     modelSettings_.recompileLibrariesCppAd, modelSettings_.verboseCppAd));
     // }
 
-        // problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
-        //                           getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
-        //                           modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
+
         // std::cout << "add done!\n";
         problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                             getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
@@ -250,9 +264,12 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     bool useFeetPlacementConstraint = false;
     loadData::loadPtreeValue(pt, useFeetPlacementConstraint, "useFeetPlacementConstraint", true);
     if (useFeetPlacementConstraint) {
-      problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+        problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
                                               i, barrierPenaltyConfig_));
+        problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
+                                  getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
+                                  modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
     }
 
 
@@ -271,7 +288,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->preComputationPtr.reset(new LeggedRobotPreComputation(*pinocchioInterfacePtr_, centroidalModelInfo_,
                                                                        *referenceManagerPtr_->getSwingTrajectoryPlanner(),
                                                                        *referenceManagerPtr_->getFootPlacementPlanner(),
-                                                                       std::move(leggedIKSolverPtr_),
+                                                                       leggedIKSolverPtr_,
                                                                        terrainEstDataPtr,
                                                                        modelSettings_));
 
@@ -331,7 +348,7 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getBaseTrackingCost(const 
         std::cerr << " #### =============================================================================\n";
     }
 
-    return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_));
+  return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_, leggedIKSolverPtr_));
 }
 
 /******************************************************************************************************/

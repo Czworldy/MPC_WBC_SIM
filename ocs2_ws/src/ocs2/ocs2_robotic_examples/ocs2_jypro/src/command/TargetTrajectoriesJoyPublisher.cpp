@@ -69,7 +69,7 @@ TargetTrajectoriesJoyPublisher::TargetTrajectoriesJoyPublisher(::ros::NodeHandle
 
     //   filter(deltaX, lastdeltaX, 0.4);
     //   filter(deltaY, lastdeltaY, 0.4);
-    //   filter(deltaYaw, la stdeltaYaw, 0.4);
+    //   filter(deltaYaw, lastdeltaYaw, 0.4);
     //   this->isJoyMsgsCome = true;
     // };
     // joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);

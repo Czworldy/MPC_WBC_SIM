@@ -91,7 +91,7 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
     kdl_parser::treeFromUrdfModel(urdfModel, kdlTree);
 
     robotStatePublisherPtr_.reset(new robot_state_publisher::RobotStatePublisher(kdlTree));
-    robotStatePublisherPtr_->publishFixedTransforms(true);
+    robotStatePublisherPtr_->publishFixedTransforms(false);  //twilight debug
   }
 }
 
@@ -106,9 +106,8 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation, const P
     pinocchio::updateFramePlacements(model, data);
 
     const auto timeStamp = ros::Time::now();
-    publishObservation(timeStamp, observation); //TWILIGHT DEBUG
+    publishObservation(timeStamp, observation);
     publishDesiredTrajectory(timeStamp, command.mpcTargetTrajectories_);
-    // std:: cout << "LeggedRobotVisualizer::publishOptimizedStateTrajectory" << std::endl;
     publishOptimizedStateTrajectory(timeStamp, primalSolution.timeTrajectory_, primalSolution.stateTrajectory_,
                                     primalSolution.modeSchedule_);
     lastTime_ = observation.time;
@@ -131,8 +130,8 @@ void LeggedRobotVisualizer::publishObservation(ros::Time timeStamp, const System
   }
 
   // Publish
-  // publishJointTransforms(timeStamp, qJoints);
-  // publishBaseTransform(timeStamp, basePose);
+  publishJointTransforms(timeStamp, qJoints);
+  publishBaseTransform(timeStamp, basePose);
   publishCartesianMarkers(timeStamp, modeNumber2StanceLeg(observation.mode), feetPositions, feetForces);
 }
 
@@ -156,7 +155,7 @@ void LeggedRobotVisualizer::publishBaseTransform(ros::Time timeStamp, const vect
   if (robotStatePublisherPtr_ != nullptr) {
     geometry_msgs::TransformStamped baseToWorldTransform;
     baseToWorldTransform.header = getHeaderMsg(frameId_, timeStamp);
-    baseToWorldTransform.child_frame_id = "BASE";
+    baseToWorldTransform.child_frame_id = "base";
 
     const Eigen::Quaternion<scalar_t> q_world_base = getQuaternionFromEulerAnglesZyx(vector3_t(basePose.tail<3>()));
     baseToWorldTransform.transform.rotation = getOrientationMsg(q_world_base);
@@ -358,60 +357,6 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(ros::Time timeStamp,
     }
   }
   markerArray.markers.push_back(std::move(sphereList));
-
-  static bool firstTime = true;
-  static visualization_msgs::Marker feetPlacement;
-  if(firstTime){
-
-  feetPlacement.type = visualization_msgs::Marker::SPHERE_LIST;
-  feetPlacement.scale.x = footMarkerDiameter_;
-  feetPlacement.scale.y = footMarkerDiameter_;
-  feetPlacement.scale.z = footMarkerDiameter_;
-  feetPlacement.ns = "desired feet placement";
-  feetPlacement.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
-
-  static std::default_random_engine e(2);
-
-  static std::normal_distribution<scalar_t> n(0,0.05);
-
-  for(size_t i = 0; i < 10; ++i) {
-    Eigen::Matrix<scalar_t, 3, 1> leftpoint = {-0.177, 0.0, 0.03};
-    Eigen::Matrix<scalar_t, 3, 1> rightpoint = {0.177, 0.0, 0.03};
-    if(i < 3){
-      leftpoint[1] = 0.25*i - 0.338;
-      rightpoint[1] = 0.25*i - 0.338;
-      // leftpoint[2] = 0.03+0.02*i;
-      // rightpoint[2] = 0.03+0.02*i;
-      leftpoint[0] += n(e);
-      rightpoint[0] += n(e);
-    }
-    else{
-      leftpoint[1] = 0.25*(i - 3) + 0.338;
-      rightpoint[1] = 0.25*(i - 3) + 0.338;
-      // leftpoint[2] = 0.03+0.06*(i-3);
-      // rightpoint[2] = 0.03+0.06*(i-3);
-      leftpoint[0] += n(e);
-      rightpoint[0] += n(e);
-    }
-
-    if (i == 0 || i == 3)
-    {
-      leftpoint[0] = -0.177;
-      rightpoint[0] = 0.177;
-    }
-    feetPlacement.points.emplace_back(getPointMsg(leftpoint));
-    feetPlacement.points.emplace_back(getPointMsg(rightpoint));
-    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
-    feetPlacement.colors.push_back(getColor(feetColorMap_[0]));
-
-        // leftPoints.emplace_back(leftpoint);
-        // rightPoints.emplace_back(rightpoint);
-  }
-  firstTime = false;
-  }
-
-  markerArray.markers.push_back(std::move(feetPlacement));
-
 
   // Add headers and Id
   assignHeader(markerArray.markers.begin(), markerArray.markers.end(), getHeaderMsg(frameId_, timeStamp));

@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   mpc.getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc.getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
-  // mpc.getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
+  mpc.getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc.getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
 
   // Launch MPC ROS node
