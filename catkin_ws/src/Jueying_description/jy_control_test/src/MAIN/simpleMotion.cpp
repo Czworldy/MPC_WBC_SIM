@@ -662,7 +662,7 @@ size_t SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& sa
 
     // std::cerr << "6" << "\n";
     // StateTime
-    indexMPCStateTime_ = 0;
+    indexMPCStateTime_ = 1;
     while ((time_stamp) > mpcMsgPtr_->stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsgPtr_->stateTime.size() - 1) {
         indexMPCStateTime_++;
     }

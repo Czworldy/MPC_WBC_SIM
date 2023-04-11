@@ -60,8 +60,8 @@ const double hfe_PDWaitForStanding(-1.23);
 const double kfe_PDWaitForStanding(2.79);
 
 const double haa_PDStandUpMotion(0);
-const double hfe_PDStandUpMotion(-0.8);
-const double kfe_PDStandUpMotion(1.7);
+const double hfe_PDStandUpMotion(-0.95);
+const double kfe_PDStandUpMotion(1.78);
 
 const double xBase(0.0);
 const double yBase(0.0);

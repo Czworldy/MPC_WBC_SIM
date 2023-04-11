@@ -5,6 +5,7 @@
 #include"Math/utility.h"
 
 QuadrupedDynamicsModel::QuadrupedDynamicsModel(){
+    rbdl_check_api_version (RBDL_API_VERSION);
     duration = paramd.cycle_time;
     quadmodel = new Model();
     initParameters();
@@ -606,7 +607,7 @@ const DVec<double> & QuadrupedDynamicsModel::getCoM6DJDotQDot_c_frame(){
 
 
 void QuadrupedDynamicsModel::initParameters(){
-    BodyMass[Base]     = 32.398;
+    BodyMass[Base]     = 26.398;
     BodyMass[LF_Hip]   = 1.5767;
     BodyMass[LF_Thigh] = 3.0063;
     BodyMass[LF_Shank] = 0.54849;
@@ -766,31 +767,74 @@ void QuadrupedDynamicsModel::generate(){
     Joint RB_Knee_joint = Joint(SpatialVector (0., -1., 0., 0., 0., 0.));
 
 
+    if (!Addons::URDFReadFromFile (
+                "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf", quadmodel, true, false)) {
+        std::cerr << "Error loading model aliengo.urdf" << std::endl;
+        abort();
+    }
+    const char* link_name[] =
+    {
+        "base",
+        "LF_HIP","LF_THIGH","LF_SHANK",
+        "LH_HIP","LH_THIGH","LH_SHANK",
+        "RF_HIP","RF_THIGH","RF_SHANK",
+        "RH_HIP","RH_THIGH","RH_SHANK"
+    };
+// Print link table
+//     int linklist_len;
+//     linklist_len = sizeof(link_name)/sizeof(link_name[0]);
+//     cout << "link_num: " << linklist_len << endl;
+//     vector<const char*> link_name_list(link_name, link_name + linklist_len);
+//     vector<int> body_id_list;
+//     int body_id;
+//     for (int i(0); i < link_name_list.size(); ++i) {
+//         body_id = quadmodel->GetBodyId(link_name_list[i]);
+//         body_id_list.push_back(body_id);
+//     }
+//     for (int i(0); i < body_id_list.size(); ++i) {
+//         cout << link_name_list[i] << ": " << body_id_list[i] << endl;
+//     }
+//   abort();
+    body_id[Base] = quadmodel->GetBodyId(link_name[0]);
+    body_id[LF_Hip] = quadmodel->GetBodyId(link_name[1]);
+    body_id[LF_Thigh] = quadmodel->GetBodyId(link_name[2]);
+    body_id[LF_Shank] = quadmodel->GetBodyId(link_name[3]);
 
+    body_id[LB_Hip] = quadmodel->GetBodyId(link_name[4]);
+    body_id[LB_Thigh] = quadmodel->GetBodyId(link_name[5]);
+    body_id[LB_Shank] = quadmodel->GetBodyId(link_name[6]);
+
+    body_id[RF_Hip] = quadmodel->GetBodyId(link_name[7]);
+    body_id[RF_Thigh] = quadmodel->GetBodyId(link_name[8]);
+    body_id[RF_Shank] = quadmodel->GetBodyId(link_name[9]);
+
+    body_id[RB_Hip] = quadmodel->GetBodyId(link_name[10]);
+    body_id[RB_Thigh] = quadmodel->GetBodyId(link_name[11]);
+    body_id[RB_Shank] = quadmodel->GetBodyId(link_name[12]);
     quadmodel->gravity = Vector3d(0., 0., -9.81);
 
-    //Base
-    body_id[Base] = quadmodel->AddBody(0, SpatialTransform(Trans[FloatBase].R, Trans[FloatBase].Tr), FloatBase_joint, Base_body, "Base");
+    // //Base
+    // body_id[Base] = quadmodel->AddBody(0, SpatialTransform(Trans[FloatBase].R, Trans[FloatBase].Tr), FloatBase_joint, Base_body, "Base");
     
-    //LF
-    body_id[LF_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[LF_HipX].R, Trans[LF_HipX].Tr), LF_HipX_joint, LF_Hip_body, "LF_Hip");
-    body_id[LF_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[LF_HipY].R, Trans[LF_HipY].Tr), LF_HipY_joint, LF_Thigh_body, "LF_Thigh");
-    body_id[LF_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[LF_Knee].R, Trans[LF_Knee].Tr), LF_Knee_joint, LF_Shank_body, "LF_Shank");
+    // //LF
+    // body_id[LF_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[LF_HipX].R, Trans[LF_HipX].Tr), LF_HipX_joint, LF_Hip_body, "LF_Hip");
+    // body_id[LF_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[LF_HipY].R, Trans[LF_HipY].Tr), LF_HipY_joint, LF_Thigh_body, "LF_Thigh");
+    // body_id[LF_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[LF_Knee].R, Trans[LF_Knee].Tr), LF_Knee_joint, LF_Shank_body, "LF_Shank");
     
-    //LB
-    body_id[LB_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[LB_HipX].R, Trans[LB_HipX].Tr), LB_HipX_joint, LB_Hip_body, "LB_Hip");
-    body_id[LB_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[LB_HipY].R, Trans[LB_HipY].Tr), LB_HipY_joint, LB_Thigh_body, "LB_Thigh");
-    body_id[LB_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[LB_Knee].R, Trans[LB_Knee].Tr), LB_Knee_joint, LB_Shank_body, "LB_Shank");
+    // //LB
+    // body_id[LB_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[LB_HipX].R, Trans[LB_HipX].Tr), LB_HipX_joint, LB_Hip_body, "LB_Hip");
+    // body_id[LB_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[LB_HipY].R, Trans[LB_HipY].Tr), LB_HipY_joint, LB_Thigh_body, "LB_Thigh");
+    // body_id[LB_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[LB_Knee].R, Trans[LB_Knee].Tr), LB_Knee_joint, LB_Shank_body, "LB_Shank");
     
-    //RF
-    body_id[RF_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[RF_HipX].R, Trans[RF_HipX].Tr), RF_HipX_joint, RF_Hip_body, "RF_Hip");
-    body_id[RF_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[RF_HipY].R, Trans[RF_HipY].Tr), RF_HipY_joint, RF_Thigh_body, "RF_Thigh");
-    body_id[RF_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[RF_Knee].R, Trans[RF_Knee].Tr), RF_Knee_joint, RF_Shank_body, "RF_Shank");
+    // //RF
+    // body_id[RF_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[RF_HipX].R, Trans[RF_HipX].Tr), RF_HipX_joint, RF_Hip_body, "RF_Hip");
+    // body_id[RF_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[RF_HipY].R, Trans[RF_HipY].Tr), RF_HipY_joint, RF_Thigh_body, "RF_Thigh");
+    // body_id[RF_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[RF_Knee].R, Trans[RF_Knee].Tr), RF_Knee_joint, RF_Shank_body, "RF_Shank");
     
-    //RB
-    body_id[RB_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[RB_HipX].R, Trans[RB_HipX].Tr), RB_HipX_joint, RB_Hip_body, "RB_Hip");
-    body_id[RB_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[RB_HipY].R, Trans[RB_HipY].Tr), RB_HipY_joint, RB_Thigh_body, "RB_Thigh");
-    body_id[RB_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[RB_Knee].R, Trans[RB_Knee].Tr), RB_Knee_joint, RB_Shank_body, "RB_Shank");
+    // //RB
+    // body_id[RB_Hip] = quadmodel->AddBody(body_id[Base], SpatialTransform(Trans[RB_HipX].R, Trans[RB_HipX].Tr), RB_HipX_joint, RB_Hip_body, "RB_Hip");
+    // body_id[RB_Thigh] = quadmodel->AppendBody(SpatialTransform(Trans[RB_HipY].R, Trans[RB_HipY].Tr), RB_HipY_joint, RB_Thigh_body, "RB_Thigh");
+    // body_id[RB_Shank] = quadmodel->AppendBody(SpatialTransform(Trans[RB_Knee].R, Trans[RB_Knee].Tr), RB_Knee_joint, RB_Shank_body, "RB_Shank");
 }
 
 

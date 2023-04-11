@@ -92,7 +92,7 @@ class StateInputCostGaussNewtonAd : public StateInputCost {
   virtual ad_vector_t costVectorFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
                                          const ad_vector_t& parameters) const = 0;
 
- private:
+ public:
   std::unique_ptr<CppAdInterface> adInterfacePtr_;
 };
 

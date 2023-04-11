@@ -7,7 +7,7 @@ project(jy_control_test)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-list(INSERT CMAKE_MODULE_PATH 0 "~/nuclear_pro/x20_sim_220909/catkin_ws/src/Jueying_description/jy_control_test/cmake")
+# list(INSERT CMAKE_MODULE_PATH 0 "~/nuclear_pro/x20_sim_220909/catkin_ws/src/Jueying_description/jy_control_test/cmake")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -95,6 +95,13 @@ add_library(${PROJECT_NAME}
                           src/STATE_ESTIMATE/TerrainEstimator.cpp
                           # src/PARAMETER/SystemParameter.cpp
                           # src/STATE_ESTIMATE/BodyPositionEst.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+${RBDL_LIBRARY}
+${RBDL_URDFREADER_LIBRARY}
+OsqpEigen::OsqpEigen
+/usr/local/lib/libquadprog.a
 )
 
         
