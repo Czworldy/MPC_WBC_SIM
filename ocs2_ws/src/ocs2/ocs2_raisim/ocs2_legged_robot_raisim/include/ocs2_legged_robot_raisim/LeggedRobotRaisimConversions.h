@@ -134,7 +134,7 @@ class LeggedRobotRaisimConversions final {
    * @return The corresponding {q, dq} pair that represents the simulator state.
    */
   std::pair<Eigen::VectorXd, Eigen::VectorXd> rbdStateToRaisimGenCoordGenVel(const vector_t& rbdState);
-
+ public:
   /**
    * @brief Convert RaiSim generalized coordinates and velocities to OCS2 RBD state.
    * @param [in] q : The generalized coordinate.
@@ -142,7 +142,7 @@ class LeggedRobotRaisimConversions final {
    * @return The corresponding RBD state.
    */
   vector_t raisimGenCoordGenVelToRbdState(const Eigen::VectorXd& q, const Eigen::VectorXd& dq);
-
+ protected:
   /**
    * @brief Convert OCS2 RBD torque to RaiSim generalized force.
    * @param [in] rbdTorque : The RBD torque to be converted.

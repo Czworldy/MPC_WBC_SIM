@@ -13,6 +13,8 @@ list
   [10] skipping
   [11] pawup
   [12] standing_trot2
+  [13] jump
+  [14] jump1
 }
 
 stance
@@ -272,5 +274,35 @@ standing_trot2
     [2]     0.35
     [3]     0.60
     [4]     0.70
+  }
+}
+
+jump
+{
+  modeSequence
+  {
+    [0]     LF_RF
+    [1]     LH_RH
+  }
+  switchingTimes
+  {
+    [0]     0.00
+    [1]     0.15
+    [2]     0.30
+  }
+}
+
+jump1
+{
+  modeSequence
+  {
+    [0]     STANCE
+    [1]     FLY
+  }
+  switchingTimes
+  {
+    [0]     0.00
+    [1]     0.15
+    [2]     0.50
   }
 }

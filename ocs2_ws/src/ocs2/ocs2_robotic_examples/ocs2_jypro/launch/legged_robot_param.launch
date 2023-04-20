@@ -39,29 +39,6 @@
     <param name="urdfFile"          value="$(arg urdfFile)" />
     <param name="gaitCommandFile"   value="$(arg gaitCommandFile)"/>
 
-    <node pkg="ocs2_jypro" type="legged_robot_mpc" name="legged_robot_mpc"
-          output="screen" launch-prefix=""/>
-
-    <node pkg="ocs2_jypro" type="MPC_WBC_Conversions" name="MPC_WBC_Conversions"
-          output="screen" launch-prefix="gnome-terminal --"/>
-
-    <node pkg="ocs2_jypro" type="legged_robot_dummy" name="legged_robot_dummy"
-          output="screen" launch-prefix="gnome-terminal --"/>
-
-    <!-- <node pkg="ocs2_jypro" type="legged_robot_target" name="legged_robot_target" -->
-
-
-
-
-
-    <node pkg="ocs2_jypro" type="legged_robot_gait_command" name="legged_robot_gait_command"
-          output="screen"  launch-prefix="gnome-terminal --"/>
-
-      <node respawn="true" pkg="joy"
-            type="joy_node" name="turtle_joy" >
-      <param name="dev" type="string" value="/dev/input/js0" />
-      <param name="deadzone" value="0.1" />
-      </node>
 
 <!-- <node pkg="ocs2_jypro" type="legged_robot_target_joy" name="legged_robot_target_joy"
 output="screen"> -->
