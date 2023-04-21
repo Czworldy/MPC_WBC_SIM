@@ -58,6 +58,20 @@ link_directories(
         ${pinocchio_LIBRARY_DIRS}
 )
 
+add_library(simple_motion
+        src/SimpleMotion/SimpleMotion.cpp
+        src/SimpleMotion/TerrainEstimator.cpp
+        # src/UserParameter.cpp
+        )
+add_dependencies(simple_motion
+        ${catkin_EXPORTED_TARGETS}
+        # ${PROJECT_NAME}_gencfg
+        )
+target_link_libraries(simple_motion
+        ${catkin_LIBRARIES}
+        )
+target_compile_options(simple_motion PUBLIC ${OCS2_CXX_FLAGS} -O3)
+
 add_library(${PROJECT_NAME}
         src/HoQp.cpp
         src/WbcBase.cpp

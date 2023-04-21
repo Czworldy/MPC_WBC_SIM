@@ -75,8 +75,6 @@ vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inpu
     singleQpTimer_.startTimer();
     WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
 
-    // Task trackingTask = formulateBaseHeightMotionTask() + formulateBaseAngularMotionTask() + formulateBaseXYLinearAccelTask()
-    //              + formulateSwingLegTask() * 100 + formulateContactForceTask(inputDesired) * 0.01;
     Task trackingTask = formulateBaseXYZMotionTask() * taskWeight_(0)
                         + formulateBaseAngularMotionTask() * taskWeight_(1)
                         + formulateSwingLegTask() * taskWeight_(2)
@@ -100,13 +98,14 @@ vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inpu
     // Task task0 = formulateFloatingBaseEomTask() + formulateTorqueLimitsTask()
     //         + formulateNoContactMotionTask() + formulateFrictionConeTask();
 
-    // Task task1 = formulateBaseHeightMotionTask() + formulateBaseAngularMotionTask()
+    // Task task1 = formulateBaseXYZMotionTask() + formulateBaseAngularMotionTask()
     //              + formulateSwingLegTask() * 100;
-    // Task task3 = formulateContactForceTask(inputDesired) + formulateBaseXYLinearAccelTask();
+    // Task task3 = formulateContactForceTask(inputDesired);
 
     // HoQp hoQp(task3, std::make_shared<HoQp>(task1, std::make_shared<HoQp>(task0))); //
     // // HoQp hoQp(task1, std::make_shared<HoQp>(task0)); //
     // vector_t x_optimal = hoQp.getSolutions();
+    // singleQpTimer_.endTimer();
     // return WbcBase::updateCmd(x_optimal);
     
 }

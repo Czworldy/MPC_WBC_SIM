@@ -21,6 +21,7 @@
 #include "ocs2_wbc/raisimVis/anymal/videoLogger.hpp"
 #include "ocs2_wbc/raisimVis/anymal/frameVisualizer.hpp"
 #include "ocs2_wbc_ros/SingleWbcRos.h"
+#include "ocs2_wbc/SimpleMotion/SimpleMotion.h"
 // #include "raisim_test.hpp"
 
 // #include "MAIN/simpleMotion.h"
@@ -325,6 +326,7 @@ int main(int argc, char* argv[]) {
                                                        modelSettings_.contactNames3DoF);
   auto wbc = std::make_unique<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                         endEffectorKinematics, wbcfilename, nodeHandle);
+  auto simpleMotion = std::make_unique<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
   
 
   auto world = std::make_unique<raisim::World>();
@@ -453,6 +455,8 @@ int main(int argc, char* argv[]) {
   uint64_t visualizationCounter_ = 0;
   Eigen::VectorXd command_out(18);
   uint64_t sim_loop = 0;
+Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
+
 
   auto randomGenerateMpcTargetTrajtory = [&](const ocs2::vector_t& currentState) {
 
@@ -527,7 +531,7 @@ int main(int argc, char* argv[]) {
     estStatesOutput.contact.lh = 0;
     estStatesOutput.contact.rf = 0;
     estStatesOutput.contact.rh = 0;
-    Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
+    // Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
     for(auto& contact: robot->getContacts()){
       if (contact.skip()) continue; /// if the contact is internal, one contact point is set to 'skip'
       if (LFfootIndex == contact.getlocalBodyIndex()){
@@ -607,6 +611,21 @@ int main(int argc, char* argv[]) {
     mpcMrtInterface_->setCurrentObservation(currentObservation);
 
     observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
+
+    vector_t qMeasured_(interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum);
+    qMeasured_.head<3>() = rbdState.segment<3>(3);
+    qMeasured_.segment<3>(3) = rbdState.head<3>();
+    qMeasured_.tail(interfacePtr->getCentroidalModelInfo().actuatedDofNum) 
+                            = rbdState.segment(6, interfacePtr->getCentroidalModelInfo().actuatedDofNum);
+    const auto& model = interfacePtr->getPinocchioInterface().getModel();
+    auto& data = interfacePtr->getPinocchioInterface().getData();
+    pinocchio::forwardKinematics(model, data, qMeasured_);
+
+    endEffectorKinematics.setPinocchioInterface(interfacePtr->getPinocchioInterface());
+    std::vector<vector3_t> posDesired = endEffectorKinematics.getPosition(vector_t());
+    auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, estStatesOutput.base_orientation_world);
+
+    terrainReceiverPtr->setMpcTerrain(terrainInfo);
 
     // Load the latest MPC policy
     mpcMrtInterface_->updatePolicy();
