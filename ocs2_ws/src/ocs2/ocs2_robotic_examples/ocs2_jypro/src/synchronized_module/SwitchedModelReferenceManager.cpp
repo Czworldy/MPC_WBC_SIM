@@ -95,6 +95,21 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
 }
+template <typename T>
+T square(T a) {
+    return a * a;
+}
+
+template <typename SCALAR_T>
+Eigen::Matrix<SCALAR_T, 3, 1> quatToZyx(const Eigen::Quaternion<SCALAR_T>& q) {
+    Eigen::Matrix<SCALAR_T, 3, 1> zyx;
+
+    SCALAR_T as = std::min(-2. * (q.x() * q.z() - q.w() * q.y()), .99999);
+    zyx(0) = std::atan2(2 * (q.x() * q.y() + q.w() * q.z()), square(q.w()) + square(q.x()) - square(q.y()) - square(q.z()));
+    zyx(1) = std::asin(as);
+    zyx(2) = std::atan2(2 * (q.y() * q.z() + q.w() * q.x()), square(q.w()) - square(q.x()) - square(q.y()) + square(q.z()));
+    return zyx;
+}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -102,7 +117,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState,
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
                                                      TargetFeetPlacement& targetFeetPlacement) {
-  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   //get current measure contact mode
   const size_t currentMode = stanceLeg2ModeNumber(terrainEstDataPtr_->stanceLegs);
   //update gait table and get predictive mode
@@ -181,11 +196,11 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   terrainNormal(2) = 1;
 
 
-  vector3_t terrainRPY = terrainQuaternionToRPY_.quaternionToTotalRad(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
+  vector3_t terrainRPY = quatToZyx(terrainEstDataPtr_->terrainQuat.cast<scalar_t>()).reverse();
   // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
   // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
 
-  const scalar_t distance2Terrain = 0.4; //For X20
+  const scalar_t distance2Terrain = 0.44; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
   // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;

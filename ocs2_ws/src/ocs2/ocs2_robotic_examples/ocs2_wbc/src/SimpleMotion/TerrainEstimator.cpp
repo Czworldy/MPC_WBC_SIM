@@ -52,16 +52,16 @@ vector3_t TerrainEstimator::run(const vector3_t &lf,
                                     const vector3_t &lh,
                                     const vector3_t &rf,
                                     const vector3_t &rh,
-                                    const Eigen::Vector4i &contact){
+                                    const Eigen::Matrix<bool, 4, 1> &contact){
 
-    // std::cout << "contact:" << contact;
-    if(contact[0] != 0)
+    // std::cout << "contact:" << contact.transpose() << std::endl;
+    if(contact[0])
         lfPosQueue.insert(lfPosQueue.begin(),filterloop(lf,xv_lf,yv_lf));
-    if(contact[1] != 0)
+    if(contact[1])
         lhPosQueue.insert(lhPosQueue.begin(),filterloop(lh,xv_lh,yv_lh));
-    if(contact[2] != 0)
+    if(contact[2])
         rfPosQueue.insert(rfPosQueue.begin(),filterloop(rf,xv_rf,yv_rf));
-    if(contact[3] != 0)
+    if(contact[3])
         rhPosQueue.insert(rhPosQueue.begin(),filterloop(rh,xv_rh,yv_rh));
 
     if(lfPosQueue.size() > USE_PAST_DATA_NUM)
@@ -138,6 +138,7 @@ vector3_t TerrainEstimator::run(const vector3_t &lf,
         return estSlopeParam;
     }
     else{
+        std::cout << ">>>>>>>>>>>>>>>>>>not enough data to estimate terrain slope<<<<<<<<<<<<<<<<<<<" << std::endl;
         return estSlopeParam;
     }
 }

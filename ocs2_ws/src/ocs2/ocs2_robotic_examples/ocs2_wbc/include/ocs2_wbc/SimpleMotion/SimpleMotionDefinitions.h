@@ -16,6 +16,14 @@ struct OneLimbData {
     }
 };
 
+struct LimbsContacts {
+public: 
+    float lf;
+    float rf;
+    float lh;
+    float rh;
+};
+
 struct LimbsPosVel {
 	OneLimbData lf_pos;
 	OneLimbData rf_pos;

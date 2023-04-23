@@ -190,8 +190,8 @@ void SimpleMotion::PDSafeGuardRun(LimbsCommand& command) {
 
 //contact_flag lf lh rf rh 
 //eePos:{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"}; 
-TerrainEstData SimpleMotion::TerrainEst(const Eigen::Vector4i& contact_flag, const std::vector<vector3_t>& eePos, 
-                                        const Eigen::Quaternion<scalar_t>& baseOriWorld) {
+TerrainEstData SimpleMotion::TerrainEst(const Eigen::Matrix<bool, 4, 1>& contact_flag, const std::vector<vector3_t>& eePos, 
+                                        const matrix3_t& baseOriWorld) {
 
 
     // cout << "foot_lf: " << foot_lf.transpose() << endl;
@@ -199,13 +199,17 @@ TerrainEstData SimpleMotion::TerrainEst(const Eigen::Vector4i& contact_flag, con
     // vector3_t terrParam = terrEst.run(foot_lf, foot_lh, foot_rf, foot_rh, contact_flag);
     vector3_t terrParam = terrEst.run(eePos[0], eePos[2], eePos[1], eePos[3], contact_flag);
     vector3_t terrNormal;
-    terrNormal << terrParam[0], terrParam[1], 1.f;
+    terrNormal << terrParam[0], terrParam[1], 1.;
     terrNormal.normalize();
     // cout << "base_pos_world: " << q.head(3).transpose() << endl;
     // cout << "terrEst:" << terrNormal.transpose() << "\tterrainParams: " << terrParam.transpose() << "\n";
 
-    vector3_t xNormal = baseOriWorld.toRotationMatrix().col(0);
+    vector3_t xNormal = baseOriWorld.col(0);
     // std::cout << "xNormal: " << xNormal.transpose() << std::endl;
+    // //get y axis
+    // vector3_t yAxis = terrNormal.cross(xNormal); yAxis.normalize();
+    // //get x axis
+    // vector3_t xAxis = yAxis.cross(terrNormal); xAxis.normalize();
     vector3_t xAxis = xNormal - xNormal.dot(terrNormal) * terrNormal;
     xAxis.normalize();
     vector3_t yAxis = terrNormal.cross(xAxis);

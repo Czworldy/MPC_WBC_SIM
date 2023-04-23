@@ -54,45 +54,6 @@ using namespace raisim;
 using namespace ocs2;
 using namespace legged_robot;
 
-struct LimbsContacts {
-public: 
-    float lf;
-    float rf;
-    float lh;
-    float rh;
-};
-
-typedef struct
-{
-	double value[3];
-    void clear() {
-        value[0] = 0.0;
-        value[1] = 0.0;
-        value[2] = 0.0;
-    }
-} OneLimbData;
-
-typedef struct
-{
-	OneLimbData lf_pos;
-	OneLimbData rf_pos;
-	OneLimbData lh_pos;
-	OneLimbData rh_pos;
-	OneLimbData lf_vel;
-	OneLimbData rf_vel;
-	OneLimbData lh_vel;
-	OneLimbData rh_vel;
-    void clear(){
-        lf_pos.clear();
-        rf_pos.clear();
-        lh_pos.clear();
-        rh_pos.clear();
-        lf_vel.clear();
-        rf_vel.clear();
-        lh_vel.clear();
-        rh_vel.clear();
-    }
-}	LimbsPosVel;
 
 struct EstimatorOutput {
 public:
@@ -106,8 +67,8 @@ public:
     Eigen::Quaterniond base_orientation_world;
     Eigen::Matrix<double, 3, 1> base_angular_vel_world;
     Eigen::Matrix<double, 3, 1> base_angular_vel_body;
-    LimbsContacts contact;
-    LimbsPosVel jointStates;
+    ocs2::wbc::LimbsContacts contact;
+    ocs2::wbc::LimbsPosVel jointStates;
 
     Eigen::Matrix<double, 3, 1> frame_c_rpy_in_world;
     Eigen::Quaterniond frame_c_quat_in_world;
@@ -320,10 +281,11 @@ int main(int argc, char* argv[]) {
   });
   ocs2::setThreadPriority(50, mpcThread_);
 
-//   ocs2::PinocchioInterface pinocchioInterface(ocs2::centroidal_model::createPinocchioInterface(urdffile, modelSettings_.jointNames));
+  ocs2::PinocchioInterface pinocchioInterface = interfacePtr->getPinocchioInterface();
   ocs2::CentroidalModelPinocchioMapping pinocchioMapping(interfacePtr->getCentroidalModelInfo());
   ocs2::PinocchioEndEffectorKinematics endEffectorKinematics(interfacePtr->getPinocchioInterface(), pinocchioMapping,
                                                        modelSettings_.contactNames3DoF);
+  auto endEffectorKinematicsClonePtr = endEffectorKinematics.clone();
   auto wbc = std::make_unique<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                         endEffectorKinematics, wbcfilename, nodeHandle);
   auto simpleMotion = std::make_unique<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
@@ -409,8 +371,8 @@ int main(int argc, char* argv[]) {
   // Eigen::Quaterniond initQuaternion(gc_init_(3), gc_init_(4), gc_init_(5), gc_init_(6)); // To be checked
   // auto initRPY = quaternionTOrpy(initQuaternion).reverse();
 
-  ocs2::QuaternionToRPY yawTotalCounter;
-  yawTotalCounter.reset();
+//   ocs2::QuaternionToRPY yawTotalCounter;
+//   yawTotalCounter.reset();
   state.tail(gvDim_) << gc_init_.head(3), 0, 0, 0, gc_init_.tail(nJoints_);
   // state.tail(12) << -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
   // std::cout << "initRPY: " << initRPY.transpose() << std::endl;
@@ -455,7 +417,7 @@ int main(int argc, char* argv[]) {
   uint64_t visualizationCounter_ = 0;
   Eigen::VectorXd command_out(18);
   uint64_t sim_loop = 0;
-Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
+Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
 
 
   auto randomGenerateMpcTargetTrajtory = [&](const ocs2::vector_t& currentState) {
@@ -552,10 +514,10 @@ Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
               estStatesOutput.contact.rh = 1.;
       }
     }
-    contact_flag_real[0] = (int) estStatesOutput.contact.lf;
-    contact_flag_real[1] = (int) estStatesOutput.contact.lh;
-    contact_flag_real[2] = (int) estStatesOutput.contact.rf;
-    contact_flag_real[3] = (int) estStatesOutput.contact.rh;
+    contact_flag_real[0] = (bool) estStatesOutput.contact.lf;
+    contact_flag_real[1] = (bool) estStatesOutput.contact.lh;
+    contact_flag_real[2] = (bool) estStatesOutput.contact.rf;
+    contact_flag_real[3] = (bool) estStatesOutput.contact.rh;
     // auto& feetcaontact = estStatesOutput.contact;
     // std::cout << "estStatesOutput.caontact: " << feetcaontact.lf << " " << feetcaontact.lh << " " << feetcaontact.rf << " " << feetcaontact.rh << std::endl;
 
@@ -617,13 +579,16 @@ Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
     qMeasured_.segment<3>(3) = rbdState.head<3>();
     qMeasured_.tail(interfacePtr->getCentroidalModelInfo().actuatedDofNum) 
                             = rbdState.segment(6, interfacePtr->getCentroidalModelInfo().actuatedDofNum);
-    const auto& model = interfacePtr->getPinocchioInterface().getModel();
-    auto& data = interfacePtr->getPinocchioInterface().getData();
-    pinocchio::forwardKinematics(model, data, qMeasured_);
+    const auto& model = pinocchioInterface.getModel();
+    auto& data = pinocchioInterface.getData();
 
-    endEffectorKinematics.setPinocchioInterface(interfacePtr->getPinocchioInterface());
-    std::vector<vector3_t> posDesired = endEffectorKinematics.getPosition(vector_t());
-    auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, estStatesOutput.base_orientation_world);
+    pinocchio::forwardKinematics(model, data, qMeasured_);
+    pinocchio::updateFramePlacements(model, data);
+
+    endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
+    std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
+
+    auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.e());
 
     terrainReceiverPtr->setMpcTerrain(terrainInfo);
 
@@ -635,7 +600,7 @@ Eigen::Vector4i contact_flag_real = {0, 0, 0, 0};
     vector_t optimizedInput;
     size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
     mpcMrtInterface_->evaluatePolicy(currentObservation.time, currentObservation.state, optimizedState, optimizedInput, plannedMode);
-
+    // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
     // std::cout << "optimizedState: " << optimizedState.transpose() << std::endl;
     // std::cout << "optimizedInput: " << optimizedInput.transpose() << std::endl;
     // std::cout << "plannedMode: " << plannedMode << std::endl;

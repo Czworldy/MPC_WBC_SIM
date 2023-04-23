@@ -622,7 +622,7 @@
   </gazebo>
 
 
-<gazebo reference="camera_link">
+<!-- <gazebo reference="camera_link">
     <sensor type="camera" name="camera_node">
       <update_rate>15.0</update_rate>
       <camera name="head">
@@ -658,7 +658,7 @@
       </plugin>
       <pose>0 0 0 0 -0 0</pose>
     </sensor>
-  </gazebo>
+  </gazebo> -->
   <!-- Gazebo requires the velodyne_gazebo_plugins package -->
   <!-- <gazebo reference="velodyne">
     <sensor name="velodyne-VLP16" type="ray">

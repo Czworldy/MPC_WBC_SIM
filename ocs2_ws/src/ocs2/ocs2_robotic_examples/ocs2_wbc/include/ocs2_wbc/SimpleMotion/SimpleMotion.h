@@ -47,8 +47,8 @@ public:
 
     //contact_flag lf lh rf rh 
     //eePos:{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"}; 
-    TerrainEstData TerrainEst(const Eigen::Vector4i& contact_flag, const std::vector<vector3_t>& eePos,
-                              const Eigen::Quaternion<scalar_t>& baseOri);
+    TerrainEstData TerrainEst(const Eigen::Matrix<bool, 4, 1>& contact_flag, const std::vector<vector3_t>& eePos,
+                              const matrix3_t& baseOri);
 
 private:
     // PD

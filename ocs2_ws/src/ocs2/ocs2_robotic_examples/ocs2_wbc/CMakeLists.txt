@@ -7,10 +7,7 @@ set(QPOASES_INLUDE_DIRS /usr/local/include/qpOASES)
 
 find_package(catkin REQUIRED
         COMPONENTS
-        # roscpp
         ocs2_jypro
-        # ocs2_legged_robot_raisim
-        # dynamic_reconfigure
         )
 
 find_package(raisim CONFIG REQUIRED)
@@ -31,11 +28,9 @@ catkin_package(
         ${raisim_INCLUDE_DIRS}
         LIBRARIES
         ${PROJECT_NAME}
+        simple_motion
         CATKIN_DEPENDS
-        # roscpp
         ocs2_jypro
-        # ocs2_legged_robot_raisim
-        # ocs2_msgs
         DEPENDS
         pinocchio
 )
@@ -65,12 +60,11 @@ add_library(simple_motion
         )
 add_dependencies(simple_motion
         ${catkin_EXPORTED_TARGETS}
-        # ${PROJECT_NAME}_gencfg
         )
 target_link_libraries(simple_motion
         ${catkin_LIBRARIES}
         )
-target_compile_options(simple_motion PUBLIC ${OCS2_CXX_FLAGS} -O3)
+target_compile_options(simple_motion PUBLIC ${OCS2_CXX_FLAGS})
 
 add_library(${PROJECT_NAME}
         src/HoQp.cpp
@@ -83,7 +77,6 @@ add_library(${PROJECT_NAME}
         )
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}
-        # ${PROJECT_NAME}_gencfg
         )
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
@@ -139,6 +132,11 @@ endif (cmake_clang_tools_FOUND)
 ## Install ##
 #############
 install(TARGETS ocs2_wbc
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS simple_motion
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

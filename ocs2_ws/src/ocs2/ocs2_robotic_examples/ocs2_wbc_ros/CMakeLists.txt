@@ -4,12 +4,12 @@ project(ocs2_wbc_ros)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         dynamic_reconfigure
         ocs2_wbc
         ocs2_msgs
+        pronto_msgs
         ocs2_legged_robot_raisim)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -83,7 +83,6 @@ add_executable(mpc_sim
         test/mpc_sim.cpp
         )
 add_dependencies(mpc_sim
-        ${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}
         )
 target_link_libraries(mpc_sim
@@ -93,6 +92,18 @@ target_link_libraries(mpc_sim
         raisim::raisimOgre
         )
 target_compile_options(mpc_sim PRIVATE ${OCS2_CXX_FLAGS})
+
+add_executable(gazebo_sim
+        test/gazebo_sim.cpp
+        )
+add_dependencies(gazebo_sim
+        ${catkin_EXPORTED_TARGETS}
+        )
+target_link_libraries(gazebo_sim
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+target_compile_options(gazebo_sim PRIVATE ${OCS2_CXX_FLAGS})
 #########################
 ###   CLANG TOOLING   ###
 #########################
@@ -115,6 +126,11 @@ install(TARGETS ocs2_wbc_ros
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(TARGETS mpc_sim
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

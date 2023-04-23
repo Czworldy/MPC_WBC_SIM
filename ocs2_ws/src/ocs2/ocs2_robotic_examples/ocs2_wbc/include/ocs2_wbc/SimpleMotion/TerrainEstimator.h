@@ -33,7 +33,7 @@ public:
                                         const vector3_t &lh,
                                         const vector3_t &rf,
                                         const vector3_t &rh,
-                                        const Eigen::Vector4i &contact);
+                                        const Eigen::Matrix<bool, 4, 1> &contact);
     
     Eigen::Vector4d getFeetHeight(){ 
         Eigen::Vector4d feetHeight;
