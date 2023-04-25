@@ -266,7 +266,7 @@ int main(int argc, char**argv) {
     ros::AsyncSpinner spinner(6);
     spinner.start();
     while(nodeHandle.ok()){
-        vector_t qMeasured(19), vMeasured(18), rbdState(36);
+        vector_t qMeasured(19), vMeasured(18);
         //ocs2 joint order [LF, LH, RF, RH]
         //gaebzo joint order   lf rf lh rh = raisim order
         qMeasured << basePosWorldCur, baseOriWorldCur.w(), baseOriWorldCur.x(), 
@@ -354,7 +354,6 @@ int main(int argc, char**argv) {
           mpcMrtInterface_->setCurrentObservation(currentObservation);
 
           observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
-              observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
 
           vector_t qMeasured_(interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum);
           qMeasured_.head<3>() = rbdState.segment<3>(3);
@@ -388,7 +387,8 @@ int main(int argc, char**argv) {
 
           // after solve the mpc problem, set target trajectory
           vector_t torque = x.tail(12); //ocs2 joint order [LF, LH, RF, RH]
-          // Eigen::Map<vector3_t>(lf_pos.value) = q_j.head(3);
+          // Eigen::Map<vector3_t>(lf_pos.value) = q_j.head(3); 
+          //TODO: add PD term
           Eigen::Map<vector3_t>(command.lf_tau.value) = torque.segment<3>(0);
           Eigen::Map<vector3_t>(command.lh_tau.value) = torque.segment<3>(3);
           Eigen::Map<vector3_t>(command.rf_tau.value) = torque.segment<3>(6);
