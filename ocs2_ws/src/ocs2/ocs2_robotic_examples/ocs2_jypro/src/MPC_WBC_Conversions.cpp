@@ -254,12 +254,12 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         wbcMsg.wbcTraj[i].baseVel.push_back(wbcInterfaceData.baseVelocity[i][4]); //p
         wbcMsg.wbcTraj[i].baseVel.push_back(wbcInterfaceData.baseVelocity[i][5]); //y
         // acceleration
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][0]); //x
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][1]); //y
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][2]); //z
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][5]); //r
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][4]); //p
-        wbcMsg.wbcTraj[i].baseAcc.push_back(a[i][3]); //y
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][0]); //x
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][1]); //y
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][2]); //z
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][3]); //r
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][4]); //p
+        wbcMsg.wbcTraj[i].baseAcc.push_back(wbcInterfaceData.baseAcceleration[i][5]); //y
 
         for (int k = 0; k < modelSettings.contactNames3DoF.size(); k++){ // LF RF LH RH
             wbcMsg.wbcTraj[i].swingPos.push_back(wbcInterfaceData.swingFeetPosition[i][k][0]);
@@ -290,8 +290,12 @@ void mpcPolicyCallback(const ocs2_msgs::mpc_flattened_controller::ConstPtr& msg)
         wbcMsg.thirdGait[i] = wbcInterfaceData.stanceFeet[2][i];
     }
     wbcMsg.switchTime[0] = wbcInterfaceData.switchTime[0]; wbcMsg.switchTime[1] = wbcInterfaceData.switchTime[1];
+    wbcMsg.inputForce.resize(12);
+    for (int i = 0; i < 12; i++) {
+        wbcMsg.inputForce[i] = msg->inputTrajectory[0].value[i];
+    }
 
-    for (int i = 0; i < 4; i++)
+    // for (int i = 0; i < 4; i++)
         // std::cout <<wbcMsg.firstGait[i]<<"\t" << std::endl;
     wbcMsgisdone = true;
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -419,12 +423,18 @@ void DesiredTrajectoriesForWBC(){
             wbcInterfaceData.swingFeetPosition[k][j] = data.oMf[model.getBodyId(modelSettings.contactNames3DoF[j])].translation();
         }
         // Base Position
-        wbcInterfaceData.basePosition[k] = q[k].head(6);
+        wbcInterfaceData.basePosition[k].resize(6);
+        wbcInterfaceData.basePosition[k][0] = q[k][0]; // x
+        wbcInterfaceData.basePosition[k][1] = q[k][1]; // y
+        wbcInterfaceData.basePosition[k][2] = q[k][2]; // z
+        wbcInterfaceData.basePosition[k][3] = q[k][5]; // roll
+        wbcInterfaceData.basePosition[k][4] = q[k][4]; // pitch
+        wbcInterfaceData.basePosition[k][5] = q[k][3]; // yaw
         // Base Velocity
         Eigen::Matrix<double, 3, 1> twist_angular;
         wbcInterfaceData.baseVelocity[k].resize(6);
         wbcInterfaceData.baseVelocity[k].head(3) = v[k].head(3);
-        wbcInterfaceData.baseVelocity[k].tail(3) = rpyDotTOtwist(q[0][3], q[0][4], q[0][5]) * v[k].segment(3, 3);//X Y Z
+        wbcInterfaceData.baseVelocity[k].tail(3) = rpyDotTOtwist(q[k][3], q[k][4], q[k][5]) * v[k].segment(3, 3);//X Y Z
 
         // Base Acceleration
         pinocchio::computeCentroidalMapTimeVariation(model, data, q[k], v[k]); //the time derivative of the Centroidal Momentum Matrix
@@ -440,6 +450,15 @@ void DesiredTrajectoriesForWBC(){
         Eigen::Matrix<double, 6, 1> q_base_ddot;
         q_base_ddot = InverseAb[k] * (hDot - data.dAg * v[k] - Aj[k] * a[k].tail(numOfActuatedJoint));
         a[k].head(6) = q_base_ddot;
+        wbcInterfaceData.baseAcceleration[k].resize(6);
+        wbcInterfaceData.baseAcceleration[k][0] = a[k][0]; //x
+        wbcInterfaceData.baseAcceleration[k][1] = a[k][1]; //y
+        wbcInterfaceData.baseAcceleration[k][2] = a[k][2]; //z
+        // wbcInterfaceData.baseAcceleration[k][3] = a[k][5]; // roll   
+        // wbcInterfaceData.baseAcceleration[k][4] = a[k][4]; // pitch   
+        // wbcInterfaceData.baseAcceleration[k][5] = a[k][3]; // yaw 
+        wbcInterfaceData.baseAcceleration[k].tail(3) = 
+                      (rpyDotTOtwistDot(q[k][3], q[k][4], q[k][5], v[k][3], v[k][4], v[k][5]) * a[k].segment(3, 3));//X Y Z // to check
 
         // Contact Point Velocity and Acceleration
         for(size_t j = 0; j < N_contactPoint; j++){

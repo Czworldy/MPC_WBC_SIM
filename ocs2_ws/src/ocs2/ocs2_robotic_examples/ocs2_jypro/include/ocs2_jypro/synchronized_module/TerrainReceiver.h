@@ -8,6 +8,7 @@
 #include <mutex>
 
 #include <ocs2_msgs/mpc_terrain.h>
+#include "ocs2_jypro/common/Types.h"
 
 
 namespace ocs2 {
@@ -23,21 +24,24 @@ public:
     feetHeight.setZero();
   }
 
-  TerrainEstData(const Eigen::Quaternionf& quat, const Eigen::Vector3f& params, const Eigen::Vector4f& height){
-    terrainQuat = quat;
-    terrainParams = params;
-    feetHeight = height;
+  TerrainEstData(const Eigen::Quaternionf& quat, const Eigen::Vector3f& params, const Eigen::Vector4f& height, const contact_flag_t& stanceLegs){
+    this->terrainQuat = quat;
+    this->terrainParams = params;
+    this->feetHeight = height;
+    this->stanceLegs = stanceLegs;
   }
 
   void copy(const TerrainEstData& other){
     terrainQuat = other.terrainQuat;
     terrainParams = other.terrainParams;
     feetHeight = other.feetHeight;
+    stanceLegs = other.stanceLegs;
   }
 
   Eigen::Quaternionf terrainQuat;
   Eigen::Vector3f terrainParams;
   Eigen::Vector4f feetHeight; //lf lh rf rh 
+  contact_flag_t stanceLegs;  // {LF, RF, LH, RH}
 };
 
 std::ostream& operator<<(std::ostream& stream, const TerrainEstData& terrainEstData);

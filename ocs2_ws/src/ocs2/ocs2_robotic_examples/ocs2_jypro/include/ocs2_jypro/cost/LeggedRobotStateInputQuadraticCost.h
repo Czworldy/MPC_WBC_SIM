@@ -42,7 +42,8 @@ class LeggedRobotStateInputQuadraticCost final : public LeggedRobotQuadraticStat
  public:
   LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
                                      const SwitchedModelReferenceManager& referenceManager,
-                                     std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr);
+                                     std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
+                                     bool useIKreslut = false);
 
   ~LeggedRobotStateInputQuadraticCost() override = default;
   LeggedRobotStateInputQuadraticCost* clone() const override;
@@ -56,6 +57,7 @@ class LeggedRobotStateInputQuadraticCost final : public LeggedRobotQuadraticStat
   const CentroidalModelInfo info_;
   const SwitchedModelReferenceManager* referenceManagerPtr_;
   std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr_;
+  bool useIKresult_;
 };
 
 }  // namespace legged_robot

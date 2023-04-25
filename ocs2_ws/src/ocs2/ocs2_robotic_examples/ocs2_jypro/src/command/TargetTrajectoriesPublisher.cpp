@@ -36,9 +36,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_msgs/mpc_target_trajectories.h>
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include <ocs2_centroidal_model/ModelHelperFunctions.h>
 
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseArray.h>
 
 // #include <Eigen/Core>
 // #include <Eigen/Dense>
@@ -50,8 +53,14 @@ namespace ocs2 {
 /******************************************************************************************************/
 /******************************************************************************************************/
 TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &nodeHandle, const std::string &topicPrefix,
-                                                         const vector_t &defaultJointState)
-    : defaultJointState_(defaultJointState) {
+                                   const vector_t &defaultJointState, PinocchioInterface& pinocchioInterface,
+                                   const CentroidalModelInfo& centroidalModelInfo)
+    : defaultJointState_(defaultJointState),
+      pinocchioInterface_(pinocchioInterface),
+      centroidalModelInfo_(centroidalModelInfo) {
+    // Mapping
+    mappingPtr_ = std::make_shared<ocs2::CentroidalModelPinocchioMapping>(centroidalModelInfo_);
+    mappingPtr_->setPinocchioInterface(pinocchioInterface_);
     // observation subscriber
     auto observationCallback = [this](const ocs2_msgs::mpc_observation::ConstPtr &msg) {
         std::lock_guard<std::mutex> lock(latestObservationMutex_);
@@ -66,16 +75,28 @@ TargetTrajectoriesPublisher::TargetTrajectoriesPublisher(::ros::NodeHandle &node
         this->isJoyMsgsCome = true;
     };
     joySubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_target_trajectories>("/traj", 1, trajCallback);
+    // auto joyCallback = [this](const geometry_msgs::Twist::ConstPtr &msg) {
+    //     std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+
+    //     deltaX = msg->linear.x;
+    //     deltaY = msg->linear.y; // msg->linear.x
+    //     deltaYaw = msg->angular.z;
+    //     this->isJoyMsgsCome = true;
+    // };
+
+    // joySubscriber_ = nodeHandle.subscribe<geometry_msgs::Twist>("/vel", 1, joyCallback);
 
     // Trajectories publisher
     targetTrajectoriesPublisherPtr_.reset(new TargetTrajectoriesRosPublisher(nodeHandle, topicPrefix));
+    // for Visualization
+    TargetTrajectoriesVisualizerPublisher_ = nodeHandle.advertise<geometry_msgs::PoseArray>("legged_robot_targetvisualizer", 2);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
 void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &commadMsg) {
-    ::ros::Rate rate(10);
+    ::ros::Rate rate(1);
     while (ros::ok() && ros::master::check()) {
         ::ros::spinOnce();
         if (isJoyMsgsCome && isMpcPolicyCome) {
@@ -93,6 +114,25 @@ void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &comm
             // publish TargetTrajectories
             targetTrajectoriesPublisherPtr_->publishTargetTrajectories(targetTrajectories);
             this->isJoyMsgsCome = false;
+            // for visualization
+            // create pose_array (along trajectory)
+            geometry_msgs::PoseArray teb_poses;
+            teb_poses.header.frame_id = "odom";
+            teb_poses.header.stamp = ros::Time::now();
+            
+            // fill path msgs with teb configurations
+            for (int i=0; i < targetTrajectories.timeTrajectory.size(); i++)
+            {
+                geometry_msgs::PoseStamped pose;
+                pose.header.frame_id = "odom";
+                pose.header.stamp = ros::Time::now();
+                pose.pose.position.x = targetTrajectories.stateTrajectory[i][6];
+                pose.pose.position.y = targetTrajectories.stateTrajectory[i][7];
+                pose.pose.position.z = 0.05;
+                pose.pose.orientation = tf::createQuaternionMsgFromYaw(targetTrajectories.stateTrajectory[i][9]);
+                teb_poses.poses.push_back(pose.pose);
+            }
+            TargetTrajectoriesVisualizerPublisher_.publish(teb_poses);
         }
         rate.sleep();
     } // end of while loop
@@ -122,6 +162,7 @@ inline legged_robot::matrix3_t rpyTORotateMat(double roll, double pitch, double 
 TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const SystemObservation &observation) {
     // get current pose
     const vector_t currentPose = observation.state.segment<6>(6);
+    const vector_t currentMometum = observation.state.head(6);
 
     // 3x3 transform matrix from odom base to odom frame
     const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
@@ -133,8 +174,16 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
     scalar_array_t timeTrajectory = receivedTargetTrajectories_.timeTrajectory;
     vector_array_t stateTrajectory(timeTrajectory.size(), vector_t::Zero(observation.state.size()));
     const vector_array_t inputTrajectory(timeTrajectory.size(), vector_t::Zero(observation.input.size()));
-    int pointCounter = 0;
 
+    // const auto& model = pinocchioInterfacePtr->getModel();
+    // auto& data = pinocchioInterfacePtr->getData();
+
+    // const auto& Ag = pinocchio::computeCentroidalMap(model, data, observation.state.tail(18));
+    const vector_t q = observation.state.tail(18);
+    updateCentroidalDynamics(pinocchioInterface_, centroidalModelInfo_, q);
+    const auto currentqVelocity = mappingPtr_->getPinocchioJointVelocity(observation.state, observation.input);
+    std::cout << "currentqVelocity: " << currentqVelocity.transpose() << "\n";
+    int pointCounter = 0;
     for (const auto &state : receivedTargetTrajectories_.stateTrajectory) {
         Eigen::Vector3d pose_xy;
         pose_xy << state(0), state(1), 1;
@@ -144,6 +193,27 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
                               .finished();
         stateTrajectory[pointCounter] << vector_t::Zero(6), targetPose, defaultJointState_;
         pointCounter++;
+    }
+
+    pointCounter = 0;
+    for (const auto& input : receivedTargetTrajectories_.inputTrajectory) {
+        Eigen::Vector2d input_xy;
+        input_xy << input(0), input(1);
+        const auto commandVelInOdomFrame = TransformMat.topLeftCorner(2,2) * input_xy;
+
+        vector_t commandGeneralizedVelocity = vector_t::Zero(18);
+        commandGeneralizedVelocity(0) = currentqVelocity(0) + commandVelInOdomFrame(0);  // X 
+        commandGeneralizedVelocity(1) = currentqVelocity(1) + commandVelInOdomFrame(1);  // Y 
+        commandGeneralizedVelocity(3) = currentqVelocity(3) + input(2);  // Yaw
+        std::cout << "cmd vel:" << input_xy.transpose() << " " << "commandVelInOdomFrame:"
+            << commandVelInOdomFrame.transpose() << " " 
+            << "final vel: " << commandGeneralizedVelocity.head(4).transpose() << "\n";
+
+        const auto commandMometum = getCentroidalMomentumMatrix(pinocchioInterface_) * commandGeneralizedVelocity / centroidalModelInfo_.robotMass;
+        // std::cout << "commandMometum: " << commandMometum.transpose() << "\n";
+        // std::cout << "centroidalModelInfo_.robotMass: " << centroidalModelInfo_.robotMass << "\n";
+        stateTrajectory[pointCounter].head(6) = commandMometum;
+
     }
     // ----------------------------------
 

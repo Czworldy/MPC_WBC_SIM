@@ -1,20 +1,15 @@
 /******************************************************************************
 Copyright (c) 2021, Farbod Farshidian. All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
  * Redistributions of source code must retain the above copyright notice, this
   list of conditions and the following disclaimer.
-
  * Redistributions in binary form must reproduce the above copyright notice,
   this list of conditions and the following disclaimer in the documentation
   and/or other materials provided with the distribution.
-
  * Neither the name of the copyright holder nor the names of its
   contributors may be used to endorse or promote products derived from
   this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -112,6 +107,7 @@ LeggedRobotInterface::LeggedRobotInterface(const std::string &taskFile, const st
     // initial state
     initialState_.setZero(centroidalModelInfo_.stateDim);
     loadData::loadEigenMatrix(taskFile, "initialState", initialState_);
+    std::cerr << "[LeggedRobotInterface] Initial state: " << initialState_.transpose() << std::endl;
 }
 
 /******************************************************************************************************/
@@ -174,17 +170,21 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
   auto mpcNominalFootholdPtr = std::make_shared<feet_array_t<std::vector<vector3_t>>>();
 
-  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
-  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
-  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
-  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
+  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
 
-  initPolygon.resize(1);
-  initPolygon[0].reserve(4);
-  initPolygon[0].push_back(vector3_t(1.5, 0, 0));
-  initPolygon[0].push_back(vector3_t(0, 1.5, 0));
-  initPolygon[0].push_back(vector3_t(-1.5, 0, 0));
-  initPolygon[0].push_back(vector3_t(0, -1.5, 0));
+  initPolygon.reserve(3);
+  std::vector<vector3_t> Polygon;
+  Polygon.reserve(4);
+  Polygon.push_back(vector3_t(1.5, 0, 0));
+  Polygon.push_back(vector3_t(0, 1.5, 0));
+  Polygon.push_back(vector3_t(-1.5, 0, 0));
+  Polygon.push_back(vector3_t(0, -1.5, 0));
+  initPolygon.push_back(Polygon);
+  initPolygon.push_back(Polygon);
+  initPolygon.push_back(Polygon);
   (*mpcPolygonArrayPtr)[0] = initPolygon;
   (*mpcPolygonArrayPtr)[1] = initPolygon;
   (*mpcPolygonArrayPtr)[2] = initPolygon;
@@ -193,6 +193,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   referenceManagerPtr_ = std::make_shared<SwitchedModelReferenceManager>(loadGaitSchedule(taskFile), std::move(swingTrajectoryPlanner),
                                                                          std::move(footPlacementPlanner), 
                                                                          leggedIKSolverPtr_,
+                                                                         pinocchioMapping, *pinocchioInterfacePtr_, centroidalModelInfo_,
                                                                          terrainEstDataPtr, mpcPolygonArrayPtr,
                                                                          mpcNominalFootholdPtr);
 
@@ -213,16 +214,18 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     problemPtr_->dynamicsPtr = std::move(dynamicsPtr);
 
   // Cost terms
-  problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_));
+  bool useIKresult = false;
+  loadData::loadPtreeValue(pt, useIKresult, "useIKresult", true);
+  problemPtr_->costPtr->add("baseTrackingCost", getBaseTrackingCost(taskFile, centroidalModelInfo_, useIKresult));
   // add final cost
-//   const std::string fileQfMatrix = "/home/yjy/jy_control_test/LQR/S.txt";
-//   auto Qf = readMatrix(fileQfMatrix.c_str());
-//   if (display_) {
-//     std::cerr << "\n #### Final Cost Coefficients: ";
-//     std::cerr << "\n #### =============================================================================\n";
-//     std::cerr << "Q_final:\n" << Qf << "\n";
-//     std::cerr << " #### =============================================================================\n";
-//   }
+  const std::string fileQfMatrix = "/home/ysc/MPC_WBC_SIM/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/FinalCost.txt";
+  auto Qf = readMatrix(fileQfMatrix.c_str());
+  if (display_) {
+    std::cerr << "\n #### Final Cost Coefficients: ";
+    std::cerr << "\n #### =============================================================================\n";
+    std::cerr << "Q_final:\n" << Qf << "\n";
+    std::cerr << " #### =============================================================================\n";
+  }
 //   problemPtr_->finalCostPtr->add("finalCost", std::unique_ptr<StateCost>(new QuadraticStateCost(Qf)));
 
     // Constraint terms
@@ -256,21 +259,24 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                     modelSettings_.recompileLibrariesCppAd, modelSettings_.verboseCppAd));
     // }
 
-
-        // std::cout << "add done!\n";
         problemPtr_->softConstraintPtr->add(footName + "_frictionCone",
                                             getFrictionConeConstraint(i, frictionCoefficient, barrierPenaltyConfig));
 
     bool useFeetPlacementConstraint = false;
     loadData::loadPtreeValue(pt, useFeetPlacementConstraint, "useFeetPlacementConstraint", true);
     if (useFeetPlacementConstraint) {
-        problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
+      problemPtr_->stateSoftConstraintPtr->add(footName + "_placement",
                                              getStateOnlyFootPlacementConstraint(*eeKinematicsPtr, footName + "_placementConstraint",
                                               i, barrierPenaltyConfig_));
-        problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
+    }
+    bool useEndEffectorTrackingCost = false;
+    loadData::loadPtreeValue(pt, useEndEffectorTrackingCost, "useEndEffectorTrackingCost", true);
+    if(useEndEffectorTrackingCost){
+      problemPtr_->costPtr->add(footName + "_endEffectorTrackingCost",
                                   getEndEffectorTrackingCost(taskFile, *eeKinematicsPtr, footName + "_endEffectorTrackingCost" , i,
                                   modelSettings_.modelFolderCppAd, modelSettings_.recompileLibrariesCppAd));
     }
+
 
 
     // problemPtr_->softConstraintPtr->add(footName + "_CBFplacement",
@@ -330,7 +336,7 @@ void LeggedRobotInterface::initializeInputCostWeight(const std::string &taskFile
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::unique_ptr<StateInputCost> LeggedRobotInterface::getBaseTrackingCost(const std::string &taskFile, const CentroidalModelInfo &info) {
+std::unique_ptr<StateInputCost> LeggedRobotInterface::getBaseTrackingCost(const std::string &taskFile, const CentroidalModelInfo &info, bool useIKresults) {
     matrix_t Q(info.stateDim, info.stateDim);
     loadData::loadEigenMatrix(taskFile, "Q", Q);
     matrix_t R(info.inputDim, info.inputDim);
@@ -348,7 +354,7 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getBaseTrackingCost(const 
         std::cerr << " #### =============================================================================\n";
     }
 
-  return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_, leggedIKSolverPtr_));
+  return std::unique_ptr<StateInputCost>(new LeggedRobotStateInputQuadraticCost(std::move(Q), std::move(R), info, *referenceManagerPtr_, leggedIKSolverPtr_, useIKresults));
 }
 
 /******************************************************************************************************/

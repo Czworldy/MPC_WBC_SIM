@@ -38,15 +38,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 inline matrix3_t rpyTORotateMat(vector3_t rpy);
+static Eigen::Vector2d integralError_ = Eigen::Vector2d::Zero();
 vector3_t xNominalOrientation_ = vector3_t::Zero();
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
 LeggedRobotStateInputQuadraticCost::LeggedRobotStateInputQuadraticCost(matrix_t Q, matrix_t R, CentroidalModelInfo info,
                                                                        const SwitchedModelReferenceManager& referenceManager,
-                                                                       std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr)
+                                                                       std::shared_ptr<LeggedIKSolver> leggedIKSolverPtr,
+                                                                       bool useIKresult)
     : LeggedRobotQuadraticStateInputCost(std::move(Q), std::move(R)), info_(std::move(info)), referenceManagerPtr_(&referenceManager), 
-    leggedIKSolverPtr_(std::move(leggedIKSolverPtr)) {}
+    leggedIKSolverPtr_(std::move(leggedIKSolverPtr)), useIKresult_(useIKresult) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -98,39 +100,46 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   const auto& getEEReference = preCompLegged.getEEReference();
 
     // std::cout << "time: " << time << " base xyz: " <<  xNominal.segment<3>(6).transpose() << std::endl; // use target trajectory.
-
-  leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
-  for (size_t i = 0; i < 4; i++) {
-    if(contactFlags[i] == 1)
-      referenceQj[i] = xNominal.segment<3>(12+3*i);
-    else{
-      referenceQj[i] = leggedIKSolverPtr_->solveIK(getEEReference[i], i);
-      if(referenceQj[i].hasNaN()){
+  if(useIKresult_){
+    leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
+    for (size_t i = 0; i < 4; i++) {
+      if(contactFlags[i] == 1)
         referenceQj[i] = xNominal.segment<3>(12+3*i);
-        // std::cerr << "######### IK solver Failed #########\n";
+      else{
+        referenceQj[i] = leggedIKSolverPtr_->solveIK(getEEReference[i], i);
+        if(referenceQj[i].hasNaN()){
+          referenceQj[i] = xNominal.segment<3>(12+3*i);
+          std::cerr << "######### IK solver Failed #########\n";
+        }
       }
     }
-  }
   
-  Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
-  qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
-  // std::cout << "qj: " << qj.transpose() << "\n";
-  // xNominal.tail(12) = qj;
-  vector_t xDeviation = state - xNominal;
-  // const auto currentPoseError = xDeviation.segment<2>(6);
-  // static Eigen::Vector2d integralError;
-  // integralError += currentPoseError*0.01;
-  // if(integralError[0] > 0.5)
-  //   integralError[0] = 0.5;
-  // if(integralError[0] < -0.5)
-  //   integralError[0] = -0.5;
-  // if(integralError[1] > 0.5)
-  //   integralError[1] = 0.5;
-  // if(integralError[1] < -0.5)
-  //   integralError[1] = -0.5;
-  // std::cout << "currentPoseError: " << currentPoseError.transpose() << std::endl;
+    Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
 
-  // xDeviation.segment<2>(6) = 2*currentPoseError + integralError;
+    qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
+    // xNominal.tail(12) = qj;
+    // std::cout << "IK result: " << qj.transpose() << "\n";
+  }
+  // std::cout << "qj: " << qj.transpose() << "\n";
+
+  vector_t xDeviation = state - xNominal;
+  // std::cout << "xNominal: " << xNominal.transpose() << std::endl;
+  // std::cout << "xDeviation: " << xDeviation.transpose() << std::endl;
+
+  const auto currentPoseError = xDeviation.segment<2>(6);
+  // // static Eigen::Vector2d integralError;
+  // integralError_ = integralError_+currentPoseError*0.01;
+  // if(integralError_[0] > 1)
+  //   integralError_[0] = 1;
+  // if(integralError_[0] < -1)
+  //   integralError_[0] = -1;
+  // if(integralError_[1] > 1)
+  //   integralError_[1] = 1;
+  // if(integralError_[1] < -1)
+  //   integralError_[1] = -1;
+  // std::cout << "integralError_: " << integralError_.transpose() << std::endl;
+
+  xDeviation.segment<2>(6) = currentPoseError + 10*integralError_;
   return {xDeviation, input - uNominal};
 
 }

@@ -30,6 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <ocs2_core/thread_support/Synchronized.h>
+#include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
+#include <ocs2_pinocchio_interface/PinocchioInterface.h>
 
 #include "ocs2_jypro/synchronized_module/LeggedRobotReferenceManager.h"
 #include "ocs2_jypro/synchronized_module/TerrainReceiver.h"
@@ -53,6 +55,9 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   SwitchedModelReferenceManager(std::shared_ptr<GaitSchedule> gaitSchedulePtr, std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr,
                                 std::shared_ptr<FootConstraintsPlanner> footPlacementPlannerPtr,
                                 std::shared_ptr<LeggedIKSolver> LeggedIKSolverPtr,
+                                const CentroidalModelPinocchioMapping& mapping,
+                                PinocchioInterface& pinocchioInterface,
+                                const CentroidalModelInfo& centroidalModelInfo,
                                 std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                 std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                 std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr);
@@ -87,6 +92,17 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr_;
   std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr_;
   QuaternionToRPY terrainQuaternionToRPY_;
+  std::unique_ptr<CentroidalModelPinocchioMapping> mappingPtr_;
+  PinocchioInterface& pinocchioInterface_;
+  const CentroidalModelInfo& centroidalModelInfo_;
+  bool useDefaultHeuristicFootholds_ = true;
+  // to deal with the late touchdown
+  ModeSchedule tempModeSchedule_;
+  bool isLateTouchdown_ = false;
+  scalar_t lateTouchdownTime_ = 0.0;
+  contact_flag_t insertContactFlags_ = {true, true, true, true};
+  int insertContactTimes_ = 0;
+
 };
 
 }  // namespace legged_robot

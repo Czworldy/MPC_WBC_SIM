@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ocs2_core/cost/StateInputCostCppAd.h>
+#include <ocs2_core/cost/StateInputGaussNewtonCostAd.h>
 
 #include "ocs2_jypro/synchronized_module/SwitchedModelReferenceManager.h"
 
@@ -11,7 +11,7 @@
 namespace ocs2 {
 namespace legged_robot {
 
-class LeggedRobotEndEffectorCost final : public StateInputCostCppAd {
+class LeggedRobotEndEffectorCost final : public StateInputCostGaussNewtonAd {
  public:
   LeggedRobotEndEffectorCost(matrix_t Q, matrix_t R,
                             const EndEffectorKinematics<scalar_t>& endEffectorKinematics,
@@ -22,16 +22,16 @@ class LeggedRobotEndEffectorCost final : public StateInputCostCppAd {
   LeggedRobotEndEffectorCost* clone() const override;
 
   /** Cost evaluation */
-  // scalar_t getValue(scalar_t time, const vector_t& state, const vector_t& input, const TargetTrajectories& targetTrajectories,
-  //                   const PreComputation& preComputation) const override;
-  // ScalarFunctionQuadraticApproximation getQuadraticApproximation(scalar_t time, const vector_t& state, const vector_t& input,
-  //                                                                const TargetTrajectories& targetTrajectories,
-  //                                                                const PreComputation& preComputation) const override;
+  scalar_t getValue(scalar_t time, const vector_t& state, const vector_t& input, const TargetTrajectories& targetTrajectories,
+                    const PreComputation& preComputation) const override;
+  ScalarFunctionQuadraticApproximation getQuadraticApproximation(scalar_t time, const vector_t& state, const vector_t& input,
+                                                                 const TargetTrajectories& targetTrajectories,
+                                                                 const PreComputation& preComputation) const override;
 
  private:
   LeggedRobotEndEffectorCost(const LeggedRobotEndEffectorCost& rhs) = default;
 
-  ad_scalar_t costFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
+  ad_vector_t costVectorFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input,
                            const ad_vector_t& parameters) const override;
   vector_t getParameters(scalar_t time, const TargetTrajectories& targetTrajectories,
                                  const PreComputation& preComputation ) const override;
