@@ -117,7 +117,7 @@ Eigen::Matrix<SCALAR_T, 3, 1> quatToZyx(const Eigen::Quaternion<SCALAR_T>& q) {
 void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState,
                                                      TargetTrajectories& targetTrajectories, ModeSchedule& modeSchedule,
                                                      TargetFeetPlacement& targetFeetPlacement) {
-  std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
+  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
   //get current measure contact mode
   const size_t currentMode = stanceLeg2ModeNumber(terrainEstDataPtr_->stanceLegs);
   //update gait table and get predictive mode
@@ -195,12 +195,17 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   vector3_t terrainNormal = terrainParams;
   terrainNormal(2) = 1;
 
+  const auto& stanceLegs = terrainEstDataPtr_->stanceLegs;
 
-  vector3_t terrainRPY = quatToZyx(terrainEstDataPtr_->terrainQuat.cast<scalar_t>()).reverse();
-  // std::cout << "terrainRPY: " << terrainRPY.transpose() << std::endl;
+  vector3_t terrainZyx = quatToZyx(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
+  std::cout << "terrainZyx: " << terrainZyx.transpose();
+  
   // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
-
-  const scalar_t distance2Terrain = 0.44; //For X20
+  if(abs(terrainZyx[1]) < 0.05) terrainZyx[1] = 0;
+  if(abs(terrainZyx[2]) < 0.05) terrainZyx[2] = 0;
+  std::cout << "\tterrainZyx After: " << terrainZyx.transpose() << std::endl;
+  std::cout << "stanceLegs: " << stanceLegs[0] << stanceLegs[1] << stanceLegs[2] << stanceLegs[3] << "\n";
+  const scalar_t distance2Terrain = 0.4; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
   // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
@@ -210,15 +215,15 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   if(targetTrajectories.timeTrajectory.size() >= 2){
     // targetState(8) = zReference;
-    // targetState(10) = terrainRPY[1]; //pitch
-    // targetState(11) = terrainRPY[0]; //roll
+    // targetState(10) = terrainZyx[1]; //pitch
+    // targetState(11) = terrainZyx[0]; //roll
     for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
       stateTrajectory(8) = zReference;
-      stateTrajectory(10) = terrainRPY[1]; //pitch
-      stateTrajectory(11) = 0.3*terrainRPY[0]; //roll
+      stateTrajectory(10) = terrainZyx[1]; //pitch
+      stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
     }
-    // targetTrajectories.stateTrajectory[1][10] = terrainRPY[1]; // pitch
-    // targetTrajectories.stateTrajectory[1][11] = 0.5*terrainRPY[0]; // roll
+    // targetTrajectories.stateTrajectory[1][10] = terrainZyx[1]; // pitch
+    // targetTrajectories.stateTrajectory[1][11] = 0.5*terrainZyx[0]; // roll
     // targetTrajectories.stateTrajectory[1][8] = zReference; // z
 
     // std::cout << "######## modify target state ########\n"; 

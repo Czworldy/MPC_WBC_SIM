@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
         )
 
 find_package(raisim CONFIG REQUIRED)
-find_package(raisimOgre CONFIG REQUIRED)
+# find_package(raisimOgre CONFIG REQUIRED)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 

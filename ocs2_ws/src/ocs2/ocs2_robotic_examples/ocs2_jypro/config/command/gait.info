@@ -15,6 +15,7 @@ list
   [12] standing_trot2
   [13] jump
   [14] jump1
+  [15] stair
 }
 
 stance
@@ -270,9 +271,9 @@ standing_trot2
   switchingTimes
   {
     [0]     0.00
-    [1]     0.25
+    [1]     0.20
     [2]     0.35
-    [3]     0.60
+    [3]     0.55
     [4]     0.70
   }
 }
@@ -304,5 +305,24 @@ jump1
     [0]     0.00
     [1]     0.15
     [2]     0.50
+  }
+}
+
+stair
+{
+  modeSequence
+  {
+    [0]     LF_RH
+    [1]     STANCE
+    [2]     RF_LH
+    [3]     STANCE
+  }
+  switchingTimes
+  {
+    [0]     0.00
+    [1]     0.15
+    [2]     0.30
+    [3]     0.45
+    [4]     0.60
   }
 }

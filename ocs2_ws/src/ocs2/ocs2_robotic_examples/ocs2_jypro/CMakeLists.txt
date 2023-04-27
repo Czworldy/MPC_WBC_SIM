@@ -22,12 +22,12 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   kdl_parser
   robot_state_publisher
   pronto_msgs
-  teb_local_planner
+  # teb_local_planner
 )
 
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
-  teb_local_planner
+  # teb_local_planner
 )
 
 find_package(Boost REQUIRED COMPONENTS
