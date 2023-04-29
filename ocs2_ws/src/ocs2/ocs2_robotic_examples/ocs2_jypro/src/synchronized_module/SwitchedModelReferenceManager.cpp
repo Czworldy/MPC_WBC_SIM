@@ -50,7 +50,8 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
                                                              const CentroidalModelInfo& centroidalModelInfo,
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                              std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
-                                                             std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr)
+                                                             std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
+                                                             std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingHeightPtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
@@ -61,7 +62,8 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
       centroidalModelInfo_(centroidalModelInfo),
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
-      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) { mappingPtr_->setPinocchioInterface(pinocchioInterface_); }
+      mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)),
+      mpcSwingHeightPtr_(std::move(mpcSwingHeightPtr)) { mappingPtr_->setPinocchioInterface(pinocchioInterface_); }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -198,13 +200,13 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const auto& stanceLegs = terrainEstDataPtr_->stanceLegs;
 
   vector3_t terrainZyx = quatToZyx(terrainEstDataPtr_->terrainQuat.cast<scalar_t>());
-  std::cout << "terrainZyx: " << terrainZyx.transpose();
+  // std::cout << "terrainZyx: " << terrainZyx.transpose();
   
   // std::cout << "terrainParam: " << terrainParams.transpose() << std::endl;
   if(abs(terrainZyx[1]) < 0.05) terrainZyx[1] = 0;
   if(abs(terrainZyx[2]) < 0.05) terrainZyx[2] = 0;
-  std::cout << "\tterrainZyx After: " << terrainZyx.transpose() << std::endl;
-  std::cout << "stanceLegs: " << stanceLegs[0] << stanceLegs[1] << stanceLegs[2] << stanceLegs[3] << "\n";
+  // std::cout << "\tterrainZyx After: " << terrainZyx.transpose() << std::endl;
+  // std::cout << "stanceLegs: " << stanceLegs[0] << stanceLegs[1] << stanceLegs[2] << stanceLegs[3] << "\n";
   const scalar_t distance2Terrain = 0.4; //For X20
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
@@ -323,8 +325,10 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
   // }
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
+  footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions, isLateTouchdown_); // 默认的情况下不用这个函数？
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions,
+      footPlacementPlannerPtr_->getSwingHeightSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
 
 

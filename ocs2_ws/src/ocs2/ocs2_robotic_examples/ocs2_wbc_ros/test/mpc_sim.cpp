@@ -249,6 +249,7 @@ int main(int argc, char* argv[]) {
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                             interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
+                            interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
                               robotName);
   mpc->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun

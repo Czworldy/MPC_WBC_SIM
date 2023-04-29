@@ -49,9 +49,15 @@ class FootConstraintsPlanner{
     nominalFoothold_ = nominalFoothold;
    }
 
+   void setTargetSwingHeight(const feet_array_t<scalar_array_t>& mpcSwingHeight){
+    swingHeight_ = mpcSwingHeight;
+   }
+
    const feet_array_t<std::vector<FootConstraints>>& getFootConstraints() const{ return feetPlacementConstraints_; }
 
    const feet_array_t<std::vector<vector3_t>>& getNominalFoothold() const{ return nominalFoothold_; }
+
+   const feet_array_t<std::vector<scalar_t>>& getSwingHeightSequence() const{ return swingHeightSequence_; }
 
  private:
       /**
@@ -101,8 +107,10 @@ class FootConstraintsPlanner{
 
    feet_polygon_array_t legEndEffectorPolygon_;
    feet_array_t<std::vector<vector3_t>> nominalFoothold_;
+   feet_array_t<std::vector<scalar_t>> swingHeight_;
 
    feet_array_t<std::vector<vector3_t>> feetPlacement_;
+   feet_array_t<std::vector<scalar_t>> swingHeightSequence_;
    feet_array_t<std::vector<scalar_t>> feetPlacementEvents_;
    feet_array_t<std::vector<FootConstraints>> feetPlacementConstraints_;
 

@@ -235,7 +235,8 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
 /******************************************************************************************************/
 /******************************************************************************************************/
 void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
-                                    scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors, bool isLateTouchdown) {
+                                    scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors,
+                                    const feet_array_t<std::vector<scalar_t>>& swingHeightSequence, bool isLateTouchdown) {
   const auto& modeSequence = modeSchedule.modeSequence;
   const auto& eventTimes = modeSchedule.eventTimes;
 
@@ -280,6 +281,9 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
 
         const scalar_t scaling = swingTrajectoryScaling(swingStartTime, swingFinalTime, config_.swingTimeScale);
 
+        const scalar_t swingHeight = std::max(swingHeightSequence[j][p], 0.1);
+        // std::cout << "swingHeightSequence[j][p]: " <<  swingHeightSequence[j][p] << std::endl;
+
         if (p >= 1){
           // if(p == initIndex){ //Doesn't seem like a good idea to use current end-effortor.
           //   const CubicSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity};
@@ -314,7 +318,7 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
           else{
           const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity};
           const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), scaling * config_.touchDownVelocity};
-          const scalar_t midHeight = std::min(feetPlacement[j][p-1].z(), feetPlacement[j][p].z()) + scaling * config_.swingHeight;
+          const scalar_t midHeight = std::min(feetPlacement[j][p-1].z(), feetPlacement[j][p].z()) + scaling * swingHeight;
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
           const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), scaling * config_.liftOffVelocity};
@@ -329,7 +333,7 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
         else{
           const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][p].z(), scaling * config_.liftOffVelocity};
           const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), scaling * config_.touchDownVelocity};
-          const scalar_t midHeight = std::min(feetPlacement[j][p-1].z(), feetPlacement[j][p].z()) + scaling * config_.swingHeight;
+          const scalar_t midHeight = std::min(feetPlacement[j][p-1].z(), feetPlacement[j][p].z()) + scaling * swingHeight;
           feetHeightTrajectories_[j].emplace_back(liftOff, midHeight, touchDown);
 
           const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][p].x(), scaling * config_.liftOffVelocity};

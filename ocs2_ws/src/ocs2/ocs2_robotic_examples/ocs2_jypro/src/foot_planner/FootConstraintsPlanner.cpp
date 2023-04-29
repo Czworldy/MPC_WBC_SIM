@@ -143,6 +143,9 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
             feetPlacementConstraints_[j].clear();
             feetPlacementConstraints_[j].reserve(modeSequence.size());
 
+            swingHeightSequence_[j].clear();
+            swingHeightSequence_[j].reserve(modeSequence.size());
+
             // save the Z position of the target feet placement
             touchDownHeightSequence_[j].clear();
             touchDownHeightSequence_[j].reserve(modeSequence.size());
@@ -215,6 +218,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     // std::cout << "conA:" << constraint.A << "\n";
                     // std::cout << "b:" << constraint.b.transpose() << "\n";
                     feetPlacementConstraints_[j].emplace_back(constraint);
+                    swingHeightSequence_[j].emplace_back(swingHeight_[j][polygonIndex]);
                 } else { // for a stance leg
                     // feetPlacement_[j].emplace_back(0,0,0);
                     // size_t index;
@@ -274,6 +278,7 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
                     feetPlacement_[j].emplace_back(footplacement); // TODO: this line should be changed to the nomial.
                     touchDownHeightSequence_[j].emplace_back(footplacement[2]);
                     feetPlacementConstraints_[j].emplace_back(constraint);
+                    swingHeightSequence_[j].emplace_back(0);
                 }
             }
         }
@@ -281,14 +286,17 @@ void FootConstraintsPlanner::update(const ModeSchedule &modeSchedule, const Targ
             //copy the previous leg placement according to the current event time.
             std::vector<vector3_t> feetPlacementTemp;
             std::vector<FootConstraints> feetConstraintsTemp;
+            std::vector<scalar_t> swingHeightSequenceTemp;
             for (int p = 0; p < eventTimes.size(); ++p) {
                 size_t index = lookup::findIndexInTimeArray(feetPlacementEvents_[j], eventTimes[p]);
                 feetPlacementTemp.emplace_back(feetPlacement_[j][index]);
                 feetConstraintsTemp.emplace_back(feetPlacementConstraints_[j][index]);
+                swingHeightSequenceTemp.emplace_back(swingHeightSequence_[j][index]);
                 // touchDownHeightSequence_[j].emplace_back(touchDownHeightSequence_[j][index]);
             }
             feetPlacement_[j] = feetPlacementTemp; 
             feetPlacementConstraints_[j] = feetConstraintsTemp;
+            swingHeightSequence_[j] = swingHeightSequenceTemp;
         }
         feetPlacementEvents_[j] = eventTimes;
     }

@@ -9,9 +9,11 @@ namespace legged_robot {
 LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle,
                                     std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr,
                                     std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
+                                    std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingHeightPtr,
                                     const std::string& robotName) :
   mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr)),
-  mpcTransformedNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {
+  mpcTransformedNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)),
+  mpcSwingHeightPtr_(std::move(mpcSwingHeightPtr)) {
   mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe("foothold_planner/RegionForFoot_LF", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
   mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe("foothold_planner/RegionForFoot_RF", 1,
@@ -55,6 +57,8 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   receivedFeetPoints_[foot_id].reserve(msg->region.size());
   receivedNominalFeethold_[foot_id].clear();
   receivedNominalFeethold_[foot_id].reserve(msg->region.size());
+  receivedSwingHeight_[foot_id].clear();
+  receivedSwingHeight_[foot_id].reserve(msg->region.size());
 
   SystemObservation observation;
   {
@@ -82,6 +86,8 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
       const vector3_t nominalPoint = {msg->region[i].nominalFoothold.x, msg->region[i].nominalFoothold.y, msg->region[i].nominalFoothold.z};
       const auto& transformedNominalPoint = tfMatrix * nominalPoint.homogeneous();
       receivedNominalFeethold_[foot_id].push_back(transformedNominalPoint.head(3));
+      receivedSwingHeight_[foot_id].push_back(msg->region[i].swing_height);
+      std::cout << "swing_height: " << msg->region[i].swing_height << std::endl;
   }
 
     polygonsUpdated_ = true;
@@ -142,6 +148,7 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
 
     *mpcTransformedPolygonsPtr_ = receivedFeetPoints_;
     *mpcTransformedNominalFeetholdsPtr_ = receivedNominalFeethold_;
+    *mpcSwingHeightPtr_ = receivedSwingHeight_;
 
         // save the transformed points to let footplacementplanner chose.
         // create polygon using transformed points.

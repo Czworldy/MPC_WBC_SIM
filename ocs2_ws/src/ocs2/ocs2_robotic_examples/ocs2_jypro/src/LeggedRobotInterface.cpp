@@ -174,11 +174,14 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
   auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
   auto mpcNominalFootholdPtr = std::make_shared<feet_array_t<std::vector<vector3_t>>>();
+  auto mpcSwingHeightPtr = std::make_shared<feet_array_t<std::vector<scalar_t>>>();
 
   (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
   (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
   (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
   (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
+
+  std::fill(mpcSwingHeightPtr->begin(), mpcSwingHeightPtr->end(), std::vector<scalar_t>{0.1, 0.1});
 
   initPolygon.reserve(3);
   std::vector<vector3_t> Polygon;
@@ -200,7 +203,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                          leggedIKSolverPtr_,
                                                                          pinocchioMapping, *pinocchioInterfacePtr_, centroidalModelInfo_,
                                                                          terrainEstDataPtr, mpcPolygonArrayPtr,
-                                                                         mpcNominalFootholdPtr);
+                                                                         mpcNominalFootholdPtr, mpcSwingHeightPtr);
 
     // Optimal control problem
     problemPtr_.reset(new OptimalControlProblem);
