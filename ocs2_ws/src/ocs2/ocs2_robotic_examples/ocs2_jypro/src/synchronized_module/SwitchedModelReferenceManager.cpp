@@ -137,8 +137,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
   // std::cout << "### Current modeSchedule:" << std::endl;
   // std::cout << modeSchedule;
-  // int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
-  // const auto& mode = modeSchedule.modeSequence[modeIndex];
+  int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
+  const auto& mode = modeSchedule.modeSequence[modeIndex];
   // std::cout << "modeIndex: " << modeIndex << "\t";
   // std::cout << "actual mode: " << currentMode << " predictive mode:" << mode  << std::endl;
   // if(modeIndex > 0) {
@@ -284,50 +284,49 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const vector3_t commandedVelocity =  (positionAfter - positionNow) * 10;
   // std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
 
-
-
   // std::cout << "commandedVelocity: " << commandedVelocity.transpose() << std::endl;
-
-
-
-
   // abort();
 
   // Normal swing feet trajectory
   // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
   feet_array_t<vector3_t> feetCurrentEEPositions;
+  feet_array_t<vector3_t> feetEETouchDownPositions;
   feet_array_t<std::vector<vector3_t>> feetTargeEEPositions;
-  for(int leg = 0; leg < 4; leg++){
+  const contact_flag_t& currentContactFlags = modeNumber2StanceLeg(mode); // {LF, RF, LH, RH}
+
+  for(int leg = 0; leg < 4; leg++){ //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
     feetCurrentEEPositions[leg] = footPlacementPlannerPtr_->getCurrentEEPosition(leg, initState);
+    if(currentContactFlags[leg] == true)
+      feetEETouchDownPositions[leg] = feetCurrentEEPositions[leg];
   }
-  if(0){
-    for(int leg = 0; leg < 4; leg++ ){
-      vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.15*currentVelocity;
-      (*mpcNominalFeetholdsPtr_)[leg].clear();
-      (*mpcNominalFeetholdsPtr_)[leg].push_back(hipNominalPoints[leg]);
-      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
-      feetTargeEEPositions[leg].clear();
-      feetTargeEEPositions[leg].push_back(footHold);
-      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
+  // if(0){
+  //   for(int leg = 0; leg < 4; leg++ ){
+  //     vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.15*currentVelocity;
+  //     (*mpcNominalFeetholdsPtr_)[leg].clear();
+  //     (*mpcNominalFeetholdsPtr_)[leg].push_back(hipNominalPoints[leg]);
+  //     (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
+  //     feetTargeEEPositions[leg].clear();
+  //     feetTargeEEPositions[leg].push_back(footHold);
+  //     std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
 
-      footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.3*currentVelocity;
-      feetTargeEEPositions[leg].push_back(footHold);
-      (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
+  //     footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.3*currentVelocity;
+  //     feetTargeEEPositions[leg].push_back(footHold);
+  //     (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
 
 
-      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
-    }
-    // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); //这种情况下target需要有两个点
+  //     std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
+  //   }
+  //   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); //这种情况下target需要有两个点
 
-  }
+  // }
   // else{
   //   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
   // }
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions,
+  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
       footPlacementPlannerPtr_->getSwingHeightSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
 

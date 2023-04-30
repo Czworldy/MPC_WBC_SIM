@@ -135,7 +135,7 @@ int main(int argc, char**argv) {
 
     std::vector<vector3_t> feet_point_pos;
 
-    // geometry_msgs::PointStamped lf_foot_pos, lh_foot_pos, rf_foot_pos, rh_foot_pos;
+    // geometry_msgs::PointStamped {"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};;
     std::vector<geometry_msgs::PointStamped> feet_pos;
     feet_pos.resize(4);
 
@@ -369,7 +369,13 @@ int main(int argc, char**argv) {
           pinocchio::updateFramePlacements(model, data);
 
           endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
+          //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
           std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
+          for(size_t leg = 0; leg < 4; leg++){
+            feet_pos[leg].point.x = posDesired[leg].x();
+            feet_pos[leg].point.y = posDesired[leg].y();
+            feet_pos[leg].point.z = posDesired[leg].z();
+          }
 
           auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.toRotationMatrix());
 
@@ -383,17 +389,38 @@ int main(int argc, char**argv) {
           vector_t optimizedInput;
           size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
           mpcMrtInterface_->evaluatePolicy(currentObservation.time, currentObservation.state, optimizedState, optimizedInput, plannedMode);
-          // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
+          optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
 
           vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, 0.001, currentObservation.time);
 
           // after solve the mpc problem, set target trajectory
           vector_t torque = x.tail(12); //ocs2 joint order [LF, LH, RF, RH]
           // Eigen::Map<vector3_t>(lf_pos.value) = q_j.head(3);
+          const vector_t& optimizedJonitState = optimizedState.tail(nJoints_); //ocs2 joint order [LF, LH, RF, RH]
+		  const vector_t& optimizedJonitVel = optimizedInput.tail(nJoints_); //ocs2 joint order [LF, LH, RF, RH]
           Eigen::Map<vector3_t>(command.lf_tau.value) = torque.segment<3>(0);
           Eigen::Map<vector3_t>(command.lh_tau.value) = torque.segment<3>(3);
           Eigen::Map<vector3_t>(command.rf_tau.value) = torque.segment<3>(6);
           Eigen::Map<vector3_t>(command.rh_tau.value) = torque.segment<3>(9);
+
+         Eigen::Map<vector3_t>(command.lf_pos.value) = optimizedJonitState.segment<3>(0);
+         Eigen::Map<vector3_t>(command.lh_pos.value) = optimizedJonitState.segment<3>(3);
+         Eigen::Map<vector3_t>(command.rf_pos.value) = optimizedJonitState.segment<3>(6);
+         Eigen::Map<vector3_t>(command.rh_pos.value) = optimizedJonitState.segment<3>(9);
+
+         Eigen::Map<vector3_t>(command.lf_vel.value) = optimizedJonitVel.segment<3>(0);
+         Eigen::Map<vector3_t>(command.lh_vel.value) = optimizedJonitVel.segment<3>(3);
+         Eigen::Map<vector3_t>(command.rf_vel.value) = optimizedJonitVel.segment<3>(6);
+         Eigen::Map<vector3_t>(command.rh_vel.value) = optimizedJonitVel.segment<3>(9);
+
+         const ocs2::wbc::UserParameter& paramf = wbc->getUserParam();
+		for(int i(0); i < 3; i++) {
+			command.lf_tau.value[i] += paramf.Kp_joint_lf[i] * (command.lf_pos.value[i] - jointStatesCur.lf_pos.value[i]) + paramf.Kd_joint_lf[i] * (command.lf_vel.value[i] - jointStatesCur.lf_vel.value[i]);
+			command.rf_tau.value[i] += paramf.Kp_joint_rf[i] * (command.rf_pos.value[i] - jointStatesCur.rf_pos.value[i]) + paramf.Kd_joint_rf[i] * (command.rf_vel.value[i] - jointStatesCur.rf_vel.value[i]);
+			command.lh_tau.value[i] += paramf.Kp_joint_lh[i] * (command.lh_pos.value[i] - jointStatesCur.lh_pos.value[i]) + paramf.Kd_joint_lh[i] * (command.lh_vel.value[i] - jointStatesCur.lh_vel.value[i]);
+			command.rh_tau.value[i] += paramf.Kp_joint_rh[i] * (command.rh_pos.value[i] - jointStatesCur.rh_pos.value[i]) + paramf.Kd_joint_rh[i] * (command.rh_vel.value[i] - jointStatesCur.rh_vel.value[i]);
+		}
+
 		    	break;
 		    }
 		    case kSafeState: {
@@ -438,10 +465,10 @@ int main(int argc, char**argv) {
         rh_haa_pub.publish(rh_haa_tau);
         rh_hfe_pub.publish(rh_hfe_tau);
         rh_kfe_pub.publish(rh_kfe_tau);
-
+        //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
         lf_foot_pub.publish(feet_pos[0]);
-        lh_foot_pub.publish(feet_pos[1]);
-        rf_foot_pub.publish(feet_pos[2]);
+        rf_foot_pub.publish(feet_pos[1]);
+        lh_foot_pub.publish(feet_pos[2]);
         rh_foot_pub.publish(feet_pos[3]);
 
         // ros::spinOnce();
