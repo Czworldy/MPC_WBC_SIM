@@ -107,6 +107,7 @@ LeggedRobotInterface::LeggedRobotInterface(const std::string &taskFile, const st
     sqpSettings_ = multiple_shooting::loadSettings(taskFile, "multiple_shooting", verbose);
 
     // OptimalConrolProblem
+    std::cout << "[LeggedRobotInterface] Setting up optimal control problem. referenceFile: " << referenceFile << std::endl;
     setupOptimalConrolProblem(taskFile, urdfFile, referenceFile, verbose);
 
     // initial state
