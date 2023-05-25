@@ -27,7 +27,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "ocs2_jypro/foot_planner/SplineCpg.h"
+#include "ocs2_jypro/foot_planner/MultiSplineCpg.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -35,67 +35,43 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, CubicSpline::Node touchDown)
-    : midTime_((liftOff.time + touchDown.time) / 2),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, 0.0}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, 0.0}, touchDown) {}
-
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, CubicSpline::Node touchDown)
-    : midTime_(midTime),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, 0.0}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, 0.0}, touchDown) {}
-
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, scalar_t midVel, CubicSpline::Node touchDown)
-    : midTime_(midTime),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, midVel}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, midVel}, touchDown) {}
-
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-scalar_t SplineCpg::position(scalar_t time) const {
+scalar_t MultiSplineCpg::position(scalar_t time) const {
   return (time < midTime_) ? leftSpline_.position(time) : rightSpline_.position(time);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::velocity(scalar_t time) const {
+scalar_t MultiSplineCpg::velocity(scalar_t time) const {
   return (time < midTime_) ? leftSpline_.velocity(time) : rightSpline_.velocity(time);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::acceleration(scalar_t time) const {
+scalar_t MultiSplineCpg::acceleration(scalar_t time) const {
   return (time < midTime_) ? leftSpline_.acceleration(time) : rightSpline_.acceleration(time);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::startTimeDerivative(scalar_t time) const {
+scalar_t MultiSplineCpg::startTimeDerivative(scalar_t time) const { // Note: I'm not sure what's this
   if (time <= midTime_) {
-    return leftSpline_.startTimeDerivative(time) + 0.5 * leftSpline_.startTimeDerivative(time);
+    return leftSpline_.startTimeDerivative(time); 
   } else {
-    return 0.5 * rightSpline_.startTimeDerivative(time);
+    return rightSpline_.startTimeDerivative(time);
   }
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::finalTimeDerivative(scalar_t time) const {
+scalar_t MultiSplineCpg::finalTimeDerivative(scalar_t time) const { // Note: I'm not sure what's this
   if (time <= midTime_) {
-    return 0.5 * leftSpline_.finalTimeDerivative(time);
+    return leftSpline_.finalTimeDerivative(time);
   } else {
-    return rightSpline_.finalTimeDerivative(time) + 0.5 * rightSpline_.finalTimeDerivative(time);
+    return rightSpline_.finalTimeDerivative(time);
   }
 }
 

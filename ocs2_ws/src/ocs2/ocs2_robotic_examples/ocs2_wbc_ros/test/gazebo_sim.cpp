@@ -148,7 +148,8 @@ int main(int argc, char**argv) {
     ros::Rate rate(1000);
 
     const std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
-    const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
+    // const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
+    const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/jy_control_gazebo/legged_controllers/config/x20/task.info";
     const std::string referencefile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/targetTrajectories.info";
     const std::string urdffile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf";
     const std::string gaitfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info";
@@ -185,6 +186,7 @@ int main(int argc, char**argv) {
                               (nodeHandle, interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                               interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
                               interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
+                              interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                                 robotName);
     mpc->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
     mpc->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
@@ -355,7 +357,7 @@ int main(int argc, char**argv) {
           mpcMrtInterface_->setCurrentObservation(currentObservation);
 
           observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
-              observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
+            //   observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
 
           vector_t qMeasured_(interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum);
           qMeasured_.head<3>() = rbdState.segment<3>(3);

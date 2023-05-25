@@ -51,7 +51,8 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
                                                              std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                                              std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                                              std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
-                                                             std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingHeightPtr)
+                                                             std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr,
+                                                             std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr)
     : LeggedRobotReferenceManager(TargetTrajectories(), ModeSchedule(), TargetFeetPlacement()),
       gaitSchedulePtr_(std::move(gaitSchedulePtr)),
       swingTrajectoryPtr_(std::move(swingTrajectoryPtr)),
@@ -63,7 +64,8 @@ SwitchedModelReferenceManager::SwitchedModelReferenceManager(std::shared_ptr<Gai
       terrainEstDataPtr_(std::move(terrainEstDataPtr)),
       mpcPolygonArrayPtr_(std::move(mpcPolygonArrayPtr)),
       mpcNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)),
-      mpcSwingHeightPtr_(std::move(mpcSwingHeightPtr)) { mappingPtr_->setPinocchioInterface(pinocchioInterface_); }
+      mpcSwingHeightPtr_(std::move(mpcSwingHeightPtr)),
+      mpcSwingMiddleTimePtr_(std::move(mpcSwingMiddleTimePtr)) { mappingPtr_->setPinocchioInterface(pinocchioInterface_); }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -88,7 +90,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
 
   // Normal swing feet trajectory
-  swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
+  // swingTrajectoryPtr_->update(modeSchedule, terrainHeight);
 
   // For terrain aware swing feet trajectory planning
   // swingTrajectoryPtr_->update(modeSchedule,
@@ -291,7 +293,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
   feet_array_t<vector3_t> feetCurrentEEPositions;
-  feet_array_t<vector3_t> feetEETouchDownPositions;
+  static feet_array_t<vector3_t> feetEETouchDownPositions;
   feet_array_t<std::vector<vector3_t>> feetTargeEEPositions;
   const contact_flag_t& currentContactFlags = modeNumber2StanceLeg(mode); // {LF, RF, LH, RH}
 
@@ -325,9 +327,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // }
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
-  footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
-  swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
-      footPlacementPlannerPtr_->getSwingHeightSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
+  footPlacementPlannerPtr_->setTargetSwingMiddleTime(*mpcSwingMiddleTimePtr_);
+  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+  // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
+  //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
+  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
+      footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
 
 

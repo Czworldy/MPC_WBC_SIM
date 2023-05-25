@@ -99,7 +99,7 @@
     <origin xyz="0.35 0 0.6" rpy="0 0.5 0" />
   </xacro:HDL-32E>
   
-    <link name="camerlink">
+    <!-- <link name="camerlink">
     <inertial>
       <mass value="0.0000001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -126,7 +126,7 @@
     <parent link="velodyne2" />
     <child link="camerlink" />
     <axis xyz="0 0 1" />
-  </joint>
+  </joint> -->
 
   <link name="LF_HIP">
     <inertial>

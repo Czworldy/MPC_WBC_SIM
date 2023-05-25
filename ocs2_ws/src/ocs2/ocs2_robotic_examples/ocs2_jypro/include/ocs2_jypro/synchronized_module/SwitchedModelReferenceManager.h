@@ -61,7 +61,8 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
                                 std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                 std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
                                 std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
-                                std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingHeightPtr);
+                                std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr,
+                                std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr);
 
   ~SwitchedModelReferenceManager() override = default;
 
@@ -79,7 +80,9 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
 
   std::shared_ptr<feet_array_t<std::vector<vector3_t>>>& getMpcNominalFeetholdsPtr() { return mpcNominalFeetholdsPtr_; }
 
-  std::shared_ptr<feet_array_t<std::vector<scalar_t>>>& getMpcSwingHeightPtr() { return mpcSwingHeightPtr_; }
+  std::shared_ptr<feet_array_t<std::vector<vector_t>>>& getMpcSwingHeightPtr() { return mpcSwingHeightPtr_; }
+
+  std::shared_ptr<feet_array_t<std::vector<scalar_t>>>& getMpcSwingMiddleTimePtr() { return mpcSwingMiddleTimePtr_; }
 
  private:
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
@@ -94,7 +97,8 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   std::shared_ptr<TerrainEstData> terrainEstDataPtr_;
   std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr_;
   std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr_;
-  std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingHeightPtr_;
+  std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr_;
+  std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr_;
   // QuaternionToRPY terrainQuaternionToRPY_;
   std::unique_ptr<CentroidalModelPinocchioMapping> mappingPtr_;
   PinocchioInterface& pinocchioInterface_;

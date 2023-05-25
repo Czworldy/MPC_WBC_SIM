@@ -27,7 +27,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "ocs2_jypro/foot_planner/SplineCpg.h"
+#include "ocs2_jypro/foot_planner/QuinticSpline.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -35,69 +35,63 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, CubicSpline::Node touchDown)
-    : midTime_((liftOff.time + touchDown.time) / 2),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, 0.0}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, 0.0}, touchDown) {}
+QuinticSpline::QuinticSpline(Node start, Node middle, Node end) {
+  assert(start.time < end.time);
+  t0_ = start.time;
+  t1_ = end.time;
+  dt_ = end.time - start.time;
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, CubicSpline::Node touchDown)
-    : midTime_(midTime),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, 0.0}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, 0.0}, touchDown) {}
+  scalar_t dp = end.position - start.position;
+  scalar_t dv = end.velocity - start.velocity;
+  
+  scalar_t x1 = start.position;
+  scalar_t x2 = middle.position;
+  scalar_t x3 = end.position;
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, scalar_t midVel, CubicSpline::Node touchDown)
-    : midTime_(midTime),
-      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, midVel}),
-      rightSpline_(CubicSpline::Node{midTime_, midHeight, midVel}, touchDown) {}
+  scalar_t v1 = start.velocity * dt_;
+  scalar_t v2 = middle.velocity * dt_;
+  scalar_t v3 = end.velocity * dt_;
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
-scalar_t SplineCpg::position(scalar_t time) const {
-  return (time < midTime_) ? leftSpline_.position(time) : rightSpline_.position(time);
+  c0_ = x1;
+  c1_ = v1;
+  c2_ = 16 * x2 - 8 * v2 - v3 - 23 * x1 - 6 * v1 + 7 * x3;
+  c3_ = 13 * v1 + 32 * v2 + 5 * v3 + 66 * x1 - 32 * x2 - 34 * x3;
+  c4_ = 16 * x2 - 40 * v2 - 8 * v3 - 68* x1 - 12 * v1 + 52 * x3;
+  c5_ = 4 * v1 + 16 * v2 + 4 * v3 + 24 * x1 - 24 * x3; 
+
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::velocity(scalar_t time) const {
-  return (time < midTime_) ? leftSpline_.velocity(time) : rightSpline_.velocity(time);
+scalar_t QuinticSpline::position(scalar_t time) const {
+  scalar_t tn = normalizedTime(time);
+  return c5_ * tn * tn * tn * tn * tn  + c4_ * tn * tn * tn * tn + c3_ * tn * tn * tn + c2_ * tn * tn + c1_ * tn + c0_;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::acceleration(scalar_t time) const {
-  return (time < midTime_) ? leftSpline_.acceleration(time) : rightSpline_.acceleration(time);
+scalar_t QuinticSpline::velocity(scalar_t time) const {
+  scalar_t tn = normalizedTime(time);
+  return (5.0 * c5_ * tn * tn * tn * tn + 4.0 * c4_ * tn * tn * tn + 3.0 * c3_ * tn * tn + 2.0 * c2_ * tn + c1_) / dt_;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::startTimeDerivative(scalar_t time) const {
-  if (time <= midTime_) {
-    return leftSpline_.startTimeDerivative(time) + 0.5 * leftSpline_.startTimeDerivative(time);
-  } else {
-    return 0.5 * rightSpline_.startTimeDerivative(time);
-  }
+scalar_t QuinticSpline::acceleration(scalar_t time) const {
+  scalar_t tn = normalizedTime(time);
+  return (20.0 * c5_ * tn * tn * tn + 12.0 * c4_ * tn * tn + 6.0 * c3_ * tn + 2.0 * c2_) / (dt_ * dt_);
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-scalar_t SplineCpg::finalTimeDerivative(scalar_t time) const {
-  if (time <= midTime_) {
-    return 0.5 * leftSpline_.finalTimeDerivative(time);
-  } else {
-    return rightSpline_.finalTimeDerivative(time) + 0.5 * rightSpline_.finalTimeDerivative(time);
-  }
+scalar_t QuinticSpline::normalizedTime(scalar_t t) const {
+  assert(t >= t0_);
+  assert(t <= t1_);
+  return (t - t0_) / dt_;
 }
-
 }  // namespace legged_robot
 }  // namespace ocs2

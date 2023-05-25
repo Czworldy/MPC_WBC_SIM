@@ -25,20 +25,36 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+******************************************************************************/
 
 #pragma once
 
-#include <cstddef>
-#include <string>
+#include "ocs2_jypro/foot_planner/QuinticSpline.h"
 
 namespace ocs2 {
-namespace robotic_assets {
+namespace legged_robot {
 
-/** Gets the path to the package source directory. */
-inline std::string getPath() {
-  return "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_assets";
-}
+class TwoQuinticSplineCpg {
+ public:
+  TwoQuinticSplineCpg(QuinticSpline::Node liftOff, QuinticSpline::Node middleLeft, scalar_t midHeight, scalar_t midTime, 
+              QuinticSpline::Node middleRight, QuinticSpline::Node touchDown);
 
-}  // namespace robotic_assets
+  scalar_t position(scalar_t time) const;
+
+  scalar_t velocity(scalar_t time) const;
+
+  scalar_t acceleration(scalar_t time) const;
+
+  // scalar_t startTimeDerivative(scalar_t time) const;
+
+  // scalar_t finalTimeDerivative(scalar_t time) const;
+
+ private:
+  scalar_t midTime_;
+  QuinticSpline leftSpline_;
+  QuinticSpline rightSpline_;
+};
+
+
+}  // namespace legged_robot
 }  // namespace ocs2

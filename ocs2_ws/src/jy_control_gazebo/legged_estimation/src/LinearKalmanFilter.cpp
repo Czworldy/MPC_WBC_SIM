@@ -6,6 +6,9 @@
 
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/centroidal.hpp>
+#include <pinocchio/algorithm/crba.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
 
 #include "legged_estimation/LinearKalmanFilter.h"
 
@@ -52,6 +55,8 @@ KalmanFilterEstimate::KalmanFilterEstimate(PinocchioInterface pinocchioInterface
   feetHeights_.setZero(4);
   eeKinematics_->setPinocchioInterface(pinocchioInterface_);
 
+  inputLast_ = vector_t::Zero(info_.generalizedCoordinatesNum);
+
   world2odom_.setRotation(tf2::Quaternion::getIdentity());
   sub_ = ros::NodeHandle().subscribe<nav_msgs::Odometry>("/tracking_camera/odom/sample", 10, &KalmanFilterEstimate::callback, this);
 }
@@ -83,6 +88,30 @@ vector_t KalmanFilterEstimate::update(const ros::Time& time, const ros::Duration
 
   pinocchio::forwardKinematics(model, data, qPino, vPino);
   pinocchio::updateFramePlacements(model, data);
+  if(1){
+    pinocchio::crba(model, data, qPino);
+    data.M.triangularView<Eigen::StrictlyLower>() = data.M.transpose().triangularView<Eigen::StrictlyLower>();
+    pinocchio::nonLinearEffects(model, data, qPino, vPino);
+    const vector_t h = data.nle;
+    // const matrix_t Mj = data.M.bottomRows(actuatedDofNum);
+    const vector_t ddotQ = (vPino - inputLast_) / period.toSec();
+    inputLast_ = vPino;
+    auto Js = matrix_t(3 * info_.numThreeDofContacts, info_.generalizedCoordinatesNum);
+    for (size_t i = 0; i < info_.numThreeDofContacts; ++i) {
+        Eigen::Matrix<scalar_t, 6, Eigen::Dynamic> jac;
+        jac.setZero(6, info_.generalizedCoordinatesNum);
+        pinocchio::getFrameJacobian(model, data, info_.endEffectorFrameIndices[i], pinocchio::LOCAL_WORLD_ALIGNED, jac);
+        Js.block(3 * i, 0, 3, info_.generalizedCoordinatesNum) = jac.template topRows<3>();
+    }
+    matrix_t JsTInv;
+    pseudoInverse(Js.transpose(), 0.0001 ,JsTInv);
+    const vector_t tau = (vector_t(info_.generalizedCoordinatesNum) << vector_t::Zero(6), jointTorque_).finished();
+    const vector_t estimateForce = JsTInv * (data.M * ddotQ + h - tau);
+    std::cout << "estimateForce: " << estimateForce.transpose() << std::endl;
+    for(int leg = 0; leg < info_.numThreeDofContacts; leg++) {
+      estimateForce.segment<3>(3 * leg).z() > 90 ? feedbackContactFlag_[leg] = true : feedbackContactFlag_[leg] = false;
+    }
+  }
 
   const auto eePos = eeKinematics_->getPosition(vector_t());
   const auto eeVel = eeKinematics_->getVelocity(vector_t(), vector_t());
@@ -104,7 +133,7 @@ vector_t KalmanFilterEstimate::update(const ros::Time& time, const ros::Duration
     int rIndex1 = i1;
     int rIndex2 = 12 + i1;
     int rIndex3 = 24 + i;
-    bool isContact = contactFlag_[i];
+    bool isContact = feedbackContactFlag_[i];
 
     scalar_t high_suspect_number(100);
     q.block(qIndex, qIndex, 3, 3) = (isContact ? 1. : high_suspect_number) * q.block(qIndex, qIndex, 3, 3);
@@ -271,6 +300,32 @@ void KalmanFilterEstimate::loadSettings(const std::string& taskFile, bool verbos
   loadData::loadPtreeValue(pt, footSensorNoisePosition_, prefix + "footSensorNoisePosition", verbose);
   loadData::loadPtreeValue(pt, footSensorNoiseVelocity_, prefix + "footSensorNoiseVelocity", verbose);
   loadData::loadPtreeValue(pt, footHeightSensorNoise_, prefix + "footHeightSensorNoise", verbose);
+}
+
+void KalmanFilterEstimate::pseudoInverse(const matrix_t& matrix, scalar_t sigmaThreshold, matrix_t& invMatrix) {
+  if (  (1 == matrix.rows()) && (1 == matrix.cols()) ) {
+    invMatrix.resize(1, 1);
+    if (matrix.coeff(0, 0) > sigmaThreshold) {
+      invMatrix.coeffRef(0, 0) = 1.0 / matrix.coeff(0, 0);
+    } else {
+      invMatrix.coeffRef(0, 0) = 0.0;
+    }
+    return;
+  }
+
+  Eigen::JacobiSVD<matrix_t> svd(matrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  // not sure if we need to svd.sort()... probably not
+  int const nrows(svd.singularValues().rows());
+  matrix_t invS;
+  invS = matrix_t::Zero(nrows, nrows);
+  for (int ii(0); ii < nrows; ++ii) {
+    if (svd.singularValues().coeff(ii) > sigmaThreshold) {
+      invS.coeffRef(ii, ii) = 1.0 / svd.singularValues().coeff(ii);
+    } else {
+      printf("sigular value is too small: %f\n",svd.singularValues().coeff(ii));
+    }
+  }
+  invMatrix = svd.matrixV() * invS * svd.matrixU().transpose();
 }
 
 }  // namespace legged

@@ -4,8 +4,12 @@
 //
 
 #include <pinocchio/fwd.hpp>  // forward declarations must be included first.
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/frames.hpp>
 
 #include "legged_controllers/LeggedController.h"
+
+#include "geometry_msgs/PointStamped.h"
 
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
@@ -71,6 +75,14 @@ bool LeggedController::init(hardware_interface::RobotHW* robot_hw, ros::NodeHand
   wbc_ = std::make_unique<ocs2::wbc::SingleWbcRos>(leggedInterface_->getPinocchioInterface(), leggedInterface_->getCentroidalModelInfo(), 
                                                         *eeKinematicsPtr_, wbcFile, nh);
   // wbc_->loadTasksSetting(taskFile, verbose);
+  simpleMotion_ = std::make_unique<ocs2::wbc::SimpleMotion>(wbc_->getUserParam(), false);
+  
+
+  lf_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/lf_foot_pos", 1);
+  lh_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
+  rf_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
+  rh_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
+
 
   // Safety Checker
   safetyChecker_ = std::make_shared<SafetyChecker>(leggedInterface_->getCentroidalModelInfo());
@@ -148,19 +160,25 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
 
 void LeggedController::updateStateEstimation(const ros::Time& time, const ros::Duration& period) {
   vector_t jointPos(hybridJointHandles_.size()), jointVel(hybridJointHandles_.size());
+  vector_t jointTorque(hybridJointHandles_.size());
   contact_flag_t contacts;
   Eigen::Quaternion<scalar_t> quat;
   contact_flag_t contactFlag;
+  Eigen::Matrix<bool, 4, 1> contact_flag = {false, false, false, false}; //contact_flag lf lh rf rh for simplemotion
   vector3_t angularVel, linearAccel;
   matrix3_t orientationCovariance, angularVelCovariance, linearAccelCovariance;
 
   for (size_t i = 0; i < hybridJointHandles_.size(); ++i) {
     jointPos(i) = hybridJointHandles_[i].getPosition();
     jointVel(i) = hybridJointHandles_[i].getVelocity();
+    jointTorque(i) = hybridJointHandles_[i].getEffort();
   }
   for (size_t i = 0; i < contacts.size(); ++i) {
     contactFlag[i] = contactHandles_[i].isContact();
+    contact_flag[i] = contactHandles_[i].isContact();
   }
+  contact_flag[1] = contactFlag[2];
+  contact_flag[2] = contactFlag[1];
   for (size_t i = 0; i < 4; ++i) {
     quat.coeffs()(i) = imuSensorHandle_.getOrientation()[i];
   }
@@ -175,6 +193,7 @@ void LeggedController::updateStateEstimation(const ros::Time& time, const ros::D
   }
 
   stateEstimate_->updateJointStates(jointPos, jointVel);
+  stateEstimate_->updateJointTorque(jointTorque);
   stateEstimate_->updateContact(contactFlag);
   stateEstimate_->updateImu(quat, angularVel, linearAccel, orientationCovariance, angularVelCovariance, linearAccelCovariance);
   measuredRbdState_ = stateEstimate_->update(time, period);
@@ -183,6 +202,36 @@ void LeggedController::updateStateEstimation(const ros::Time& time, const ros::D
   currentObservation_.state = rbdConversions_->computeCentroidalStateFromRbdModel(measuredRbdState_);
   currentObservation_.state(9) = yawLast + angles::shortest_angular_distance(yawLast, currentObservation_.state(9));
   currentObservation_.mode = stateEstimate_->getMode();
+
+  vector_t qMeasured_(leggedInterface_->getCentroidalModelInfo().generalizedCoordinatesNum);
+  qMeasured_.head<3>() = measuredRbdState_.segment<3>(3);
+  qMeasured_.segment<3>(3) = measuredRbdState_.head<3>();
+  qMeasured_.tail(leggedInterface_->getCentroidalModelInfo().actuatedDofNum) 
+                          = measuredRbdState_.segment(6, leggedInterface_->getCentroidalModelInfo().actuatedDofNum);
+  const auto& model = leggedInterface_->getPinocchioInterface().getModel();
+  auto& data = leggedInterface_->getPinocchioInterface().getData();
+
+  pinocchio::forwardKinematics(model, data, qMeasured_);
+  pinocchio::updateFramePlacements(model, data);
+
+  eeKinematicsPtr_->setPinocchioInterface(leggedInterface_->getPinocchioInterface());
+  std::vector<vector3_t> posDesired = eeKinematicsPtr_->getPosition(vector_t());
+
+  auto terrainInfo = simpleMotion_->TerrainEst(contact_flag, posDesired, quat.toRotationMatrix());
+
+  terrainReceiverPtr_->setMpcTerrain(terrainInfo);
+
+  std::vector<geometry_msgs::PointStamped> feet_pos;
+  feet_pos.resize(4);
+    for(size_t leg = 0; leg < 4; leg++) {
+    feet_pos[leg].point.x = posDesired[leg].x();
+    feet_pos[leg].point.y = posDesired[leg].y();
+    feet_pos[leg].point.z = posDesired[leg].z();
+  }
+  lf_foot_pub_.publish(feet_pos[0]);
+  rf_foot_pub_.publish(feet_pos[1]);
+  lh_foot_pub_.publish(feet_pos[2]);
+  rh_foot_pub_.publish(feet_pos[3]);
 }
 
 LeggedController::~LeggedController() {
@@ -226,7 +275,7 @@ void LeggedController::setupMpc() {
   // Terrain receiver
   // auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainReceiver>(nodeHandle,
   //     leggedInterface_->getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr(), robotName);
-  auto terrainReceiverPtr = std::make_shared<ocs2::legged_robot::TerrainPythonInterface>(
+  terrainReceiverPtr_ = std::make_shared<ocs2::legged_robot::TerrainPythonInterface>(
             leggedInterface_->getSwitchedModelReferenceManagerPtr()->getTerrainEstDataPtr());
 
   auto footPlacementPublisher = std::make_shared<ocs2::legged_robot::FootPlacementVisualizer>(nodeHandle, *leggedInterface_->getSwitchedModelReferenceManagerPtr()->getSwingTrajectoryPlanner());
@@ -235,10 +284,11 @@ void LeggedController::setupMpc() {
                             (nodeHandle, leggedInterface_->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                             leggedInterface_->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
                             leggedInterface_->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
+                            leggedInterface_->getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                               robotName);
   mpc_->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc_->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
-  mpc_->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
+  mpc_->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr_);       //for preRun
   mpc_->getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc_->getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
   observationPublisher_ = nodeHandle.advertise<ocs2_msgs::mpc_observation>(robotName + "_mpc_observation", 1);

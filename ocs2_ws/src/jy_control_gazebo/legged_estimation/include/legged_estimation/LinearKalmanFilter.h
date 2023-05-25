@@ -25,6 +25,8 @@ class KalmanFilterEstimate : public StateEstimateBase {
 
   void loadSettings(const std::string& taskFile, bool verbose);
 
+  void contactForceEstimate();
+
  protected:
   void updateFromTopic();
 
@@ -33,9 +35,10 @@ class KalmanFilterEstimate : public StateEstimateBase {
   nav_msgs::Odometry getOdomMsg();
 
   vector_t feetHeights_;
+  vector_t inputLast_; //for contact force estimation
 
   // Config
-  scalar_t footRadius_ = 0.02;
+  scalar_t footRadius_ = 0.036;
   scalar_t imuProcessNoisePosition_ = 0.02;
   scalar_t imuProcessNoiseVelocity_ = 0.02;
   scalar_t footProcessNoisePosition_ = 0.002;
@@ -44,6 +47,8 @@ class KalmanFilterEstimate : public StateEstimateBase {
   scalar_t footHeightSensorNoise_ = 0.01;
 
  private:
+  void pseudoInverse(const matrix_t& matrix, scalar_t sigmaThreshold, matrix_t& invMatrix);
+
   Eigen::Matrix<scalar_t, 18, 1> xHat_;
   Eigen::Matrix<scalar_t, 12, 1> ps_;
   Eigen::Matrix<scalar_t, 12, 1> vs_;

@@ -25,20 +25,54 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+******************************************************************************/
 
 #pragma once
 
-#include <cstddef>
-#include <string>
+#include <ocs2_core/Types.h>
 
 namespace ocs2 {
-namespace robotic_assets {
+namespace legged_robot {
 
-/** Gets the path to the package source directory. */
-inline std::string getPath() {
-  return "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_assets";
-}
+class QuinticSpline {
+ public:
+  struct Node {
+    scalar_t time;
+    scalar_t position;
+    scalar_t velocity;
+  };
 
-}  // namespace robotic_assets
+  QuinticSpline(Node start, Node middle, Node end);
+
+  scalar_t position(scalar_t time) const;
+
+  scalar_t velocity(scalar_t time) const;
+
+  scalar_t acceleration(scalar_t time) const;
+
+  // scalar_t startTimeDerivative(scalar_t t) const;
+
+  // scalar_t finalTimeDerivative(scalar_t t) const;
+
+ private:
+  scalar_t normalizedTime(scalar_t t) const;
+
+  scalar_t t0_;
+  scalar_t t1_;
+  scalar_t dt_;
+
+  scalar_t c0_;
+  scalar_t c1_;
+  scalar_t c2_;
+  scalar_t c3_;
+  scalar_t c4_;
+  scalar_t c5_;
+
+  // scalar_t dc0_;  // derivative w.r.t. dt_
+  // scalar_t dc1_;  // derivative w.r.t. dt_
+  // scalar_t dc2_;  // derivative w.r.t. dt_
+  // scalar_t dc3_;  // derivative w.r.t. dt_
+};
+
+}  // namespace legged_robot
 }  // namespace ocs2

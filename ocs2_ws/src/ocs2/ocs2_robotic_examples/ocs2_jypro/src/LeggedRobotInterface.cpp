@@ -175,14 +175,21 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
 
   auto mpcPolygonArrayPtr = std::make_shared<feet_polygon_array_t>();
   auto mpcNominalFootholdPtr = std::make_shared<feet_array_t<std::vector<vector3_t>>>();
-  auto mpcSwingHeightPtr = std::make_shared<feet_array_t<std::vector<scalar_t>>>();
+  auto mpcSwingHeightPtr = std::make_shared<feet_array_t<std::vector<vector_t>>>();
+  auto mpcSwingMiddleTimePtr = std::make_shared<feet_array_t<std::vector<scalar_t>>>();
 
   (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
   (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
   (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
   (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
-
-  std::fill(mpcSwingHeightPtr->begin(), mpcSwingHeightPtr->end(), std::vector<scalar_t>{0.1, 0.1});
+  
+  std::vector<vector_t> swingHeightDefault;
+  vector_t defaultHeight = vector3_t{0.075, 0.15, 0.075};
+    swingHeightDefault.push_back(defaultHeight);
+    swingHeightDefault.push_back(defaultHeight);
+    
+  std::fill(mpcSwingHeightPtr->begin(), mpcSwingHeightPtr->end(), swingHeightDefault);
+  std::fill(mpcSwingMiddleTimePtr->begin(), mpcSwingMiddleTimePtr->end(), std::vector<scalar_t>{0.17, 0.17});
 
   initPolygon.reserve(3);
   std::vector<vector3_t> Polygon;
@@ -204,7 +211,8 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
                                                                          leggedIKSolverPtr_,
                                                                          pinocchioMapping, *pinocchioInterfacePtr_, centroidalModelInfo_,
                                                                          terrainEstDataPtr, mpcPolygonArrayPtr,
-                                                                         mpcNominalFootholdPtr, mpcSwingHeightPtr);
+                                                                         mpcNominalFootholdPtr, mpcSwingHeightPtr,
+                                                                         mpcSwingMiddleTimePtr);
 
     // Optimal control problem
     problemPtr_.reset(new OptimalControlProblem);

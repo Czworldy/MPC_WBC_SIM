@@ -30,6 +30,7 @@ class StateEstimateBase {
   virtual void updateImu(const Eigen::Quaternion<scalar_t>& quat, const vector3_t& angularVelLocal, const vector3_t& linearAccelLocal,
                          const matrix3_t& orientationCovariance, const matrix3_t& angularVelCovariance,
                          const matrix3_t& linearAccelCovariance);
+  virtual void updateJointTorque(const vector_t& jointTorque){ jointTorque_ = jointTorque; }
 
   virtual vector_t update(const ros::Time& time, const ros::Duration& period) = 0;
 
@@ -46,7 +47,8 @@ class StateEstimateBase {
 
   vector3_t zyxOffset_ = vector3_t::Zero();
   vector_t rbdState_;
-  contact_flag_t contactFlag_{};
+  vector_t jointTorque_;
+  contact_flag_t contactFlag_{}, feedbackContactFlag_{};
   Eigen::Quaternion<scalar_t> quat_;
   vector3_t angularVelLocal_, linearAccelLocal_;
   matrix3_t orientationCovariance_, angularVelCovariance_, linearAccelCovariance_;

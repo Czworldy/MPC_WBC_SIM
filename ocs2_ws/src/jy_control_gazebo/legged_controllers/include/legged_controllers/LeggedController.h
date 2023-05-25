@@ -23,6 +23,7 @@
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 #include <ocs2_jypro/LeggedRobotPyBindings.h>
 #include "ocs2_wbc_ros/SingleWbcRos.h"
+#include "ocs2_wbc/SimpleMotion/SimpleMotion.h"
 
 #include "legged_controllers/SafetyChecker.h"
 #include "legged_controllers/visualization/LeggedSelfCollisionVisualization.h"
@@ -67,15 +68,18 @@ class LeggedController : public controller_interface::MultiInterfaceController<H
   // Whole Body Control
   std::shared_ptr<ocs2::wbc::SingleWbcRos> wbc_;
   std::shared_ptr<SafetyChecker> safetyChecker_;
+  std::unique_ptr<ocs2::wbc::SimpleMotion> simpleMotion_;
 
   // Nonlinear MPC
   std::shared_ptr<MPC_BASE> mpc_;
   std::shared_ptr<MPC_MRT_Interface> mpcMrtInterface_;
+  std::shared_ptr<ocs2::legged_robot::TerrainPythonInterface> terrainReceiverPtr_;
 
   // Visualization
   std::shared_ptr<LeggedRobotVisualizer> robotVisualizer_;
   // std::shared_ptr<LeggedSelfCollisionVisualization> selfCollisionVisualization_;
   ros::Publisher observationPublisher_;
+  ros::Publisher lf_foot_pub_, lh_foot_pub_, rf_foot_pub_, rh_foot_pub_;
 
  private:
   std::thread mpcThread_;
