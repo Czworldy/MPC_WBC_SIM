@@ -98,6 +98,8 @@ add_library(ocs2_jypro
   src/synchronized_module/TerrainPythonInterface.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
+  src/foot_planner/QuinticSpline.cpp
+  src/foot_planner/TwoQuinticSplineCpg.cpp
   src/foot_planner/MultiSplineCpg.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
   src/foot_planner/FootPlacementPlanner.cpp

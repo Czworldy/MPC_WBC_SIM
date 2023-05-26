@@ -104,6 +104,166 @@ scalar_t SwingTrajectoryPlanner::getSwingTimeLeft(size_t leg, scalar_t time) con
   return feetHeightTrajectoriesEvents_[leg][index] - time;
 }
 
+// /******************************************************************************************************/
+// /******************************************************************************************************/
+// /******************************************************************************************************/
+// void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const ModeSchedule& modeSchedule, 
+//               const feet_array_t<std::vector<vector3_t>>& feetPlacement, scalar_t initTime,
+//               const feet_array_t<vector3_t>& currentFeetEndEffectors,
+//               const feet_array_t<std::vector<vector_t>>& swingHeightSequence, 
+//               const feet_array_t<std::vector<scalar_t>>& swingMiddleTimeSequence) {
+//   const auto& modeSequence = modeSchedule.modeSequence;
+//   const auto& eventTimes = modeSchedule.eventTimes;
+
+//   usingMultiHeight_ = true;
+
+//   const auto eesContactFlagStocks = extractContactFlags(modeSequence);
+
+//   const size_t initIndex = lookup::findIndexInTimeArray(eventTimes, initTime);
+
+
+//   feet_array_t<std::vector<int>> startTimesIndices;
+//   feet_array_t<std::vector<int>> finalTimesIndices;
+//   for (size_t leg = 0; leg < numFeet_; leg++) {
+//     std::tie(startTimesIndices[leg], finalTimesIndices[leg]) = updateFootSchedule(eesContactFlagStocks[leg]);
+//   }
+
+//   for (size_t j = 0; j < numFeet_; j++) {
+//     if (eesContactFlagStocks[j][initIndex]){
+//     // feetHeightTrajectories_[j].clear();
+//     // feetHeightTrajectories_[j].reserve(modeSequence.size());
+
+//     feetMultiHeightTrajectories_[j].clear();
+//     feetMultiHeightTrajectories_[j].reserve(modeSequence.size());
+
+//     feetXTrajectories_[j].clear();
+//     feetXTrajectories_[j].reserve(modeSequence.size());
+
+//     feetYTrajectories_[j].clear();
+//     feetYTrajectories_[j].reserve(modeSequence.size());
+//     for (int p = 0; p < modeSequence.size(); ++p) {
+//       if (!eesContactFlagStocks[j][p]) {  // for a swing leg
+//         // consider after swing phase another swing phase again.
+//         int m = p;
+//         for(; m > 0; m--){
+//           if(eesContactFlagStocks[j][m]){
+//             break;
+//           }
+//         }
+//         const int swingStartIndex = startTimesIndices[j][p];
+//         const int swingFinalIndex = finalTimesIndices[j][p];
+//         checkThatIndicesAreValid(j, p, swingStartIndex, swingFinalIndex, modeSequence);
+
+//         const scalar_t swingStartTime = eventTimes[swingStartIndex];
+//         const scalar_t swingFinalTime = eventTimes[swingFinalIndex];
+
+//         const scalar_t scaling = swingTrajectoryScaling(swingStartTime, swingFinalTime, config_.swingTimeScale);
+
+//         // scalar_t swingHeight = std::max(swingHeightSequence[j][p], 0.12);
+//         // swingHeight = std::min(swingHeight, 0.3);
+
+//         // if (p >= 1){
+//           if (p == initIndex + 1) {
+//             /* Node : T P V */
+//             const scalar_t midHeight      = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][1];
+//             const scalar_t midHeightLeft  = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][0];
+//             const scalar_t midHeightRight = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][2];
+//             const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
+//             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
+//             const scalar_t swingTime = swingFinalTime - swingStartTime;
+
+//             const CubicSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
+//             const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
+//             const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+
+//             const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
+//             const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
+
+//             // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
+//             // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
+              
+//             feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, midTime);
+
+//             std::cout << "midTime : " << j << " " << midTime << "\n";
+//             std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
+//             std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
+//             std::cout << "midHeight : " << j << " " << midHeight << "\n";
+
+//             const CubicSpline::Node xStart{swingStartTime, currentFeetEndEffectors[j].x(), 0.0};
+//             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
+//             feetXTrajectories_[j].emplace_back(xStart, (xStart.position + xEnd.position)/2., 
+//                                                midTime, scaling * config_.liftOffVelocity, xEnd);
+
+//             const CubicSpline::Node yStart{swingStartTime, currentFeetEndEffectors[j].y(), 0.0};
+//             const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
+//             feetYTrajectories_[j].emplace_back(yStart, (yStart.position + yEnd.position)/2., 
+//                                                midTime, scaling * config_.liftOffVelocity, yEnd);
+//           }
+//           else{
+//             const scalar_t midHeight      = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][1];
+//             const scalar_t midHeightLeft  = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][0];
+//             const scalar_t midHeightRight = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][2];
+//             const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
+//             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
+//             const scalar_t swingTime = swingFinalTime - swingStartTime;
+
+//             const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
+//             const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
+//             const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+
+//             const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
+//             const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
+            
+//             // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
+//             // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
+//             feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, midTime);
+
+//             std::cout << "midTime : " << j << " " << midTime << "\n";
+//             std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
+//             std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
+//             std::cout << "midTimeLeft : " << j << " " << swingStartTime + swingMiddleTimeSequence[j][p]/2. << "\n";
+//             std::cout << "midTimeRight : " << j << " " << (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2. << "\n";
+//             std::cout << "midHeight : " << j << " " << midHeight << "\n";
+
+//             const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), 0.0};
+//             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
+//             feetXTrajectories_[j].emplace_back(xStart, (xStart.position + xEnd.position)/2., 
+//                                                midTime, scaling * config_.liftOffVelocity, xEnd);
+
+//             const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][m].y(), 0.0};
+//             const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
+//             feetYTrajectories_[j].emplace_back(yStart, (yStart.position + yEnd.position)/2., 
+//                                                midTime, scaling * config_.liftOffVelocity, yEnd);
+//           }
+//       } else {  // for a stance leg
+//         const CubicSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0};
+//         const CubicSpline::Node apex{0.5, feetPlacement[j][p].z(), 0.0};
+//         const CubicSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0};
+//         const SplineCpg leftSpline(liftOff, feetPlacement[j][p].z(), 0.25, 0.0, apex);
+//         const SplineCpg rightSpline(apex, feetPlacement[j][p].z(), 0.75, 0.0, touchDown);
+        
+//         feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, 0.5);
+
+//         const CubicSpline::Node xStart{0.0, feetPlacement[j][p].x(), 0.0};
+//         const CubicSpline::Node xEnd{1.0, feetPlacement[j][p].x(), 0.0};
+//         feetXTrajectories_[j].emplace_back(xStart, feetPlacement[j][p].x(),xEnd);
+
+//         const CubicSpline::Node yStart{0.0, feetPlacement[j][p].y(), 0.0};
+//         const CubicSpline::Node yEnd{1.0, feetPlacement[j][p].y(), 0.0};
+//         feetYTrajectories_[j].emplace_back(yStart, feetPlacement[j][p].y(),yEnd);
+//       }
+//     }
+//     // if(j == 0){
+//     //     for(const auto& p:feetPlacement[j]){
+//     //       std::cout << "leg: " << j << " x: " << p.x() << " y: " << p.y() << " z: " << p.z() << std::endl;
+//     //     }
+//     // }
+    
+//     feetHeightTrajectoriesEvents_[j] = eventTimes;
+//   }
+//   }
+// } 
+
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -172,17 +332,12 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
-            const CubicSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
-            const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
-            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+            const QuinticSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
+            const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity}; 
+            const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity}; 
+            const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
 
-            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
-            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
-
-            // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
-            // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
-              
-            feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, midTime);
+            feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, midHeight, midTime, middleRight, touchDown);
 
             std::cout << "midTime : " << j << " " << midTime << "\n";
             std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
@@ -192,12 +347,21 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const CubicSpline::Node xStart{swingStartTime, currentFeetEndEffectors[j].x(), 0.0};
             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
             feetXTrajectories_[j].emplace_back(xStart, (xStart.position + xEnd.position)/2., 
-                                               midTime, scaling * config_.liftOffVelocity, xEnd);
+                                               midTime, 2*scaling * config_.liftOffVelocity/3, xEnd);
 
             const CubicSpline::Node yStart{swingStartTime, currentFeetEndEffectors[j].y(), 0.0};
             const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
             feetYTrajectories_[j].emplace_back(yStart, (yStart.position + yEnd.position)/2., 
-                                               midTime, scaling * config_.liftOffVelocity, yEnd);
+                                               midTime, 2*scaling * config_.liftOffVelocity/3, yEnd);
+
+            //CubeSpline
+            // const CubicSpline::Node xStart{swingStartTime, currentFeetEndEffectors[j].x(), scaling * config_.liftOffVelocity};
+            // const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
+            // feetXTrajectories_[j].emplace_back(xStart, xEnd);
+
+            // const CubicSpline::Node yStart{swingStartTime, currentFeetEndEffectors[j].y(), scaling * config_.liftOffVelocity};
+            // const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
+            // feetYTrajectories_[j].emplace_back(yStart, yEnd);
           }
           else{
             const scalar_t midHeight      = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][1];
@@ -207,16 +371,12 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
-            const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
-            const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
-            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+            const QuinticSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
+            const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity}; 
+            const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity}; 
+            const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
 
-            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
-            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
-            
-            // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
-            // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
-            feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, midTime);
+            feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, midHeight, midTime, middleRight, touchDown);
 
             std::cout << "midTime : " << j << " " << midTime << "\n";
             std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
@@ -225,32 +385,42 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             std::cout << "midTimeRight : " << j << " " << (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2. << "\n";
             std::cout << "midHeight : " << j << " " << midHeight << "\n";
 
-            const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), 0.0};
+            const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), scaling * config_.liftOffVelocity};
             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
             feetXTrajectories_[j].emplace_back(xStart, (xStart.position + xEnd.position)/2., 
-                                               midTime, scaling * config_.liftOffVelocity, xEnd);
+                                               midTime, 2*scaling * config_.liftOffVelocity / 3, xEnd);
 
             const CubicSpline::Node yStart{swingStartTime, feetPlacement[j][m].y(), 0.0};
             const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
             feetYTrajectories_[j].emplace_back(yStart, (yStart.position + yEnd.position)/2., 
-                                               midTime, scaling * config_.liftOffVelocity, yEnd);
+                                               midTime, 2*scaling * config_.liftOffVelocity/3, yEnd);
+
+            //CubeSpline
+            // const CubicSpline::Node xStart{swingStartTime, currentFeetEndEffectors[j].x(), scaling * config_.liftOffVelocity};
+            // const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
+            // feetXTrajectories_[j].emplace_back(xStart, xEnd);
+
+            // const CubicSpline::Node yStart{swingStartTime, currentFeetEndEffectors[j].y(), scaling * config_.liftOffVelocity};
+            // const CubicSpline::Node yEnd{swingFinalTime, feetPlacement[j][p].y(), 0.};
+            // feetYTrajectories_[j].emplace_back(yStart, yEnd);
           }
       } else {  // for a stance leg
-        const CubicSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0};
-        const CubicSpline::Node apex{0.5, feetPlacement[j][p].z(), 0.0};
-        const CubicSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0};
-        const SplineCpg leftSpline(liftOff, feetPlacement[j][p].z(), 0.25, 0.0, apex);
-        const SplineCpg rightSpline(apex, feetPlacement[j][p].z(), 0.75, 0.0, touchDown);
-        
-        feetMultiHeightTrajectories_[j].emplace_back(leftSpline, rightSpline, 0.5);
+        const QuinticSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0};
+        const QuinticSpline::Node middleLeft{0.25, feetPlacement[j][p].z(), 0.0}; 
+        const QuinticSpline::Node middleRight{0.75, feetPlacement[j][p].z(), 0.0}; 
+        const QuinticSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0};
+
+        feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, feetPlacement[j][p].z(), 0.5, middleRight, touchDown);
 
         const CubicSpline::Node xStart{0.0, feetPlacement[j][p].x(), 0.0};
         const CubicSpline::Node xEnd{1.0, feetPlacement[j][p].x(), 0.0};
-        feetXTrajectories_[j].emplace_back(xStart, feetPlacement[j][p].x(),xEnd);
+        feetXTrajectories_[j].emplace_back(xStart, feetPlacement[j][p].x(), xEnd);
+        // feetXTrajectories_[j].emplace_back(xStart, xEnd);
 
         const CubicSpline::Node yStart{0.0, feetPlacement[j][p].y(), 0.0};
         const CubicSpline::Node yEnd{1.0, feetPlacement[j][p].y(), 0.0};
-        feetYTrajectories_[j].emplace_back(yStart, feetPlacement[j][p].y(),yEnd);
+        feetYTrajectories_[j].emplace_back(yStart, feetPlacement[j][p].y(), yEnd);
+        // feetYTrajectories_[j].emplace_back(yStart, yEnd);
       }
     }
     // if(j == 0){

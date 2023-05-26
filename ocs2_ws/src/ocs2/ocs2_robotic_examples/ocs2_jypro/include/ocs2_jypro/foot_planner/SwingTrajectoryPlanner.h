@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/Types.h"
 #include "ocs2_jypro/foot_planner/SplineCpg.h"
 #include "ocs2_jypro/foot_planner/MultiSplineCpg.h"
+#include "ocs2_jypro/foot_planner/TwoQuinticSplineCpg.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -145,7 +146,7 @@ class SwingTrajectoryPlanner {
   bool usingMultiHeight_ = false;
 
   feet_array_t<std::vector<SplineCpg>> feetHeightTrajectories_;
-  feet_array_t<std::vector<MultiSplineCpg>> feetMultiHeightTrajectories_;
+  feet_array_t<std::vector<TwoQuinticSplineCpg>> feetMultiHeightTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetXTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetYTrajectories_;
   feet_array_t<std::vector<scalar_t>> feetHeightTrajectoriesEvents_;
