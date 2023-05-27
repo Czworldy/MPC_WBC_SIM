@@ -37,6 +37,7 @@
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
@@ -227,6 +228,9 @@ int main(int argc, char**argv) {
     auto wbc = std::make_shared<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                           endEffectorKinematics, wbcfilename, nodeHandle);
     auto simpleMotion = std::make_shared<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
+
+    auto robotVisualizer_ = std::make_shared<ocs2::legged_robot::LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
+                                                             interfacePtr->getCentroidalModelInfo(), endEffectorKinematics, nodeHandle);
   
     jointStatesSub = nodeHandle.subscribe("/X20/joint_states", 1, &jointStatesCallback);
     gazeboLinkStatesSub = nodeHandle.subscribe("/ground_truth/state", 1,&gazeboNavMsgsCallback);
@@ -414,6 +418,9 @@ int main(int argc, char**argv) {
          Eigen::Map<vector3_t>(command.lh_vel.value) = optimizedJonitVel.segment<3>(3);
          Eigen::Map<vector3_t>(command.rf_vel.value) = optimizedJonitVel.segment<3>(6);
          Eigen::Map<vector3_t>(command.rh_vel.value) = optimizedJonitVel.segment<3>(9);
+
+         robotVisualizer_->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+
 
          const ocs2::wbc::UserParameter& paramf = wbc->getUserParam();
 		for(int i(0); i < 3; i++) {

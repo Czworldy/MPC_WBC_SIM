@@ -129,7 +129,7 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
   }
 
   for (size_t j = 0; j < numFeet_; j++) {
-    if (eesContactFlagStocks[j][initIndex]){
+    if (eesContactFlagStocks[j][initIndex]){ // current stance leg
     // feetHeightTrajectories_[j].clear();
     // feetHeightTrajectories_[j].reserve(modeSequence.size());
 
@@ -174,10 +174,10 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
 
             const CubicSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
             const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
-            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), scaling * config_.touchDownVelocity};
 
-            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
-            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
+            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., scaling * config_.liftOffVelocity, apex);
+            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity, touchDown);
 
             // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
             // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
@@ -209,10 +209,10 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
 
             const CubicSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity}; // without foothold from mapper, this with cause promblem in slope.
             const CubicSpline::Node apex{midTime, midHeight, 0.0}; 
-            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity};
+            const CubicSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), scaling * config_.touchDownVelocity};
 
-            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., 2*scaling * config_.liftOffVelocity/3., apex);
-            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity/3., touchDown);
+            const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + swingMiddleTimeSequence[j][p]/2., scaling * config_.liftOffVelocity, apex);
+            const SplineCpg rightSpline(apex, midHeightRight, (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2., scaling * config_.touchDownVelocity, touchDown);
             
             // const SplineCpg leftSpline(liftOff, midHeightLeft, swingStartTime + 0.25 * swingTime, 2 * scaling * config_.liftOffVelocity/3., apex);
             // const SplineCpg rightSpline(apex, midHeightRight,  swingStartTime + 0.75 * swingTime, scaling * config_.touchDownVelocity/3., touchDown);
@@ -259,6 +259,22 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
     //     }
     // }
     
+    feetHeightTrajectoriesEvents_[j] = eventTimes;
+  }
+  else {
+    //copy the previous leg placement according to the current event time.
+    std::vector<MultiSplineCpg> feetMultiHeightTrajectoriesTemp;
+    std::vector<SplineCpg> feetXTrajectoriesTemp;
+    std::vector<SplineCpg> feetYTrajectoriesTemp;
+    for (int p = 0; p < eventTimes.size(); ++p) {
+        size_t index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[j], eventTimes[p]);
+        feetMultiHeightTrajectoriesTemp.emplace_back(feetMultiHeightTrajectories_[j][index]);
+        feetXTrajectoriesTemp.emplace_back(feetXTrajectories_[j][index]);
+        feetYTrajectoriesTemp.emplace_back(feetYTrajectories_[j][index]);
+    }
+    feetMultiHeightTrajectories_[j] = feetMultiHeightTrajectoriesTemp; 
+    feetXTrajectories_[j] = feetXTrajectoriesTemp;
+    feetYTrajectories_[j] = feetYTrajectoriesTemp;
     feetHeightTrajectoriesEvents_[j] = eventTimes;
   }
   }
