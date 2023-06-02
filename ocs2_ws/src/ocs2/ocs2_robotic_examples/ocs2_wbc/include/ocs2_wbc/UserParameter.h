@@ -23,7 +23,6 @@ class UserParameter{
         vector3_t Kp_body, Kd_body;
         vector3_t Kp_ori, Kd_ori;
         vector3_t Kp_foot, Kd_foot;               //
-;
         vector3_t Kp_foot_lf, Kd_foot_lf;         // Swing Leg Task Space
         vector3_t Kp_LegJoint_lf, Kd_LegJoint_lf; // WBC LegJointMotionControl Task
 

@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/foot_planner/FootConstraintsPlanner.h"
 #include "ocs2_jypro/gait/GaitSchedule.h"
 #include "ocs2_jypro/gait/MotionPhaseDefinition.h"
-// #include "ocs2_jypro/BodyPositionEstimator/BodyPositionEstimator.h"
+#include "ocs2_jypro/BodyPositionEstimator/BodyPositionEstimator.h"
 #include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 #include "ocs2_jypro/synchronized_module/LegEndEffectorsPolygonReceiver.h"
 
@@ -60,9 +60,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
                                 const CentroidalModelInfo& centroidalModelInfo,
                                 std::shared_ptr<TerrainEstData> terrainEstDataPtr,
                                 std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr,
-                                std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
-                                std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr,
-                                std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr);
+                                std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr);
 
   ~SwitchedModelReferenceManager() override = default;
 
@@ -80,10 +78,6 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
 
   std::shared_ptr<feet_array_t<std::vector<vector3_t>>>& getMpcNominalFeetholdsPtr() { return mpcNominalFeetholdsPtr_; }
 
-  std::shared_ptr<feet_array_t<std::vector<vector_t>>>& getMpcSwingHeightPtr() { return mpcSwingHeightPtr_; }
-
-  std::shared_ptr<feet_array_t<std::vector<scalar_t>>>& getMpcSwingMiddleTimePtr() { return mpcSwingMiddleTimePtr_; }
-
  private:
   void modifyReferences(scalar_t initTime, scalar_t finalTime, const vector_t& initState, TargetTrajectories& targetTrajectories,
                         ModeSchedule& modeSchedule) override;
@@ -97,9 +91,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   std::shared_ptr<TerrainEstData> terrainEstDataPtr_;
   std::shared_ptr<feet_polygon_array_t> mpcPolygonArrayPtr_;
   std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr_;
-  std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr_;
-  std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr_;
-  // QuaternionToRPY terrainQuaternionToRPY_;
+  QuaternionToRPY terrainQuaternionToRPY_;
   std::unique_ptr<CentroidalModelPinocchioMapping> mappingPtr_;
   PinocchioInterface& pinocchioInterface_;
   const CentroidalModelInfo& centroidalModelInfo_;

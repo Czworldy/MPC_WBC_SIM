@@ -52,8 +52,6 @@ class RaisimRollout final : public RolloutBase {
   using input_to_raisim_pd_targets_t = std::function<std::pair<Eigen::VectorXd, Eigen::VectorXd>(
       double, const vector_t&, const vector_t&, const Eigen::VectorXd&, const Eigen::VectorXd&)>;
   using data_extraction_callback_t = std::function<void(double, const raisim::ArticulatedSystem&)>;
-  using input_to_raisim_wbc_generalized_force_t = 
-      std::function<Eigen::VectorXd(double, const vector_t&, const vector_t&, const Eigen::VectorXd&, const Eigen::VectorXd&, size_t)>;
 
   /**
    * Constructor
@@ -78,8 +76,7 @@ class RaisimRollout final : public RolloutBase {
                 input_to_raisim_generalized_force_t inputToRaisimGeneralizedForce,
                 data_extraction_callback_t dataExtractionCallback = nullptr,
                 RaisimRolloutSettings raisimRolloutSettings = RaisimRolloutSettings(),
-                input_to_raisim_pd_targets_t inputToRaisimPdTargets = nullptr, 
-                input_to_raisim_wbc_generalized_force_t inputToRaisimWbcGeneralizedForce = nullptr);
+                input_to_raisim_pd_targets_t inputToRaisimPdTargets = nullptr);
 
   //! Copy constructor
   RaisimRollout(const RaisimRollout& other);
@@ -144,9 +141,6 @@ class RaisimRollout final : public RolloutBase {
   void runSimulation(const std::pair<scalar_t, scalar_t>& timeInterval, ControllerBase* controller, scalar_array_t& timeTrajectory,
                      vector_array_t& stateTrajectory, vector_array_t& inputTrajectory);
 
-  void runSimulation(const std::pair<scalar_t, scalar_t>& timeInterval, ControllerBase* controller, size_t mode,
-                     scalar_array_t& timeTrajectory, vector_array_t& stateTrajectory, vector_array_t& inputTrajectory);
-
   //! Helper method to remove the ground plane from simulation
   void deleteGroundPlane();
 
@@ -171,7 +165,6 @@ class RaisimRollout final : public RolloutBase {
   state_to_raisim_gen_coord_gen_vel_t stateToRaisimGenCoordGenVel_;
   raisim_gen_coord_gen_vel_to_state_t raisimGenCoordGenVelToState_;
   input_to_raisim_generalized_force_t inputToRaisimGeneralizedForce_;
-  input_to_raisim_wbc_generalized_force_t inputToRaisimWbcGeneralizedForce_;
   data_extraction_callback_t dataExtractionCallback_;
   input_to_raisim_pd_targets_t inputToRaisimPdTargets_;
 };

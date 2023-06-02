@@ -37,7 +37,7 @@ void TrackingQP::setQpProblem(const Task& trackingCost, const Task& constraints,
   d_ = Task::concatenateMatrices(constraints.a_, constraints.d_);
   qpInequalityUpperBound_ = Task::concatenateVectors(constraints.b_, constraints.f_);
   vector_t infinityLowerBound(constraints.f_.rows());
-  infinityLowerBound.setConstant(-qpOASES::INFTY);
+  infinityLowerBound.setConstant(-1e30);
   qpInequalityLowerBound_ = Task::concatenateVectors(constraints.b_, infinityLowerBound);
 
   solveSqpProblem(isInitRun);
@@ -48,7 +48,6 @@ TrackingQP::TrackingQP(size_t nVar, size_t nC) {
   qpOASES::Options options;
   options.setToMPC();
   options.printLevel = qpOASES::PL_LOW;
-  options.enableEqualities = qpOASES::BT_TRUE;
   sqpProblemPtr_->setOptions(options);
 }
 

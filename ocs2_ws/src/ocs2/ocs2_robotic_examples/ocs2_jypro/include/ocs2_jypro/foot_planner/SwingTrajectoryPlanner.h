@@ -33,7 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ocs2_jypro/common/Types.h"
 #include "ocs2_jypro/foot_planner/SplineCpg.h"
-#include "ocs2_jypro/foot_planner/MultiSplineCpg.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -49,33 +48,24 @@ class SwingTrajectoryPlanner {
 
   SwingTrajectoryPlanner(Config config, size_t numFeet);
 
-  // void update(const ModeSchedule& modeSchedule, scalar_t terrainHeight);
+  void update(const ModeSchedule& modeSchedule, scalar_t terrainHeight);
 
-  // void update(const ModeSchedule& modeSchedule, const vector_t& terrainHeight);
+  void update(const ModeSchedule& modeSchedule, const vector_t& terrainHeight);
 
-  // void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
-  //             const feet_array_t<scalar_array_t>& touchDownHeightSequence);
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
+              const feet_array_t<scalar_array_t>& touchDownHeightSequence);
 
-  // void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
-  //             const feet_array_t<scalar_array_t>& touchDownHeightSequence, 
-  //             const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
-  //             scalar_t initTime);
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<scalar_array_t>& liftOffHeightSequence,
+              const feet_array_t<scalar_array_t>& touchDownHeightSequence, 
+              const feet_array_t<scalar_array_t>& feetHeightTrajectoriesEvents,
+              scalar_t initTime);
               
-  // void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
-  //             scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors,
-  //             const feet_array_t<std::vector<scalar_t>>& swingHeightSequence, 
-  //             const feet_array_t<std::vector<scalar_t>>& swingMiddleTimeSequence, 
-  //             bool isLateTouchdown);
-  
-  void updateUsingMultiHeightAndSwingMiddleTime(const ModeSchedule& modeSchedule, 
-              const feet_array_t<std::vector<vector3_t>>& feetPlacement, scalar_t initTime,
-              const feet_array_t<vector3_t>& currentFeetEndEffectors,
-              const feet_array_t<std::vector<vector_t>>& swingHeightSequence, 
-              const feet_array_t<std::vector<scalar_t>>& swingMiddleTimeSequence);
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
+              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors, bool isLateTouchdown);
 
   //use in no feethold from upper planner.
-  // void update(const ModeSchedule& modeSchedule, const feet_array_t<vector3_t>& currentFeetEndEffectors,
-  //             scalar_t initTime, const feet_array_t<std::vector<vector3_t>>& targetFeetEndEffectors); 
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<vector3_t>& currentFeetEndEffectors,
+              scalar_t initTime, const feet_array_t<std::vector<vector3_t>>& targetFeetEndEffectors); 
 
   scalar_t getZvelocityConstraint(size_t leg, scalar_t time) const;
 
@@ -142,12 +132,10 @@ class SwingTrajectoryPlanner {
 
   const Config config_;
   const size_t numFeet_;
-  bool usingMultiHeight_ = false;
 
   feet_array_t<std::vector<SplineCpg>> feetHeightTrajectories_;
-  feet_array_t<std::vector<MultiSplineCpg>> feetMultiHeightTrajectories_;
-  feet_array_t<std::vector<SplineCpg>> feetXTrajectories_;
-  feet_array_t<std::vector<SplineCpg>> feetYTrajectories_;
+  feet_array_t<std::vector<CubicSpline>> feetXTrajectories_;
+  feet_array_t<std::vector<CubicSpline>> feetYTrajectories_;
   feet_array_t<std::vector<scalar_t>> feetHeightTrajectoriesEvents_;
 };
 

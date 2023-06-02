@@ -60,31 +60,31 @@ TargetTrajectoriesJoyPublisher::TargetTrajectoriesJoyPublisher(::ros::NodeHandle
     };
     observationSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_observation>(topicPrefix + "_mpc_observation", 1, observationCallback);
     // raw joy
-    // auto joyCallback = [this](const sensor_msgs::Joy::ConstPtr& msg) {
-    //   std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+    auto joyCallback = [this](const sensor_msgs::Joy::ConstPtr& msg) {
+      std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
 
-    //   deltaX = msg->axes[1] * joyGainLinearFactors_;
-    //   deltaY = msg->axes[0] * joyGainLinearFactors_;
-    //   deltaYaw = msg->axes[3] * joyGainAngularFactors_;
+      deltaX = msg->axes[1] * joyGainLinearFactors_;
+      deltaY = msg->axes[0] * joyGainLinearFactors_;
+      deltaYaw = msg->axes[3] * joyGainAngularFactors_;
 
-    //   filter(deltaX, lastdeltaX, 0.4);
-    //   filter(deltaY, lastdeltaY, 0.4);
-    //   filter(deltaYaw, la stdeltaYaw, 0.4);
-    //   this->isJoyMsgsCome = true;
-    // };
-    // joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);
+      filter(deltaX, lastdeltaX, 0.4);
+      filter(deltaY, lastdeltaY, 0.4);
+      filter(deltaYaw, lastdeltaYaw, 0.4);
+      this->isJoyMsgsCome = true;
+    };
+    joySubscriber_ = nodeHandle.subscribe<sensor_msgs::Joy>("joy", 1, joyCallback);
 
     // vel
-    auto joyCallback = [this](const geometry_msgs::Twist::ConstPtr &msg) {
-        std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
+    // auto joyCallback = [this](const geometry_msgs::Twist::ConstPtr &msg) {
+    //     std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
 
-        deltaX = 0.05 + msg->linear.x;
-        deltaY = -0.07 + msg->linear.y * joyGainLinearFactors_; // msg->linear.x
-        deltaYaw = 0.06 + msg->angular.z * joyGainAngularFactors_;
-        this->isJoyMsgsCome = true;
-    };
+    //     deltaX = 0.05 + msg->linear.x;
+    //     deltaY = -0.07 + msg->linear.y * joyGainLinearFactors_; // msg->linear.x
+    //     deltaYaw = 0.06 + msg->angular.z * joyGainAngularFactors_;
+    //     this->isJoyMsgsCome = true;
+    // };
 
-    joySubscriber_ = nodeHandle.subscribe<geometry_msgs::Twist>("/vel", 1, joyCallback);
+    // joySubscriber_ = nodeHandle.subscribe<geometry_msgs::Twist>("/vel", 1, joyCallback);
 
     // Trajectories publisher
     targetTrajectoriesPublisherPtr_.reset(new TargetTrajectoriesRosPublisher(nodeHandle, topicPrefix));

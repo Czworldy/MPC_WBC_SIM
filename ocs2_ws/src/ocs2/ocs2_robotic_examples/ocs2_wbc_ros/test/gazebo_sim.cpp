@@ -37,7 +37,6 @@
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
-#include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
@@ -136,7 +135,7 @@ int main(int argc, char**argv) {
 
     std::vector<vector3_t> feet_point_pos;
 
-    // geometry_msgs::PointStamped {"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};;
+    // geometry_msgs::PointStamped lf_foot_pos, lh_foot_pos, rf_foot_pos, rh_foot_pos;
     std::vector<geometry_msgs::PointStamped> feet_pos;
     feet_pos.resize(4);
 
@@ -149,8 +148,7 @@ int main(int argc, char**argv) {
     ros::Rate rate(1000);
 
     const std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
-    // const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
-    const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/jy_control_gazebo/legged_controllers/config/x20/task.info";
+    const std::string taskfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
     const std::string referencefile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/targetTrajectories.info";
     const std::string urdffile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf";
     const std::string gaitfile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/gait.info";
@@ -186,8 +184,6 @@ int main(int argc, char**argv) {
     auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                               (nodeHandle, interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                               interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
-                              interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
-                              interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                                 robotName);
     mpc->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
     mpc->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
@@ -228,9 +224,6 @@ int main(int argc, char**argv) {
     auto wbc = std::make_shared<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                           endEffectorKinematics, wbcfilename, nodeHandle);
     auto simpleMotion = std::make_shared<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
-
-    auto robotVisualizer_ = std::make_shared<ocs2::legged_robot::LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
-                                                             interfacePtr->getCentroidalModelInfo(), endEffectorKinematics, nodeHandle);
   
     jointStatesSub = nodeHandle.subscribe("/X20/joint_states", 1, &jointStatesCallback);
     gazeboLinkStatesSub = nodeHandle.subscribe("/ground_truth/state", 1,&gazeboNavMsgsCallback);
@@ -273,7 +266,7 @@ int main(int argc, char**argv) {
     ros::AsyncSpinner spinner(6);
     spinner.start();
     while(nodeHandle.ok()){
-        vector_t qMeasured(19), vMeasured(18), rbdState(36);
+        vector_t qMeasured(19), vMeasured(18);
         //ocs2 joint order [LF, LH, RF, RH]
         //gaebzo joint order   lf rf lh rh = raisim order
         qMeasured << basePosWorldCur, baseOriWorldCur.w(), baseOriWorldCur.x(), 
@@ -350,8 +343,8 @@ int main(int argc, char**argv) {
 		    	break;
 		    }
 		    case kWBCMPC: {
-          const ocs2::vector_t state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
-          const ocs2::vector_t rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
+          const ocs2::vector_t& state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
+          const ocs2::vector_t& rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
           currentObservation.state = state;
           //contact_flag_real LF LH RF RH
           contact_flag_t stanceLegs = {contact_flag_real[0], contact_flag_real[2], 
@@ -361,7 +354,6 @@ int main(int argc, char**argv) {
           mpcMrtInterface_->setCurrentObservation(currentObservation);
 
           observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
-            //   observationPublisher.publish(ros_msg_conversions::createObservationMsg(currentObservation));
 
           vector_t qMeasured_(interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum);
           qMeasured_.head<3>() = rbdState.segment<3>(3);
@@ -375,22 +367,7 @@ int main(int argc, char**argv) {
           pinocchio::updateFramePlacements(model, data);
 
           endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
-          //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
           std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
-          const vector3_t& bodyPosition = state.segment(6, 3);
-          const vector3_t& bodyZyxEulerAngles = state.segment(9, 3);
-          Eigen::Matrix<scalar_t, 4, 4> _O_B_tfMatrix = Eigen::Matrix<scalar_t, 4, 4>::Identity();
-          
-          _O_B_tfMatrix.topLeftCorner(3, 3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyZyxEulerAngles);
-          _O_B_tfMatrix.topRightCorner(3, 1) = bodyPosition;
-          const auto _B_O_tfMatrix = _O_B_tfMatrix.inverse();
-          for(size_t leg = 0; leg < 4; leg++){
-            vector3_t posDesiredinBodyFrame = (_B_O_tfMatrix * posDesired[leg].homogeneous()).head(3);
-
-            feet_pos[leg].point.x = posDesiredinBodyFrame.x();
-            feet_pos[leg].point.y = posDesiredinBodyFrame.y();
-            feet_pos[leg].point.z = posDesiredinBodyFrame.z();
-          }
 
           auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.toRotationMatrix());
 
@@ -404,41 +381,18 @@ int main(int argc, char**argv) {
           vector_t optimizedInput;
           size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
           mpcMrtInterface_->evaluatePolicy(currentObservation.time, currentObservation.state, optimizedState, optimizedInput, plannedMode);
-          optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
+          // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
 
           vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, 0.001, currentObservation.time);
 
           // after solve the mpc problem, set target trajectory
           vector_t torque = x.tail(12); //ocs2 joint order [LF, LH, RF, RH]
-          // Eigen::Map<vector3_t>(lf_pos.value) = q_j.head(3);
-          const vector_t& optimizedJonitState = optimizedState.tail(nJoints_); //ocs2 joint order [LF, LH, RF, RH]
-		  const vector_t& optimizedJonitVel = optimizedInput.tail(nJoints_); //ocs2 joint order [LF, LH, RF, RH]
+          // Eigen::Map<vector3_t>(lf_pos.value) = q_j.head(3); 
+          //TODO: add PD term
           Eigen::Map<vector3_t>(command.lf_tau.value) = torque.segment<3>(0);
           Eigen::Map<vector3_t>(command.lh_tau.value) = torque.segment<3>(3);
           Eigen::Map<vector3_t>(command.rf_tau.value) = torque.segment<3>(6);
           Eigen::Map<vector3_t>(command.rh_tau.value) = torque.segment<3>(9);
-
-         Eigen::Map<vector3_t>(command.lf_pos.value) = optimizedJonitState.segment<3>(0);
-         Eigen::Map<vector3_t>(command.lh_pos.value) = optimizedJonitState.segment<3>(3);
-         Eigen::Map<vector3_t>(command.rf_pos.value) = optimizedJonitState.segment<3>(6);
-         Eigen::Map<vector3_t>(command.rh_pos.value) = optimizedJonitState.segment<3>(9);
-
-         Eigen::Map<vector3_t>(command.lf_vel.value) = optimizedJonitVel.segment<3>(0);
-         Eigen::Map<vector3_t>(command.lh_vel.value) = optimizedJonitVel.segment<3>(3);
-         Eigen::Map<vector3_t>(command.rf_vel.value) = optimizedJonitVel.segment<3>(6);
-         Eigen::Map<vector3_t>(command.rh_vel.value) = optimizedJonitVel.segment<3>(9);
-
-         robotVisualizer_->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
-
-
-         const ocs2::wbc::UserParameter& paramf = wbc->getUserParam();
-		for(int i(0); i < 3; i++) {
-			command.lf_tau.value[i] += paramf.Kp_joint_lf[i] * (command.lf_pos.value[i] - jointStatesCur.lf_pos.value[i]) + paramf.Kd_joint_lf[i] * (command.lf_vel.value[i] - jointStatesCur.lf_vel.value[i]);
-			command.rf_tau.value[i] += paramf.Kp_joint_rf[i] * (command.rf_pos.value[i] - jointStatesCur.rf_pos.value[i]) + paramf.Kd_joint_rf[i] * (command.rf_vel.value[i] - jointStatesCur.rf_vel.value[i]);
-			command.lh_tau.value[i] += paramf.Kp_joint_lh[i] * (command.lh_pos.value[i] - jointStatesCur.lh_pos.value[i]) + paramf.Kd_joint_lh[i] * (command.lh_vel.value[i] - jointStatesCur.lh_vel.value[i]);
-			command.rh_tau.value[i] += paramf.Kp_joint_rh[i] * (command.rh_pos.value[i] - jointStatesCur.rh_pos.value[i]) + paramf.Kd_joint_rh[i] * (command.rh_vel.value[i] - jointStatesCur.rh_vel.value[i]);
-		}
-
 		    	break;
 		    }
 		    case kSafeState: {
@@ -483,15 +437,15 @@ int main(int argc, char**argv) {
         rh_haa_pub.publish(rh_haa_tau);
         rh_hfe_pub.publish(rh_hfe_tau);
         rh_kfe_pub.publish(rh_kfe_tau);
-        //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
+
         lf_foot_pub.publish(feet_pos[0]);
-        rf_foot_pub.publish(feet_pos[1]);
-        lh_foot_pub.publish(feet_pos[2]);
+        lh_foot_pub.publish(feet_pos[1]);
+        rf_foot_pub.publish(feet_pos[2]);
         rh_foot_pub.publish(feet_pos[3]);
 
         // ros::spinOnce();
 
-        bool rate_bool = rate.sleep();
+        // bool rate_bool = rate.sleep();
     }
     spinner.stop();
 

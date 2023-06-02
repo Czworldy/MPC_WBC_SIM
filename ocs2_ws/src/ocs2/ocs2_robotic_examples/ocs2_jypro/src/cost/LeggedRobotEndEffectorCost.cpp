@@ -163,7 +163,7 @@ ad_vector_t LeggedRobotEndEffectorCost::getVelocityCppAd(PinocchioInterfaceCppAd
   const ad_vector_t v = mapping.getPinocchioJointVelocity(state, input);
 
   pinocchio::forwardKinematics(model, data, q, v);
-  // pinocchio::updateFramePlacements(model, data);
+  pinocchio::updateFramePlacements(model, data);
 
   ad_vector_t velocities(3 * endEffectorKinematics_.getendEffectorFrameIds().size());
   for (int i = 0; i < endEffectorKinematics_.getendEffectorFrameIds().size(); i++) {

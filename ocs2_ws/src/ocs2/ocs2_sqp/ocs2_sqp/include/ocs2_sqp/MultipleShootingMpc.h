@@ -48,6 +48,7 @@ class MultipleShootingMpc final : public MPC_BASE {
   MultipleShootingMpc(mpc::Settings mpcSettings, multiple_shooting::Settings settings, const OptimalControlProblem& optimalControlProblem,
                       const Initializer& initializer)
       : MPC_BASE(std::move(mpcSettings)) {
+        std::cout << "SqpMpc\n";
     solverPtr_.reset(new MultipleShootingSolver(std::move(settings), optimalControlProblem, initializer));
   };
 
