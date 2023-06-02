@@ -350,8 +350,8 @@ int main(int argc, char**argv) {
 		    	break;
 		    }
 		    case kWBCMPC: {
-          const ocs2::vector_t& state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
-          const ocs2::vector_t& rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
+          const ocs2::vector_t state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
+          const ocs2::vector_t rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
           currentObservation.state = state;
           //contact_flag_real LF LH RF RH
           contact_flag_t stanceLegs = {contact_flag_real[0], contact_flag_real[2], 
@@ -377,10 +377,19 @@ int main(int argc, char**argv) {
           endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
           //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
           std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
+          const vector3_t& bodyPosition = state.segment(6, 3);
+          const vector3_t& bodyZyxEulerAngles = state.segment(9, 3);
+          Eigen::Matrix<scalar_t, 4, 4> _O_B_tfMatrix = Eigen::Matrix<scalar_t, 4, 4>::Identity();
+          
+          _O_B_tfMatrix.topLeftCorner(3, 3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyZyxEulerAngles);
+          _O_B_tfMatrix.topRightCorner(3, 1) = bodyPosition;
+          const auto _B_O_tfMatrix = _O_B_tfMatrix.inverse();
           for(size_t leg = 0; leg < 4; leg++){
-            feet_pos[leg].point.x = posDesired[leg].x();
-            feet_pos[leg].point.y = posDesired[leg].y();
-            feet_pos[leg].point.z = posDesired[leg].z();
+            vector3_t posDesiredinBodyFrame = (_B_O_tfMatrix * posDesired[leg].homogeneous()).head(3);
+
+            feet_pos[leg].point.x = posDesiredinBodyFrame.x();
+            feet_pos[leg].point.y = posDesiredinBodyFrame.y();
+            feet_pos[leg].point.z = posDesiredinBodyFrame.z();
           }
 
           auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.toRotationMatrix());
@@ -482,7 +491,7 @@ int main(int argc, char**argv) {
 
         // ros::spinOnce();
 
-        // bool rate_bool = rate.sleep();
+        bool rate_bool = rate.sleep();
     }
     spinner.stop();
 
