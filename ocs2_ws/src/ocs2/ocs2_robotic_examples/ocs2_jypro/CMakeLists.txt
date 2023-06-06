@@ -101,6 +101,7 @@ add_library(ocs2_jypro
   src/foot_planner/QuinticSpline.cpp
   src/foot_planner/TwoQuinticSplineCpg.cpp
   src/foot_planner/MultiSplineCpg.cpp
+  src/foot_planner/SixthOrderSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
   src/foot_planner/FootPlacementPlanner.cpp
   src/foot_planner/FootConstraintsPlanner.cpp

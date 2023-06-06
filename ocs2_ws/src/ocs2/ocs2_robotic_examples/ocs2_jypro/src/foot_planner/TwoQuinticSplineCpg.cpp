@@ -41,6 +41,11 @@ TwoQuinticSplineCpg::TwoQuinticSplineCpg(QuinticSpline::Node liftOff, QuinticSpl
       leftSpline_(liftOff, middleLeft, QuinticSpline::Node{midTime_, midHeight, 0.0}),
       rightSpline_(QuinticSpline::Node{midTime_, midHeight, 0.0}, middleRight, touchDown) {}
 
+TwoQuinticSplineCpg::TwoQuinticSplineCpg(QuinticSpline::Node liftOff, scalar_t leftMidHeight, QuinticSpline::Node apex, 
+      scalar_t rightMidHeight,QuinticSpline::Node touchDown) 
+    : midTime_(apex.time),
+      leftSpline_(liftOff, leftMidHeight, apex, true),
+      rightSpline_(apex, rightMidHeight, touchDown, false) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/

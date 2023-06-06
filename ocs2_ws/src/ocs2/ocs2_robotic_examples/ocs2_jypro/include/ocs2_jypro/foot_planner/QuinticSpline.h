@@ -40,9 +40,11 @@ class QuinticSpline {
     scalar_t time;
     scalar_t position;
     scalar_t velocity;
+    scalar_t acceleration;
   };
 
   QuinticSpline(Node start, Node middle, Node end);
+  QuinticSpline(Node start, scalar_t middle, Node end, bool isLeft);
 
   scalar_t position(scalar_t time) const;
 
