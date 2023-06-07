@@ -29,12 +29,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#include <memory>
 #include <ocs2_core/reference/ModeSchedule.h>
 
 #include "ocs2_jypro/common/Types.h"
 #include "ocs2_jypro/foot_planner/SplineCpg.h"
 #include "ocs2_jypro/foot_planner/MultiSplineCpg.h"
 #include "ocs2_jypro/foot_planner/TwoQuinticSplineCpg.h"
+#include "ocs2_jypro/foot_planner/SixthOrderSpline.h"
+#include "ocs2_jypro/foot_planner/MinimumJerkSeventhOrderSpline.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -146,8 +149,10 @@ class SwingTrajectoryPlanner {
   const size_t numFeet_;
   bool usingMultiHeight_ = false;
 
+  MinimumJerkSeventhOrderSplineSolver minimumJerkSolver_;
+
   feet_array_t<std::vector<SplineCpg>> feetHeightTrajectories_;
-  feet_array_t<std::vector<TwoQuinticSplineCpg>> feetMultiHeightTrajectories_;
+  feet_array_t<std::vector<std::unique_ptr<Spline>>> feetMultiHeightTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetXTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetYTrajectories_;
   feet_array_t<std::vector<scalar_t>> feetHeightTrajectoriesEvents_;

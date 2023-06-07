@@ -22,8 +22,8 @@ model_settings
 
 swing_trajectory_config
 {
-  liftOffVelocity               0.5  
-  touchDownVelocity            -0.5     ;-0.2
+  liftOffVelocity               0.4  
+  touchDownVelocity             0.0     ;-0.2
   swingHeight                   0.25
   touchdownAfterHorizon         0.2
   swingTimeScale                0.15

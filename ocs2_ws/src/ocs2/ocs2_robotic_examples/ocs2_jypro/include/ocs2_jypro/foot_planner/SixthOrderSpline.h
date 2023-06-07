@@ -29,18 +29,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#include <ocs2_core/Types.h>
 #include "ocs2_jypro/foot_planner/QuinticSpline.h"
 
 namespace ocs2 {
 namespace legged_robot {
 
-class TwoQuinticSplineCpg {
+class SixthOrderSpline : public Spline {
  public:
-  TwoQuinticSplineCpg(QuinticSpline::Node liftOff, QuinticSpline::Node middleLeft, scalar_t midHeight, scalar_t midTime, 
-              QuinticSpline::Node middleRight, QuinticSpline::Node touchDown);
+  using Node = QuinticSpline::Node;
 
-  TwoQuinticSplineCpg(QuinticSpline::Node liftOff, scalar_t leftMidHeight, QuinticSpline::Node apex, scalar_t rightMidHeight,
-              QuinticSpline::Node touchDown);
+  SixthOrderSpline(Node start, scalar_t middle, Node end);
 
   scalar_t position(scalar_t time) const;
 
@@ -48,16 +47,53 @@ class TwoQuinticSplineCpg {
 
   scalar_t acceleration(scalar_t time) const;
 
+  // scalar_t startTimeDerivative(scalar_t t) const;
+
+  // scalar_t finalTimeDerivative(scalar_t t) const;
+
+ private:
+  scalar_t normalizedTime(scalar_t t) const;
+
+  scalar_t t0_;
+  scalar_t t1_;
+  scalar_t dt_;
+
+  scalar_t c0_;
+  scalar_t c1_;
+  scalar_t c2_;
+  scalar_t c3_;
+  scalar_t c4_;
+  scalar_t c5_;
+  scalar_t c6_;
+
+  // scalar_t dc0_;  // derivative w.r.t. dt_
+  // scalar_t dc1_;  // derivative w.r.t. dt_
+  // scalar_t dc2_;  // derivative w.r.t. dt_
+  // scalar_t dc3_;  // derivative w.r.t. dt_
+};
+
+class TwoSixthOrderSplineCpg : public Spline {
+ public:
+  using Node = QuinticSpline::Node;
+
+  TwoSixthOrderSplineCpg(Node liftOff, scalar_t leftMidHeight, Node apex, scalar_t rightMidHeight,
+              Node touchDown);
+
+  scalar_t position(scalar_t time) const override;
+
+  scalar_t velocity(scalar_t time) const override;
+
+  scalar_t acceleration(scalar_t time) const override;
+
   // scalar_t startTimeDerivative(scalar_t time) const;
 
   // scalar_t finalTimeDerivative(scalar_t time) const;
 
  private:
   scalar_t midTime_;
-  QuinticSpline leftSpline_;
-  QuinticSpline rightSpline_;
+  SixthOrderSpline leftSpline_;
+  SixthOrderSpline rightSpline_;
 };
-
 
 }  // namespace legged_robot
 }  // namespace ocs2
