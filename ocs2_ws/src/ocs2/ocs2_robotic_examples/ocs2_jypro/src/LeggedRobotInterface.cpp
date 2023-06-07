@@ -58,7 +58,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
 #include "ocs2_jypro/cost/LeggedRobotStateInputQuadraticCost.h"
 #include "ocs2_jypro/dynamics/LeggedRobotDynamicsAD.h"
-#include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
 #include "ocs2_jypro/foot_planner/LeggedIKSolver.h"
 #include "ocs2_jypro/LoadMatrixFromFile.h"
 
@@ -178,10 +177,10 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   auto mpcSwingHeightPtr = std::make_shared<feet_array_t<std::vector<vector_t>>>();
   auto mpcSwingMiddleTimePtr = std::make_shared<feet_array_t<std::vector<scalar_t>>>();
 
-  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, __FOOT_R__},{__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
-  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{__FOOT_X__, -__FOOT_Y__, __FOOT_R__}}; 
-  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, __FOOT_R__},{-__FOOT_X__, __FOOT_Y__, __FOOT_R__}};
-  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__},{-__FOOT_X__, -__FOOT_Y__, __FOOT_R__}};
+  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, -0.4},{__FOOT_X__, __FOOT_Y__, -0.4}};
+  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, -0.4},{__FOOT_X__, -__FOOT_Y__, -0.4}}; 
+  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, -0.4},{-__FOOT_X__, __FOOT_Y__, -0.4}};
+  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, -0.4},{-__FOOT_X__, -__FOOT_Y__, -0.4}};
   
   std::vector<vector_t> swingHeightDefault;
   vector_t defaultHeight = vector3_t{0.075, 0.15, 0.075};
@@ -397,7 +396,7 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getEndEffectorTrackingCost
         std::cerr << " #### =============================================================================\n";
     }
 
-    return std::unique_ptr<StateInputCost>(new LeggedRobotEndEffectorCost(std::move(Q), std::move(R), eeKinematics,
+    return std::unique_ptr<StateInputCost>(new LeggedRobotEndEffectorCost(std::move(Q), std::move(R), *referenceManagerPtr_, eeKinematics, 
                                                                           contactPointIndex, centroidalModelInfo_.stateDim, centroidalModelInfo_.inputDim,
                                                                           modelName, modelFolderCppAd, recompileCppAd));
 }

@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ocs2_jypro/common/Types.h"
 #include "ocs2_jypro/foot_planner/SplineCpg.h"
 #include "ocs2_jypro/foot_planner/MultiSplineCpg.h"
+#include "ocs2_jypro/foot_planner/TwoQuinticSplineCpg.h"
 
 namespace ocs2 {
 namespace legged_robot {
@@ -66,7 +67,8 @@ class SwingTrajectoryPlanner {
   //             const feet_array_t<std::vector<scalar_t>>& swingHeightSequence, 
   //             const feet_array_t<std::vector<scalar_t>>& swingMiddleTimeSequence, 
   //             bool isLateTouchdown);
-  
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
+              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors, bool isLateTouchdown);
   void updateUsingMultiHeightAndSwingMiddleTime(const ModeSchedule& modeSchedule, 
               const feet_array_t<std::vector<vector3_t>>& feetPlacement, scalar_t initTime,
               const feet_array_t<vector3_t>& currentFeetEndEffectors,
@@ -145,7 +147,7 @@ class SwingTrajectoryPlanner {
   bool usingMultiHeight_ = false;
 
   feet_array_t<std::vector<SplineCpg>> feetHeightTrajectories_;
-  feet_array_t<std::vector<MultiSplineCpg>> feetMultiHeightTrajectories_;
+  feet_array_t<std::vector<TwoQuinticSplineCpg>> feetMultiHeightTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetXTrajectories_;
   feet_array_t<std::vector<SplineCpg>> feetYTrajectories_;
   feet_array_t<std::vector<scalar_t>> feetHeightTrajectoriesEvents_;

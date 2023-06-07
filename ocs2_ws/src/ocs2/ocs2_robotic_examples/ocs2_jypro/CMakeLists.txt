@@ -103,6 +103,8 @@ add_library(ocs2_jypro
   src/foot_planner/FootPlacementPlanner.cpp
   src/foot_planner/FootConstraintsPlanner.cpp
   src/foot_planner/LeggedIKSolver.cpp
+  src/foot_planner/QuinticSpline.cpp
+  src/foot_planner/TwoQuinticSplineCpg.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitPythonInterface.cpp
