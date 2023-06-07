@@ -30,11 +30,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <ocs2_core/Types.h>
+#include "ocs2_jypro/foot_planner/CubicSpline.h"
 
 namespace ocs2 {
 namespace legged_robot {
 
-class QuinticSpline {
+class QuinticSpline : public Spline {
  public:
   struct Node {
     scalar_t time;

@@ -34,7 +34,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 
-class CubicSpline {
+class Spline
+{
+public:
+  Spline() = default;
+  virtual ~Spline() = default;
+
+  virtual scalar_t position(scalar_t time) const = 0;
+
+  virtual scalar_t velocity(scalar_t time) const = 0;
+  
+  virtual scalar_t acceleration(scalar_t time) const = 0;
+};
+
+
+class CubicSpline : public Spline {
  public:
   struct Node {
     scalar_t time;

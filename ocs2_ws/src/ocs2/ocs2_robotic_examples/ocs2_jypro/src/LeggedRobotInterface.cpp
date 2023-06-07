@@ -189,7 +189,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     swingHeightDefault.push_back(defaultHeight);
     
   std::fill(mpcSwingHeightPtr->begin(), mpcSwingHeightPtr->end(), swingHeightDefault);
-  std::fill(mpcSwingMiddleTimePtr->begin(), mpcSwingMiddleTimePtr->end(), std::vector<scalar_t>{0.17, 0.17});
+  std::fill(mpcSwingMiddleTimePtr->begin(), mpcSwingMiddleTimePtr->end(), std::vector<scalar_t>{0.175, 0.175});
 
   initPolygon.reserve(3);
   std::vector<vector3_t> Polygon;

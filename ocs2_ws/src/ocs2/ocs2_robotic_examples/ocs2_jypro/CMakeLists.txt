@@ -4,6 +4,8 @@ project(ocs2_jypro)
 # Generate compile_commands.json for clang tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(QPOASES_INLUDE_DIRS /usr/local/include/qpOASES)
+
 set(CATKIN_PACKAGE_DEPENDENCIES
   roslib
   pybind11_catkin
@@ -106,6 +108,7 @@ add_library(ocs2_jypro
   src/foot_planner/FootPlacementPlanner.cpp
   src/foot_planner/FootConstraintsPlanner.cpp
   src/foot_planner/LeggedIKSolver.cpp
+  src/foot_planner/MinimumJerkSeventhOrderSpline.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitPythonInterface.cpp
@@ -129,6 +132,7 @@ target_link_libraries(ocs2_jypro
   ${Boost_LIBRARIES}
   ${pinocchio_LIBRARIES}
   dl
+  qpOASES
 )
 target_compile_options(ocs2_jypro PUBLIC ${pinocchio_CFLAGS_OTHER} -DPINOCCHIO_URDFDOM_TYPEDEF_SHARED_PTR -DPINOCCHIO_URDFDOM_USE_STD_SHARED_PTR)
 

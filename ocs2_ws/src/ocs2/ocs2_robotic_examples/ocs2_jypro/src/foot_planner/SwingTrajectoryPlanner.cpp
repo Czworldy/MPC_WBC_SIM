@@ -39,7 +39,8 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-SwingTrajectoryPlanner::SwingTrajectoryPlanner(Config config, size_t numFeet) : config_(std::move(config)), numFeet_(numFeet) {}
+SwingTrajectoryPlanner::SwingTrajectoryPlanner(Config config, size_t numFeet) : config_(std::move(config)), numFeet_(numFeet),
+  minimumJerkSolver_(3) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -47,7 +48,7 @@ SwingTrajectoryPlanner::SwingTrajectoryPlanner(Config config, size_t numFeet) : 
 scalar_t SwingTrajectoryPlanner::getZvelocityConstraint(size_t leg, scalar_t time) const {
   const auto index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[leg], time);
   if(usingMultiHeight_){
-    return feetMultiHeightTrajectories_[leg][index].velocity(time);
+    return feetMultiHeightTrajectories_[leg][index]->velocity(time);
   }
   else
     return feetHeightTrajectories_[leg][index].velocity(time);
@@ -59,7 +60,7 @@ scalar_t SwingTrajectoryPlanner::getZvelocityConstraint(size_t leg, scalar_t tim
 scalar_t SwingTrajectoryPlanner::getZpositionConstraint(size_t leg, scalar_t time) const {
   const auto index = lookup::findIndexInTimeArray(feetHeightTrajectoriesEvents_[leg], time);
   if(usingMultiHeight_)
-    return feetMultiHeightTrajectories_[leg][index].position(time);
+    return feetMultiHeightTrajectories_[leg][index]->position(time);
   else
     return feetHeightTrajectories_[leg][index].position(time);
 }
@@ -332,7 +333,7 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
-            const QuinticSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity, 0.0}; // without foothold from mapper, this with cause promblem in slope.
+            const QuinticSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity, 0.5}; // without foothold from mapper, this with cause promblem in slope.
             const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
             const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
             const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity, 0.0};
@@ -340,12 +341,18 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const QuinticSpline::Node apex{midTime, midHeight, 0.0, 0.0};
 
             // feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, midHeight, midTime, middleRight, touchDown);
-            feetMultiHeightTrajectories_[j].emplace_back(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            // feetMultiHeightTrajectories_[j].emplace_back(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            // std::unique_ptr<TwoSixthOrderSplineCpg> splinePtr(new TwoSixthOrderSplineCpg(liftOff, midHeightLeft, apex, midHeightRight, touchDown));
+            auto coffe = minimumJerkSolver_.solveCoffectient(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            SenvenOrderSpline leftSpline(coffe.head(8), swingStartTime, midTime);
+            SenvenOrderSpline rightSpline(coffe.tail(8), midTime, swingFinalTime);
+            std::unique_ptr<SeventhOrderSplineCpg> splinePtr(new SeventhOrderSplineCpg(leftSpline, rightSpline, midTime));
+            feetMultiHeightTrajectories_[j].emplace_back(std::move(splinePtr));
 
-            std::cout << "midTime : " << j << " " << midTime << "\n";
-            std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
-            std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
-            std::cout << "midHeight : " << j << " " << midHeight << "\n";
+            // std::cout << "midTime : " << j << " " << midTime << "\n";
+            // std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
+            // std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
+            // std::cout << "midHeight : " << j << " " << midHeight << "\n";
 
             const CubicSpline::Node xStart{swingStartTime, currentFeetEndEffectors[j].x(), 0.0};
             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
@@ -374,7 +381,7 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
-            const QuinticSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity, 0.0}; // without foothold from mapper, this with cause promblem in slope.
+            const QuinticSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity, 0.5}; // without foothold from mapper, this with cause promblem in slope.
             const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
             const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
             const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity, 0.0};
@@ -382,14 +389,20 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const QuinticSpline::Node apex{midTime, midHeight, 0.0, 0.0};
 
             // feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, midHeight, midTime, middleRight, touchDown);
-            feetMultiHeightTrajectories_[j].emplace_back(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            // feetMultiHeightTrajectories_[j].emplace_back(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            // std::unique_ptr<TwoSixthOrderSplineCpg> splinePtr(new TwoSixthOrderSplineCpg(liftOff, midHeightLeft, apex, midHeightRight, touchDown));
+            auto coffe = minimumJerkSolver_.solveCoffectient(liftOff, midHeightLeft, apex, midHeightRight, touchDown);
+            SenvenOrderSpline leftSpline(coffe.head(8), swingStartTime, midTime);
+            SenvenOrderSpline rightSpline(coffe.tail(8), midTime, swingFinalTime);
+            std::unique_ptr<SeventhOrderSplineCpg> splinePtr(new SeventhOrderSplineCpg(leftSpline, rightSpline, midTime));
+            feetMultiHeightTrajectories_[j].emplace_back(std::move(splinePtr));
 
-            std::cout << "midTime : " << j << " " << midTime << "\n";
-            std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
-            std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
-            std::cout << "midTimeLeft : " << j << " " << swingStartTime + swingMiddleTimeSequence[j][p]/2. << "\n";
-            std::cout << "midTimeRight : " << j << " " << (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2. << "\n";
-            std::cout << "midHeight : " << j << " " << midHeight << "\n";
+            // std::cout << "midTime : " << j << " " << midTime << "\n";
+            // std::cout << "midHeightLeft : " << j << " " << midHeightLeft << "\n";
+            // std::cout << "midHeightRight : " << j << " " << midHeightRight << "\n";
+            // std::cout << "midTimeLeft : " << j << " " << swingStartTime + swingMiddleTimeSequence[j][p]/2. << "\n";
+            // std::cout << "midTimeRight : " << j << " " << (swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2. << "\n";
+            // std::cout << "midHeight : " << j << " " << midHeight << "\n";
 
             const CubicSpline::Node xStart{swingStartTime, feetPlacement[j][m].x(), scaling * config_.liftOffVelocity};
             const CubicSpline::Node xEnd{swingFinalTime, feetPlacement[j][p].x(), 0.0};
@@ -418,7 +431,9 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
         const QuinticSpline::Node apex{0.5, feetPlacement[j][p].z(), 0.0, 0.0};
 
         // feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, feetPlacement[j][p].z(), 0.5, middleRight, touchDown);
-        feetMultiHeightTrajectories_[j].emplace_back(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown);
+        // feetMultiHeightTrajectories_[j].emplace_back(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown);
+        std::unique_ptr<TwoSixthOrderSplineCpg> splinePtr(new TwoSixthOrderSplineCpg(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown));
+        feetMultiHeightTrajectories_[j].emplace_back(std::move(splinePtr));
 
         const CubicSpline::Node xStart{0.0, feetPlacement[j][p].x(), 0.0};
         const CubicSpline::Node xEnd{1.0, feetPlacement[j][p].x(), 0.0};

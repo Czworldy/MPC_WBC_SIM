@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 
-class MultiSplineCpg {
+class MultiSplineCpg : public Spline {
  public:
   MultiSplineCpg(const SplineCpg& leftSpline, const SplineCpg& rightSpline, scalar_t midTime)
     : midTime_(midTime), leftSpline_(leftSpline), rightSpline_(rightSpline) {}
