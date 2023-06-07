@@ -37,6 +37,7 @@
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
@@ -227,6 +228,9 @@ int main(int argc, char**argv) {
     auto wbc = std::make_shared<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                           endEffectorKinematics, wbcfilename, nodeHandle);
     auto simpleMotion = std::make_shared<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
+
+    auto robotVisualizer_ = std::make_shared<ocs2::legged_robot::LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
+                                                             interfacePtr->getCentroidalModelInfo(), endEffectorKinematics, nodeHandle);
   
     jointStatesSub = nodeHandle.subscribe("/X20/joint_states", 1, &jointStatesCallback);
     gazeboLinkStatesSub = nodeHandle.subscribe("/ground_truth/state", 1,&gazeboNavMsgsCallback);
@@ -346,8 +350,8 @@ int main(int argc, char**argv) {
 		    	break;
 		    }
 		    case kWBCMPC: {
-          const ocs2::vector_t& state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
-          const ocs2::vector_t& rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
+          const ocs2::vector_t state = raisimConversions->raisimGenCoordGenVelToState(qMeasured, vMeasured); // [Hcom, q_b, q_j] //q_j order is fixed.
+          const ocs2::vector_t rbdState = raisimConversions->raisimGenCoordGenVelToRbdState(qMeasured, vMeasured);
           currentObservation.state = state;
           //contact_flag_real LF LH RF RH
           contact_flag_t stanceLegs = {contact_flag_real[0], contact_flag_real[2], 
@@ -373,10 +377,19 @@ int main(int argc, char**argv) {
           endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
           //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
           std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
+          const vector3_t& bodyPosition = state.segment(6, 3);
+          const vector3_t& bodyZyxEulerAngles = state.segment(9, 3);
+          Eigen::Matrix<scalar_t, 4, 4> _O_B_tfMatrix = Eigen::Matrix<scalar_t, 4, 4>::Identity();
+          
+          _O_B_tfMatrix.topLeftCorner(3, 3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyZyxEulerAngles);
+          _O_B_tfMatrix.topRightCorner(3, 1) = bodyPosition;
+          const auto _B_O_tfMatrix = _O_B_tfMatrix.inverse();
           for(size_t leg = 0; leg < 4; leg++){
-            feet_pos[leg].point.x = posDesired[leg].x();
-            feet_pos[leg].point.y = posDesired[leg].y();
-            feet_pos[leg].point.z = posDesired[leg].z();
+            vector3_t posDesiredinBodyFrame = (_B_O_tfMatrix * posDesired[leg].homogeneous()).head(3);
+
+            feet_pos[leg].point.x = posDesiredinBodyFrame.x();
+            feet_pos[leg].point.y = posDesiredinBodyFrame.y();
+            feet_pos[leg].point.z = posDesiredinBodyFrame.z();
           }
 
           auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.toRotationMatrix());
@@ -414,6 +427,9 @@ int main(int argc, char**argv) {
          Eigen::Map<vector3_t>(command.lh_vel.value) = optimizedJonitVel.segment<3>(3);
          Eigen::Map<vector3_t>(command.rf_vel.value) = optimizedJonitVel.segment<3>(6);
          Eigen::Map<vector3_t>(command.rh_vel.value) = optimizedJonitVel.segment<3>(9);
+
+         robotVisualizer_->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+
 
          const ocs2::wbc::UserParameter& paramf = wbc->getUserParam();
 		for(int i(0); i < 3; i++) {
@@ -475,7 +491,7 @@ int main(int argc, char**argv) {
 
         // ros::spinOnce();
 
-        // bool rate_bool = rate.sleep();
+        bool rate_bool = rate.sleep();
     }
     spinner.stop();
 

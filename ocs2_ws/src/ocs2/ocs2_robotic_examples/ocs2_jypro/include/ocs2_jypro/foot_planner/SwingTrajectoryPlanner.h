@@ -70,7 +70,8 @@ class SwingTrajectoryPlanner {
   //             const feet_array_t<std::vector<scalar_t>>& swingHeightSequence, 
   //             const feet_array_t<std::vector<scalar_t>>& swingMiddleTimeSequence, 
   //             bool isLateTouchdown);
-  
+  void update(const ModeSchedule& modeSchedule, const feet_array_t<std::vector<vector3_t>>& feetPlacement, 
+              scalar_t initTime, const feet_array_t<vector3_t>& currentFeetEndEffectors, bool isLateTouchdown);
   void updateUsingMultiHeightAndSwingMiddleTime(const ModeSchedule& modeSchedule, 
               const feet_array_t<std::vector<vector3_t>>& feetPlacement, scalar_t initTime,
               const feet_array_t<vector3_t>& currentFeetEndEffectors,
