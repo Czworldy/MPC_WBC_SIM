@@ -6,7 +6,7 @@ import math
 prog = MathematicalProgram()
 polygon_oder = 7
 polygon_coffe_num = polygon_oder + 1
-d_order = 3
+d_order = 2
 dT = 0.175
 x = prog.NewContinuousVariables(2 * polygon_coffe_num, "x")
 
@@ -26,7 +26,7 @@ Aeq_block_2 =  np.zeros((6 , polygon_coffe_num))
 Aeq_block_1[0,0] = 1
 Aeq_block_1[1,1] = 1
 Aeq_block_1[2,2] = 2
-Aeq_block_1[3,:] = np.array([0.5**x for x in range(polygon_coffe_num)])
+Aeq_block_1[3,:] = np.array([0.4**x for x in range(polygon_coffe_num)])
 Aeq_block_1[4,:] = np.array([1 for x in range(polygon_coffe_num)])
 Aeq_block_1[5,:] = np.array([x for x in range(polygon_coffe_num)])
 
@@ -41,11 +41,14 @@ Aeq = np.block([
   [Aeq_block_1 , np.zeros((6, polygon_coffe_num))],
   [np.zeros((6, polygon_coffe_num)), Aeq_block_2],
   [0,0,2,6,12,20,30,42,0,0,-2,0,0,0,0,0],
+  [0.0, 0.0, 0.0, 6.0, 24.0, 60.0, 120.0,210.0,0,0,0,-6.0,0,0,0,0]
 ])
 print(Aeq)
 # p1 v1 a1 p2 p3 v3 p3 v3 a5 p4 p5 v5 0
 # 0, 0.5,1,0.1,0.15,0,0.15,0,0,0.1,0,0,0
-beq = np.array([0,0.2,1,  0.12,  0.15,0, 0.15,0,  0,  0.1,  0,0,    0])
+beq = np.array([0,0.0,1,  0.1,  0.25,0, 0.25,0,  0,  0.1,  0,0,    0, 0])
+# beq = np.array([-0.42,00.20,00.50,-0.30,-0.27,00.00,-0.27,00.00,00.00,-0.30,-0.42,-0.0,00.00])
+# beq = np.array([-0.07,00.20,1,00.03,00.08,00.00,00.08,00.00,00.00,00.03,-0.07,00.00,00.00, 0])
 prog.AddLinearEqualityConstraint(Aeq=Aeq, beq=beq, vars=x)
 
 result = Solve(prog)
@@ -72,13 +75,13 @@ jerk = []
 for i in range(101):
   y.append(traj1.EvaluateUnivariate(i/100.0))
   vel.append(traj1.EvaluateUnivariate(i/100.0, derivative_order = 1))
-  acc.append(traj1.EvaluateUnivariate(i/100.0, derivative_order = 2))
+  acc.append(traj1.EvaluateUnivariate(i/100.0, derivative_order = 2)/10)
   jerk.append(traj1.EvaluateUnivariate(i/100.0, derivative_order = 3))
   t.append(i/100.0)
 for i in range(101):
   y.append(traj2.EvaluateUnivariate(i/100.0))
   vel.append(traj2.EvaluateUnivariate(i/100.0, derivative_order = 1))
-  acc.append(traj2.EvaluateUnivariate(i/100.0, derivative_order = 2))
+  acc.append(traj2.EvaluateUnivariate(i/100.0, derivative_order = 2)/10)
   jerk.append(traj2.EvaluateUnivariate(i/100.0, derivative_order = 3))
   t.append(1 + i/100.0)
 
