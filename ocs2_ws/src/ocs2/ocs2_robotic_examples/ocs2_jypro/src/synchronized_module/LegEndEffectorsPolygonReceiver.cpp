@@ -9,12 +9,13 @@ namespace legged_robot {
 LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle nodeHandle,
                                     std::shared_ptr<feet_polygon_array_t> mpcPolygonsPtr,
                                     std::shared_ptr<feet_array_t<std::vector<vector3_t>>> mpcNominalFeetholdsPtr,
+                                    std::shared_ptr<feet_array_t<std::vector<vector_t>>> mpcSwingHeightPtr,
+                                    std::shared_ptr<feet_array_t<std::vector<scalar_t>>> mpcSwingMiddleTimePtr,
                                     const std::string& robotName) :
   mpcTransformedPolygonsPtr_(std::move(mpcPolygonsPtr)),
-  mpcTransformedNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)) {
-
-  receivedFeetPoints_ = *mpcTransformedPolygonsPtr_;
-  receivedNominalFeethold_ = *mpcTransformedNominalFeetholdsPtr_;
+  mpcTransformedNominalFeetholdsPtr_(std::move(mpcNominalFeetholdsPtr)),
+  mpcSwingHeightPtr_(std::move(mpcSwingHeightPtr)),
+  mpcSwingMiddleTimePtr_(std::move(mpcSwingMiddleTimePtr)) {
   mpcPolygonMsgSubscriber_[0] = nodeHandle.subscribe("foothold_planner/RegionForFoot_LF", 1,
         &LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback, this, ::ros::TransportHints().udp());
   mpcPolygonMsgSubscriber_[1] = nodeHandle.subscribe("foothold_planner/RegionForFoot_RF", 1,
@@ -27,6 +28,10 @@ LegEndEffectorsPolygonReceiver::LegEndEffectorsPolygonReceiver(ros::NodeHandle n
     std::lock_guard<std::mutex> lock(latestObservationMutex_);
     latestObservation_ = ros_msg_conversions::readObservationMsg(*msg);
   };
+  receivedFeetPoints_ = *mpcTransformedPolygonsPtr_;
+  receivedNominalFeethold_ = *mpcTransformedNominalFeetholdsPtr_;
+  receivedSwingHeight_ = *mpcSwingHeightPtr_;
+  receivedSwingMiddleTime_ = *mpcSwingMiddleTimePtr_;
   observationSubscriber_ = nodeHandle.subscribe<ocs2_msgs::mpc_observation>("legged_robot_mpc_observation", 1, observationCallback);
 
 }
@@ -53,11 +58,15 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   //   legEndeffectorPolygonReceived_->push_back(ocs2::Polygon(msg->polygons[i]));
   // }
   const int foot_id = msg->foot_id;
-  // std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
+  std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
   receivedFeetPoints_[foot_id].clear();
   receivedFeetPoints_[foot_id].reserve(msg->region.size());
   receivedNominalFeethold_[foot_id].clear();
   receivedNominalFeethold_[foot_id].reserve(msg->region.size());
+  receivedSwingHeight_[foot_id].clear();
+  receivedSwingHeight_[foot_id].reserve(msg->region.size());
+  receivedSwingMiddleTime_[foot_id].clear();
+  receivedSwingMiddleTime_[foot_id].reserve(msg->region.size());
 
   SystemObservation observation;
   {
@@ -72,7 +81,7 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
   tfMatrix.topRightCorner(3,1) = currentPose.head(3);
 
-  // std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
+  std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
   for (int i = 0; i < msg->region.size(); i++) {
       std::vector<Eigen::Vector3d> polygon;
       polygon.reserve(msg->region[i].boundaryPoint.size());
@@ -85,6 +94,11 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
       const vector3_t nominalPoint = {msg->region[i].nominalFoothold.x, msg->region[i].nominalFoothold.y, msg->region[i].nominalFoothold.z};
       const auto& transformedNominalPoint = tfMatrix * nominalPoint.homogeneous();
       receivedNominalFeethold_[foot_id].push_back(transformedNominalPoint.head(3));
+      receivedSwingHeight_[foot_id].push_back(Eigen::Map<const Eigen::VectorXf>(msg->region[i].swing_height.data(), 
+                                                msg->region[i].swing_height.size()).cast<scalar_t>());
+      receivedSwingMiddleTime_[foot_id].push_back(msg->region[i].swing_time);
+      // std::cout << "swing_height: " << msg->region[i].swing_height << std::endl;
+      // std::cout << "transformedNominalPoint: " << transformedNominalPoint.head(3).transpose() << std::endl;
   }
 
     polygonsUpdated_ = true;
@@ -145,6 +159,8 @@ void LegEndEffectorsPolygonReceiver::preSolverRun(scalar_t initTime, scalar_t fi
 
     *mpcTransformedPolygonsPtr_ = receivedFeetPoints_;
     *mpcTransformedNominalFeetholdsPtr_ = receivedNominalFeethold_;
+    *mpcSwingHeightPtr_ = receivedSwingHeight_;
+    *mpcSwingMiddleTimePtr_ = receivedSwingMiddleTime_;
 
         // save the transformed points to let footplacementplanner chose.
         // create polygon using transformed points.

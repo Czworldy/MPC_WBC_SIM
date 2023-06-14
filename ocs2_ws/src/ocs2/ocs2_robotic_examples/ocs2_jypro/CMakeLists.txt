@@ -4,6 +4,8 @@ project(ocs2_jypro)
 # Generate compile_commands.json for clang tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(QPOASES_INLUDE_DIRS /usr/local/include/qpOASES)
+
 set(CATKIN_PACKAGE_DEPENDENCIES
   roslib
   pybind11_catkin
@@ -40,7 +42,7 @@ pkg_check_modules(pinocchio REQUIRED pinocchio)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wfatal-errors -Wl,--no-as-needed")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -Wfatal-errors -Wl,--no-as-needed")
 
 
 ###################################
@@ -98,10 +100,15 @@ add_library(ocs2_jypro
   src/synchronized_module/TerrainPythonInterface.cpp
   src/foot_planner/SplineCpg.cpp
   src/foot_planner/CubicSpline.cpp
+  src/foot_planner/QuinticSpline.cpp
+  src/foot_planner/TwoQuinticSplineCpg.cpp
+  src/foot_planner/MultiSplineCpg.cpp
+  src/foot_planner/SixthOrderSpline.cpp
   src/foot_planner/SwingTrajectoryPlanner.cpp
   src/foot_planner/FootPlacementPlanner.cpp
   src/foot_planner/FootConstraintsPlanner.cpp
   src/foot_planner/LeggedIKSolver.cpp
+  src/foot_planner/MinimumJerkSeventhOrderSpline.cpp
   src/gait/Gait.cpp
   src/gait/GaitReceiver.cpp
   src/gait/GaitPythonInterface.cpp
@@ -125,6 +132,7 @@ target_link_libraries(ocs2_jypro
   ${Boost_LIBRARIES}
   ${pinocchio_LIBRARIES}
   dl
+  qpOASES
 )
 target_compile_options(ocs2_jypro PUBLIC ${pinocchio_CFLAGS_OTHER} -DPINOCCHIO_URDFDOM_TYPEDEF_SHARED_PTR -DPINOCCHIO_URDFDOM_USE_STD_SHARED_PTR)
 

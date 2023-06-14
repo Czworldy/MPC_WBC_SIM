@@ -8,12 +8,12 @@
 namespace ocs2 {
 namespace legged_robot {
 
-LeggedRobotEndEffectorCost::LeggedRobotEndEffectorCost(matrix_t Q, matrix_t R, 
+LeggedRobotEndEffectorCost::LeggedRobotEndEffectorCost(matrix_t Q, matrix_t R, const SwitchedModelReferenceManager& referenceManager,
                                                        const EndEffectorKinematics<scalar_t>& endEffectorKinematics,
                                                        size_t contactPointIndex,size_t stateDim, size_t inputDim,
                                                        const std::string& modelName, const std::string& modelFolderCppAd,
                                                        bool recompileCppAd) 
-  : Q_(std::move(Q)), R_(std::move(R)), 
+  : Q_(std::move(Q)), R_(std::move(R)), referenceManagerPtr_(&referenceManager),
   endEffectorKinematics_(cast<PinocchioEndEffectorKinematicsCppAd>(endEffectorKinematics)),
   // pinocchioInterfaceCppAd_(endEffectorKinematics_.pinocchioInterface_.toCppAd()),
   contactPointIndex_(contactPointIndex) {
@@ -34,6 +34,10 @@ LeggedRobotEndEffectorCost::LeggedRobotEndEffectorCost(matrix_t Q, matrix_t R,
      };
 
     initialize(stateDim, inputDim, 6, modelName, modelFolderCppAd, recompileCppAd, true);
+}
+
+bool LeggedRobotEndEffectorCost::isActive(scalar_t time) const {
+  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
 }
 
 LeggedRobotEndEffectorCost* LeggedRobotEndEffectorCost::clone() const {

@@ -43,6 +43,22 @@ SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, CubicSpline:
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
+SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, CubicSpline::Node touchDown)
+    : midTime_(midTime),
+      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, 0.0}),
+      rightSpline_(CubicSpline::Node{midTime_, midHeight, 0.0}, touchDown) {}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+SplineCpg::SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, scalar_t midVel, CubicSpline::Node touchDown)
+    : midTime_(midTime),
+      leftSpline_(liftOff, CubicSpline::Node{midTime_, midHeight, midVel}),
+      rightSpline_(CubicSpline::Node{midTime_, midHeight, midVel}, touchDown) {}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
 scalar_t SplineCpg::position(scalar_t time) const {
   return (time < midTime_) ? leftSpline_.position(time) : rightSpline_.position(time);
 }

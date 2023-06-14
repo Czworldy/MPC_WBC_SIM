@@ -40,6 +40,7 @@
 #include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include <ocs2_raisim_ros/RaisimHeightmapRosConverter.h>
 
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
@@ -48,6 +49,7 @@
 #include <signal.h>
 #include <atomic>
 
+#include "ocs2_wbc_ros/RandomHeightMapGenerator.hpp"
 #include <ros/ros.h>
 #include <angles/angles.h>
 
@@ -216,7 +218,7 @@ int main(int argc, char* argv[]) {
 
   ros::Publisher observationPublisher;
 
-  std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
+  const std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
   std::string taskfile      ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
   std::string referencefile ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/targetTrajectories.info";
   std::string urdffile      ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf";
@@ -255,13 +257,15 @@ int main(int argc, char* argv[]) {
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                             interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
+                            interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
+                            interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                               robotName);
   mpc->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
-
+  std::cout << "mpc done!\n";
   auto mpcMrtInterface_ = std::make_shared<MPC_MRT_Interface>(*mpc);
   mpcMrtInterface_->initRollout(&interfacePtr->getRollout());
 
@@ -295,8 +299,7 @@ int main(int argc, char* argv[]) {
   auto wbc = std::make_unique<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                         endEffectorKinematics, wbcfilename, nodeHandle);
   auto simpleMotion = std::make_unique<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
-
-  auto robotVisualizer = std::make_shared<LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
+  auto robotVisualizer_ = std::make_shared<ocs2::legged_robot::LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
                                                              interfacePtr->getCentroidalModelInfo(), endEffectorKinematics, nodeHandle);
   
 
@@ -309,7 +312,23 @@ int main(int argc, char* argv[]) {
   world->setMaterialPairProp("steel","rubber",0.8, 0.4, 0.001);
   world->setMaterialPairProp("steel", "steel", 0.8, 0.95, 0.001);
 
-  auto heightMap_ = world->addHeightMap("/home/yjy/jy_control_test/terrain12.txt",0, 0, "steel");
+  raisim::RandomHeightMapGenerator hmGenerator;
+  std::mt19937 gen(0);  
+
+  auto heightMap_ = world->addHeightMap("/home/yjy/jy_control_test/terrain.txt",0, 0, "steel");
+  // auto heightMap_ = hmGenerator.generateTerrain(world.get(), raisim::RandomHeightMapGenerator::GroundType::HEIGHT_MAP_DISCRETE, 1, false, gen);
+
+
+  //map publisher
+  std::unique_ptr<ocs2::RaisimHeightmapRosConverter> heightmapPub;
+  heightmapPub.reset(new ocs2::RaisimHeightmapRosConverter());
+  auto mapPublishThread_ = std::thread([&]() {
+      ros::Rate rate(1);
+      while(ros::ok() && ros::master::check()) {
+       heightmapPub->publishGridmap(*heightMap_, "odom");
+       rate.sleep();
+      }
+  });
 
   heightMap_->setAppearance("soil2");
   heightMap_->setName("gnd");
@@ -362,6 +381,7 @@ int main(int argc, char* argv[]) {
   /// this is nominal configuration of anymal
   gc_init_ << 0.0, 0.0, 0.44, 1.0, 0.0, 0.0, 0.0, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
   gc_init_.tail(12) = interfacePtr->getInitialState().tail(12);
+  gc_init_[2] = heightMap_->getHeight(0, 0) + 0.44;
 
   /// set pd gains
   Eigen::VectorXd jointPgain(gvDim_), jointDgain(gvDim_);
@@ -616,8 +636,6 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     // std::cout << "currentObservation.time: " << currentObservation.time << std::endl;
 
     vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, 0.001, currentObservation.time);
-
-    robotVisualizer->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
     // std::cout << "wbc update: " << x.rows() << std::endl; //rows = 42
     // after solve the mpc problem, set target trajectory
     vector_t torque = x.tail(12);
@@ -636,6 +654,7 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
 
     world->integrate();
     // estimateState();
+    robotVisualizer_->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
 
 
     if(visualizationCounter_ % visDecimation == 0) {

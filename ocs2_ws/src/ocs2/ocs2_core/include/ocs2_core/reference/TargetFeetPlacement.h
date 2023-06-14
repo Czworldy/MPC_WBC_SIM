@@ -10,7 +10,7 @@ namespace ocs2 {
 
 //X20 (x,y) = (0.3377,0.2033)
 #define __FOOT_X__ 0.30164
-#define __FOOT_Y__ 0.20322
+#define __FOOT_Y__ 0.18322
 #define __FOOT_R__ 0.036
 struct TargetFeetPlacement {
  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
