@@ -110,6 +110,7 @@ class SwitchedModelReferenceManager : public LeggedRobotReferenceManager {
   scalar_t lateTouchdownTime_ = 0.0;
   contact_flag_t insertContactFlags_ = {true, true, true, true};
   int insertContactTimes_ = 0;
+  feet_array_t<vector3_t> feetEETouchDownPositions_;
 
 };
 

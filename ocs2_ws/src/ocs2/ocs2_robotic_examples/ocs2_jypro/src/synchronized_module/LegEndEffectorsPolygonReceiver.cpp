@@ -58,7 +58,7 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   //   legEndeffectorPolygonReceived_->push_back(ocs2::Polygon(msg->polygons[i]));
   // }
   const int foot_id = msg->foot_id;
-  std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
+  // std::cout << "foot_id Constraint Callback: " << foot_id << std::endl;
   receivedFeetPoints_[foot_id].clear();
   receivedFeetPoints_[foot_id].reserve(msg->region.size());
   receivedNominalFeethold_[foot_id].clear();
@@ -81,7 +81,7 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
   tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
   tfMatrix.topRightCorner(3,1) = currentPose.head(3);
 
-  std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
+  // std::cout << "msg size:" << msg->region.size() << " " << msg->region[0].boundaryPoint.size() << "\n";
   for (int i = 0; i < msg->region.size(); i++) {
       std::vector<Eigen::Vector3d> polygon;
       polygon.reserve(msg->region[i].boundaryPoint.size());
@@ -97,8 +97,8 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
       receivedSwingHeight_[foot_id].push_back(Eigen::Map<const Eigen::VectorXf>(msg->region[i].swing_height.data(), 
                                                 msg->region[i].swing_height.size()).cast<scalar_t>());
       receivedSwingMiddleTime_[foot_id].push_back(msg->region[i].swing_time);
-      // std::cout << "swing_height: " << msg->region[i].swing_height << std::endl;
-      // std::cout << "transformedNominalPoint: " << transformedNominalPoint.head(3).transpose() << std::endl;
+      std::cout << "swing_height: " << receivedSwingHeight_[foot_id].back().transpose() << std::endl;
+      std::cout << "transformedNominalPoint: " << transformedNominalPoint.head(3).transpose() << std::endl;
   }
 
     polygonsUpdated_ = true;
