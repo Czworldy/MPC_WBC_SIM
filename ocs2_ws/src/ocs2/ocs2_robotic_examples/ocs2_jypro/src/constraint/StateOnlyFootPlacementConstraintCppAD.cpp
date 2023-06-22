@@ -70,7 +70,7 @@ StateOnlyFootPlacementConstraint::StateOnlyFootPlacementConstraint(const Switche
                 0, 0, 1,
                 0, 0, 0;
         std::cout << "start build CppAD!\n";
-        initialize(stateDim_, 0, modelName, "/home/ysc/cppad",true, true);
+        initialize(stateDim_, 0, modelName, "/tmp/ocs2_udq_mpc",true, true);
 
         
         

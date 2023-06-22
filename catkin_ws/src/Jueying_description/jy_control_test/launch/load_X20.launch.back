@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<launch>
+
+ <!-- Name of the robot description parameter -->
+  <arg name="description_name"         default="robot_description"/>
+  <!-- Joint state topic name -->
+  <arg name="joint_states_topic"       default="/joint_states"/>
+
+  <arg name="rviz"    default="false" />
+  <arg name="urdf_tf_publish"    default="false" />
+
+    <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/slope_X.world"/> -->
+  <arg name="world_name" value="$(find jueying_gazebo)/worlds/jiange_1.world"/>
+
+  <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/wall.world"/> -->
+  <!-- <arg name="world_name" value="/home/dqwang/MPC_WBC_sim/catkin_ws/src/Jueying_description/X20/world/jypro_world"/> -->
+  <arg name="paused" default="true"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+<param name="robot_description" command="$(find xacro)/xacro --inorder $(find X20)/urdf/X20.xacro"/>
+
+<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model X20 -param robot_description
+        -J A_LF_HAA 0.0
+        -J A_LF_HFE -0.87
+        -J A_LF_KFE 1.855
+        -J A_RF_HAA 0.0
+        -J A_RF_HFE -0.87
+        -J A_RF_KFE 1.855
+        -J B_LH_HAA 0.0
+        -J B_LH_HFE -0.87
+        -J B_LH_KFE 1.855
+        -J B_RH_HAA 0.0
+        -J B_RH_HFE -0.87
+        -J B_RH_KFE 1.855
+        -z 0.42
+    "/>
+
+   <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find jy_control_test)/config/controller_X20.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="control_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="X20" args="
+                                                                            joint_state_controller
+                                                                            LF_HAA_controller
+                                                                            LF_HFE_controller
+                                                                            LF_KFE_controller
+                                                                            RF_HAA_controller
+                                                                            RF_HFE_controller
+                                                                            RF_KFE_controller
+                                                                            LH_HAA_controller
+                                                                            LH_HFE_controller
+                                                                            LH_KFE_controller
+                                                                            RH_HAA_controller
+                                                                            RH_HFE_controller
+                                                                            RH_KFE_controller
+
+
+">
+<remap from="joint_states"      to="$(arg joint_states_topic)"/>
+</node>
+
+  <node if="$(arg urdf_tf_publish)" name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  <param name="publish_frequency" type="double" value="50.0" />
+  </node>
+
+    <node if="$(arg urdf_tf_publish)" pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" >
+    <param name="publish_frequency" type="double" value="50.0" />
+    </node>
+
+  <arg name="rvizconfig" default="$(find jy_control_test)/rviz/load_robot.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
+
+</launch>
+

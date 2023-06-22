@@ -10,16 +10,16 @@
 #include <set>
 #include <random>
 
-#include <raisim/OgreVis.hpp>
+// #include <raisim/OgreVis.hpp>
 // #include "raisimVis/raisimKeyboardCallback.hpp"
 // #include "raisimVis/raisimBasicImguiPanel.hpp"
 
-#include "ocs2_wbc/raisimVis/anymal/anymal_imgui_render_callback.hpp"
-#include "ocs2_wbc/raisimVis/anymal/gaitLogger.hpp"
-#include "ocs2_wbc/raisimVis/anymal/jointSpeedTorqueLogger.hpp"
-#include "ocs2_wbc/raisimVis/anymal/rewardLogger.hpp"
-#include "ocs2_wbc/raisimVis/anymal/videoLogger.hpp"
-#include "ocs2_wbc/raisimVis/anymal/frameVisualizer.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/anymal_imgui_render_callback.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/gaitLogger.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/jointSpeedTorqueLogger.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/rewardLogger.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/videoLogger.hpp"
+// #include "ocs2_wbc/raisimVis/anymal/frameVisualizer.hpp"
 #include "ocs2_wbc_ros/SingleWbcRos.h"
 #include "ocs2_wbc/SimpleMotion/SimpleMotion.h"
 // #include "raisim_test.hpp"
@@ -40,6 +40,7 @@
 #include "ocs2_jypro/visualization/LeggedRobotVisualizer.h"
 #include <ocs2_msgs/mpc_observation.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+#include <ocs2_raisim_ros/RaisimHeightmapRosConverter.h>
 
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
@@ -48,8 +49,20 @@
 #include <signal.h>
 #include <atomic>
 
+#include "ocs2_wbc_ros/RandomHeightMapGenerator.hpp"
 #include <ros/ros.h>
 #include <angles/angles.h>
+
+#include "raisim/RaisimServer.hpp"
+
+#include <sensor_msgs/PointCloud2.h>
+#include <tf2_ros/transform_listener.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/conversions.h>
+#include <pcl/common/transforms.h>
+
 
 using namespace raisim;
 using namespace ocs2;
@@ -144,6 +157,8 @@ const double rollBase(0.);
 const double pitchBase(0.);
 const double yawBase(0.);
 
+const double simulation_dt_ = 0.001;
+
 bool isMPC(false);
 bool isMPCMsgUpdate(false);
 
@@ -164,41 +179,7 @@ void filter(ocs2::scalar_t& input, ocs2::scalar_t& lastOutput, ocs2::scalar_t al
     lastOutput = alpha * input + (1 - alpha) * lastOutput;
     input = lastOutput;
 }
-void setupCallback() {
-  auto vis = raisim::OgreVis::get();
 
-  /// light
-  vis->getLight()->setDiffuseColour(1, 1, 1);
-  vis->getLight()->setCastShadows(true);
-  Ogre::Vector3 lightdir(-3,-3,-0.5);
-  lightdir.normalise();
-  vis->getLightNode()->setDirection({lightdir});
-
-  /// load  textures
-  vis->addResourceDirectory(vis->getResourceDir() + "/material/checkerboard");
-  vis->loadMaterialFile("checkerboard.material");
-
-  /// shdow setting
-  vis->getSceneManager()->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE);
-  vis->getSceneManager()->setShadowTextureSettings(2048, 3);
-
-  /// scale related settings!! Please adapt it depending on your map size
-  // beyond this distance, shadow disappears
-  vis->getSceneManager()->setShadowFarDistance(10);
-  // size of contact points and contact forces
-  vis->setContactVisObjectSize(0.03, 0.6);
-  // speed of camera motion in freelook mode
-  vis->getCameraMan()->setTopSpeed(5);
-
-  /// skybox
-  Ogre::Quaternion quat;
-  quat.FromAngleAxis(Ogre::Radian(M_PI_2), {1., 0, 0});
-  vis->getSceneManager()->setSkyBox(true,
-                                    "Examples/StormySkyBox",
-                                    500,
-                                    true,
-                                    quat);
-}
 
 int main(int argc, char* argv[]) {
   using vector12_t = Eigen::Matrix<ocs2::scalar_t, 12, 1>;
@@ -216,7 +197,7 @@ int main(int argc, char* argv[]) {
 
   ros::Publisher observationPublisher;
 
-  std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
+  const std::string wbcfilename = "/home/yjy/jy_control_test/include/PARAMETER/UserParameter_sdk_ws.info";
   std::string taskfile      ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/mpc/task.info";
   std::string referencefile ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/ocs2/ocs2_robotic_examples/ocs2_jypro/config/command/targetTrajectories.info";
   std::string urdffile      ;//= "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf";
@@ -228,6 +209,12 @@ int main(int argc, char* argv[]) {
   nodeHandle.getParam("/referenceFile", referencefile);
 
   observationPublisher = nodeHandle.advertise<ocs2_msgs::mpc_observation>(robotName + "_mpc_observation", 1);
+
+  auto lf_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/lf_foot_pos", 1);
+  auto lh_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
+  auto rf_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
+  auto rh_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
+
   auto interfacePtr = std::make_unique<ocs2::legged_robot::LeggedRobotInterface>(taskfile, urdffile, referencefile);
   // auto mpc = std::make_unique<ocs2::legged_robot::LeggedRobotPyBindings>(std::move(interfacePtr), gaitfile);
   auto mpc = std::make_unique<ocs2::MultipleShootingMpc>(interfacePtr->mpcSettings(), interfacePtr->sqpSettings(), 
@@ -255,13 +242,15 @@ int main(int argc, char* argv[]) {
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                             interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
+                            interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
+                            interfacePtr->getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                               robotName);
   mpc->getSolverPtr()->setReferenceManager(rosReferenceManagerPtr);  //for perRun
   mpc->getSolverPtr()->addSynchronizedModule(gaitReceiverPtr);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(terrainReceiverPtr);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc->getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
-
+  std::cout << "mpc done!\n";
   auto mpcMrtInterface_ = std::make_shared<MPC_MRT_Interface>(*mpc);
   mpcMrtInterface_->initRollout(&interfacePtr->getRollout());
 
@@ -295,13 +284,13 @@ int main(int argc, char* argv[]) {
   auto wbc = std::make_unique<ocs2::wbc::SingleWbcRos>(interfacePtr->getPinocchioInterface(), interfacePtr->getCentroidalModelInfo(), 
                                                         endEffectorKinematics, wbcfilename, nodeHandle);
   auto simpleMotion = std::make_unique<ocs2::wbc::SimpleMotion>(wbc->getUserParam(), false);
-
-  auto robotVisualizer = std::make_shared<LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
+  auto robotVisualizer_ = std::make_shared<ocs2::legged_robot::LeggedRobotVisualizer>(interfacePtr->getPinocchioInterface(),
                                                              interfacePtr->getCentroidalModelInfo(), endEffectorKinematics, nodeHandle);
+
   
 
   auto world = std::make_unique<raisim::World>();
-  world->setTimeStep(0.001);
+  world->setTimeStep(simulation_dt_);
   world->setERP(0, 0);
 
   world->setMaterialPairProp("steel","rubber",0.8, 0.4, 0.001);
@@ -309,45 +298,44 @@ int main(int argc, char* argv[]) {
   world->setMaterialPairProp("steel","rubber",0.8, 0.4, 0.001);
   world->setMaterialPairProp("steel", "steel", 0.8, 0.95, 0.001);
 
-  auto heightMap_ = world->addHeightMap("/home/yjy/jy_control_test/terrain12.txt",0, 0, "steel");
+  raisim::RandomHeightMapGenerator hmGenerator;
+  std::mt19937 gen(0);  
 
-  heightMap_->setAppearance("soil2");
-  heightMap_->setName("gnd");
+  // auto heightMap_ = world->addHeightMap("/home/yjy/jy_control_test/terrain.txt",0, 0, "steel");
+  // auto heightMap_ = hmGenerator.generateTerrain(world.get(), raisim::RandomHeightMapGenerator::GroundType::HEIGHT_MAP_DISCRETE, 1, false, gen);
+  auto ground = world->addGround();
+  ground->setName("gnd");
 
-  auto vis = raisim::OgreVis::get();
+  //map publisher
+  std::unique_ptr<ocs2::RaisimHeightmapRosConverter> heightmapPub;
+  heightmapPub.reset(new ocs2::RaisimHeightmapRosConverter());
+  auto mapPublishThread_ = std::thread([&]() {
+      ros::Rate rate(1);
+      while(ros::ok() && ros::master::check()) {
+      //  heightmapPub->publishGridmap(*heightMap_, "odom");
+       rate.sleep();
+      }
+  });
 
-  /// gui
-  anymal_gui::init({anymal_gui::video::init(vis->getResourceDir()),
-                      anymal_gui::joint_speed_and_torque::init(100),
-                      anymal_gui::gait::init(100),
-                      // anymal_gui::reward::init({"commandTracking", "torque"}),
-                      anymal_gui::frame::init()});
-
-  /// these method must be called before initApp
-  vis->setWorld(world.get());
-  vis->setWindowSize(1800, 1200);
-  vis->setImguiSetupCallback(raisim::anymal_gui::imguiSetupCallback);
-  vis->setImguiRenderCallback(raisim::anymal_gui::anymalImguiRenderCallBack);
-  vis->setSetUpCallback(setupCallback);
-  vis->setAntiAliasing(2);
-
-  /// starts visualizer thread
-  vis->initApp();
-  vis->createGraphicalObject(heightMap_, "gnd", "checkerboard_green");
-
-
+  // heightMap_->setAppearance("soil2");
+  // heightMap_->setName("gnd");
+  raisim::Mat<3, 3> inertia;
+  inertia.setIdentity();
+  const raisim::Vec<3> com = {0, 0, 0};
+  auto map = world->addMesh("/home/yjy/Documents/ICRA2023/meshes/part/map_easy.obj", 1.0, inertia, com);
+  map->setName("terrain");
+  map->setBodyType(raisim::BodyType::STATIC);
+  map->setOrientation( 0.0, 0.0, std::sqrt(2)/2.0, std::sqrt(2)/2.0);
+  map->setPosition(13.0, -16.0, 0.0);
+  map->setBodyType(raisim::BodyType::STATIC);
+  
   auto robot = world->addArticulatedSystem(urdffile);
+
   robot->setName("X20");
   robot->getCollisionBody("LF_SHANK/0").setMaterial("rubber");
   robot->getCollisionBody("LH_SHANK/0").setMaterial("rubber");
   robot->getCollisionBody("RF_SHANK/0").setMaterial("rubber");
   robot->getCollisionBody("RH_SHANK/0").setMaterial("rubber");
-
-  auto robotVisual_ = vis->createGraphicalObject(robot, "X20");
-
-  vis->setDesiredFPS(45.);
-  vis->select(robotVisual_->at(0), false);
-  vis->getCameraMan()->setYawPitchDist(Ogre::Radian(0), -Ogre::Radian(M_PI_4), 2);
 
       /// get robot data
   int gcDim_ = robot->getGeneralizedCoordinateDim();
@@ -362,6 +350,7 @@ int main(int argc, char* argv[]) {
   /// this is nominal configuration of anymal
   gc_init_ << 0.0, 0.0, 0.44, 1.0, 0.0, 0.0, 0.0, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584, -0.007, -0.84, 1.584;
   gc_init_.tail(12) = interfacePtr->getInitialState().tail(12);
+  // gc_init_[2] = heightMap_->getHeight(0, 0) + 0.44;
 
   /// set pd gains
   Eigen::VectorXd jointPgain(gvDim_), jointDgain(gvDim_);
@@ -420,7 +409,6 @@ int main(int argc, char* argv[]) {
 
   bool isSafe(true);
   const double desired_fps_ = 45.0;
-  const double simulation_dt_ = 0.001;
   const int visDecimation = int(1. / (desired_fps_ * simulation_dt_) + 1e-10);
   uint64_t resetMpcTargetCounter = 1;
   uint64_t visualizationCounter_ = 0;
@@ -506,20 +494,20 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     for(auto& contact: robot->getContacts()){
       if (contact.skip()) continue; /// if the contact is internal, one contact point is set to 'skip'
       if (LFfootIndex == contact.getlocalBodyIndex()){
-          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd")
+          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")
               estStatesOutput.contact.lf = 1.;
       }
       if (LHfootIndex == contact.getlocalBodyIndex()){
-          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd")
+          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")
               estStatesOutput.contact.lh = 1.;
 
       }
       if (RFfootIndex == contact.getlocalBodyIndex()){
-          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd")
+          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")
               estStatesOutput.contact.rf = 1.;
       }
       if (RHfootIndex == contact.getlocalBodyIndex()){
-          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd")
+          if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")
               estStatesOutput.contact.rh = 1.;
       }
     }
@@ -565,7 +553,105 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
   bool isMpcReady(false), isMpcFirstSolved(false);
 
   size_t generalizedCoordinatesNum = interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum;
-  while (nodeHandle.ok()) {
+
+  raisim::RaisimServer server(world.get());
+  auto scans = server.addInstancedVisuals("scan points",
+                                          raisim::Shape::Box,
+                                          {0.01, 0.01, 0.01},
+                                          {1,0,0,1},
+                                          {0,1,0,1});
+  int scanSize1 = 50;
+  int scanSize2 = 100;
+
+  scans->resize(scanSize1*scanSize2);
+  server.launchServer();
+  std::vector<geometry_msgs::PointStamped> feet_pos;
+  feet_pos.resize(4);
+  ros::Rate rate_(1000);
+  bool tfPublished = false;
+  
+  auto scanThread_ = std::thread([&]() {
+    auto cloudPub = nodeHandle.advertise<sensor_msgs::PointCloud2>("/point_cloud2",1);
+    tf2_ros::Buffer tfBuffer_;
+    tf2_ros::TransformListener tfListener_(tfBuffer_);
+
+      while (nodeHandle.ok()) {
+          try {
+              ocs2::executeAndSleep(
+                [&]() {
+                    if(!tfPublished)
+                        return;
+                    raisim::Vec<3> lidarPos; raisim::Mat<3,3> lidarOri;
+                    robot->getFramePosition("lidar_joint", lidarPos);
+                    robot->getFrameOrientation("lidar_joint", lidarOri);
+                    std::string errorMsg;
+                    ros::Time timeStamp = ros::Time(0);  // Use Time(0) to get the latest transform.
+                    Eigen::Isometry3d transformation;
+                    if (tfBuffer_.canTransform("lidar_link", "odom", timeStamp, &errorMsg)) {
+                        geometry_msgs::TransformStamped transformStamped;
+                        try {
+                            transformStamped = tfBuffer_.lookupTransform("lidar_link", "odom", timeStamp);
+                        } catch (tf2::TransformException& ex) {
+                            ROS_ERROR("[ConvexPlaneExtractionROS] %s", ex.what());
+                            transformation =  Eigen::Isometry3d::Identity();
+                        }
+
+                        // Extract translation.
+                        transformation.translation().x() = transformStamped.transform.translation.x;
+                        transformation.translation().y() = transformStamped.transform.translation.y;
+                        transformation.translation().z() = transformStamped.transform.translation.z;
+
+                        // Extract rotation.
+                        Eigen::Quaterniond rotationQuaternion(transformStamped.transform.rotation.w, transformStamped.transform.rotation.x,
+                                                                transformStamped.transform.rotation.y, transformStamped.transform.rotation.z);
+                        transformation.linear() = rotationQuaternion.toRotationMatrix();
+                    } else {
+                        ROS_ERROR_STREAM("[ConvexPlaneExtractionROS] errorMsg" << errorMsg);
+                        return;
+                    }
+
+                    sensor_msgs::PointCloud2 scanMsg;
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+                    for(int i=0; i<scanSize1; i++) {
+                        for (int j = 0; j < scanSize2; j++) {
+                            const double yaw = j * M_PI / scanSize2 * 0.6 - 0.3 * M_PI;
+                            double pitch = -(i * 0.6/scanSize1) + 0.4;
+                            const double normInv = 1. / sqrt(pitch * pitch + 1);
+                            Eigen::Vector3d direction = {cos(yaw) * normInv, sin(yaw) * normInv, -pitch * normInv};
+                            Eigen::Vector3d rayDirection;
+                            rayDirection = lidarOri.e() * direction;
+                            auto &col = world->rayTest(lidarPos.e(), rayDirection, 10);
+                            if (col.size() > 0) {
+                                scans->setPosition(i * scanSize2 + j, col[0].getPosition());
+                                float length = (col[0].getPosition() - lidarPos.e()).norm();
+                                scans->setColorWeight(i * scanSize2 + j, std::min(length/15.f, 1.0f));
+                                pcl::PointXYZ p(col[0].getPosition()[0], col[0].getPosition()[1], col[0].getPosition()[2]);
+                                cloud->points.push_back(p);
+                            }
+                            else
+                                scans->setPosition(i*scanSize2+j, {0, 0, 100});
+                        }
+                    }
+                    // pcl::toROSMsg(*cloud, scanMsg);
+                    // std::cout << "TF: " << transformation.matrix() << "\n";
+
+                    pcl::transformPointCloud(*cloud, *transformed_cloud, transformation.matrix().cast<float>());
+                    pcl::toROSMsg(*transformed_cloud, scanMsg);
+                    scanMsg.header.frame_id = "lidar_link"; 
+                    scanMsg.header.stamp = ros::Time::now();
+                    cloudPub.publish(scanMsg);
+
+                }, 
+                10);
+          } catch (const std::exception& e) {
+              controllerRunning_ = false;
+              ROS_ERROR_STREAM("[Scan thread] Error : " << e.what());
+          }
+      }
+  });
+  while (nodeHandle.ok()) { 
     ros::spinOnce();
     estimateState();
     static bool setTarget = false;
@@ -595,7 +681,22 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     pinocchio::updateFramePlacements(model, data);
 
     endEffectorKinematicsClonePtr->setPinocchioInterface(pinocchioInterface);
+    //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
     std::vector<vector3_t> posDesired = endEffectorKinematicsClonePtr->getPosition(vector_t());
+    const vector3_t& bodyPosition = state.segment(6, 3);
+    const vector3_t& bodyZyxEulerAngles = state.segment(9, 3);
+    Eigen::Matrix<scalar_t, 4, 4> _O_B_tfMatrix = Eigen::Matrix<scalar_t, 4, 4>::Identity();
+    
+    _O_B_tfMatrix.topLeftCorner(3, 3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyZyxEulerAngles);
+    _O_B_tfMatrix.topRightCorner(3, 1) = bodyPosition;
+    const auto _B_O_tfMatrix = _O_B_tfMatrix.inverse();
+    for(size_t leg = 0; leg < 4; leg++){
+     vector3_t posDesiredinBodyFrame = (_B_O_tfMatrix * posDesired[leg].homogeneous()).head(3);
+ 
+     feet_pos[leg].point.x = posDesiredinBodyFrame.x();
+     feet_pos[leg].point.y = posDesiredinBodyFrame.y();
+     feet_pos[leg].point.z = posDesiredinBodyFrame.z();
+    }
 
     auto terrainInfo = simpleMotion->TerrainEst(contact_flag_real, posDesired, baseOriWorldCur.e());
 
@@ -615,49 +716,59 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     // std::cout << "plannedMode: " << plannedMode << std::endl;
     // std::cout << "currentObservation.time: " << currentObservation.time << std::endl;
 
-    vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, 0.001, currentObservation.time);
-
-    robotVisualizer->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+    vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, simulation_dt_, currentObservation.time);
     // std::cout << "wbc update: " << x.rows() << std::endl; //rows = 42
     // after solve the mpc problem, set target trajectory
     vector_t torque = x.tail(12);
     // std::cout << "torque: " << torque.transpose() << std::endl;
-    if (resetMpcTargetCounter % 100 == 0 && resetMpcTargetCounter > 10 && setTarget) {
-      
-        randomGenerateMpcTargetTrajtory(state);
-    }
-    resetMpcTargetCounter++;
 
+    // if (resetMpcTargetCounter % 100 == 0 && resetMpcTargetCounter > 10 && setTarget) {
+      
+    //     randomGenerateMpcTargetTrajtory(state);
+    // }
+    // resetMpcTargetCounter++;
 
     command_out.tail(12) << torque.head(3), torque.segment(6, 3), torque.segment(3, 3), torque.tail(3);
 
     robot->setGeneralizedForce(command_out);
     // robot->setPdTarget(optimizedState
 
-    world->integrate();
+    // world->integrate();
     // estimateState();
+    robotVisualizer_->update(currentObservation, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+    tfPublished = true;
+
+    lf_foot_pub.publish(feet_pos[0]);
+    rf_foot_pub.publish(feet_pos[1]);
+    lh_foot_pub.publish(feet_pos[2]);
+    rh_foot_pub.publish(feet_pos[3]);
 
 
-    if(visualizationCounter_ % visDecimation == 0) {
-      OgreVis::get()->renderOneFrame();
-    }
-    ++visualizationCounter_;
+    // if(visualizationCounter_ % visDecimation == 0) {
+    //   // OgreVis::get()->renderOneFrame();
+    // }
+    // ++visualizationCounter_;
     ++sim_loop;
 
-    if(sim_loop % 5 == 0){
-    // if(1){
-      /// torque, speed and contact state
-      // std::cout << "robotControlState: " << robotState << std::endl;
-      Eigen::VectorXd jointTorque = robot->getGeneralizedForce().e().tail(12);
-      Eigen::VectorXd jointSpeed = robot->getGeneralizedVelocity().e().tail(12);
-      // anymal_gui::joint_speed_and_torque::push_back(sim_loop*world->getTimeStep(), jointSpeed, jointTorque);
-      // anymal_gui::gait::push_back(contact_flag_real);
-    }
+
+
+    // if(sim_loop % 5 == 0){
+    // // if(1){
+    //   /// torque, speed and contact state
+    //   // std::cout << "robotControlState: " << robotState << std::endl;
+    //   Eigen::VectorXd jointTorque = robot->getGeneralizedForce().e().tail(12);
+    //   Eigen::VectorXd jointSpeed = robot->getGeneralizedVelocity().e().tail(12);
+    //   // anymal_gui::joint_speed_and_torque::push_back(sim_loop*world->getTimeStep(), jointSpeed, jointTorque);
+    //   // anymal_gui::gait::push_back(contact_flag_real);
+    // }
     
     if(app_stopped){
         break;
         controllerRunning_ = false;
     }
+
+    server.integrateWorldThreadSafe();
+    rate_.sleep();
   }
 
   return 0;

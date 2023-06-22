@@ -91,7 +91,7 @@ void LeggedRobotVisualizer::launchVisualizerNode(ros::NodeHandle& nodeHandle) {
     kdl_parser::treeFromUrdfModel(urdfModel, kdlTree);
 
     robotStatePublisherPtr_.reset(new robot_state_publisher::RobotStatePublisher(kdlTree));
-    robotStatePublisherPtr_->publishFixedTransforms(false);  //twilight debug
+    robotStatePublisherPtr_->publishFixedTransforms(true);
   }
 }
 

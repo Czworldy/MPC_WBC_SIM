@@ -17,7 +17,7 @@ model_settings
 
   verboseCppAd                  true
   recompileLibrariesCppAd       false
-  modelFolderCppAd              /home/ysc/cppad
+  modelFolderCppAd              /tmp/ocs2/cppad
 }
 
 swing_trajectory_config
@@ -270,7 +270,7 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.01
-  delta                  0.3
+  delta                  0.2
 }
 
 Qee

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 
 <launch>
+    <!-- <param name="/use_sim_time" value="true" /> -->
     <arg name="robot_name"         default="legged_robot"/>
     <arg name="config_name"        default="mpc"/>
     <arg name="target_command"     default="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
@@ -12,7 +13,8 @@
     <arg name="description_file"   default="$(find X20)/urdf/X20_rsm.urdf"/>
 
       <!-- The task file for the mpc. -->
-    <arg name="taskFile"          default="$(find ocs2_jypro)/config/mpc/task.info"/>
+    <!-- <arg name="taskFile"          default="$(find ocs2_jypro)/config/mpc/task.info"/> -->
+    <arg name="taskFile"          default="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
     <!-- The reference related config file of the robot -->
     <arg name="referenceFile"     default="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
     <!-- The URDF model of the robot -->
@@ -38,6 +40,7 @@
     <param name="referenceFile"     value="$(arg referenceFile)" />
     <param name="urdfFile"          value="$(arg urdfFile)" />
     <param name="gaitCommandFile"   value="$(arg gaitCommandFile)"/>
+    <param name="simlation_timestep"   value="0.001"/>
 
     <node pkg="ocs2_jypro" type="legged_robot_gait_command" name="legged_robot_gait_command"
           output="screen"  launch-prefix=""/>

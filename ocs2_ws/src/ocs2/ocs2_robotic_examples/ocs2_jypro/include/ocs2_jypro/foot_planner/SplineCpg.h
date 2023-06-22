@@ -37,6 +37,8 @@ namespace legged_robot {
 class SplineCpg {
  public:
   SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, CubicSpline::Node touchDown);
+  SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, CubicSpline::Node touchDown);
+  SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, scalar_t midVel, CubicSpline::Node touchDown);
 
   scalar_t position(scalar_t time) const;
 

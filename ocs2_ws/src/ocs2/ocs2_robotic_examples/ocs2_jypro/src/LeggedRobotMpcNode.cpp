@@ -75,6 +75,8 @@ int main(int argc, char** argv) {
   auto polygonReceiverPtr = std::make_shared<ocs2::legged_robot::LegEndEffectorsPolygonReceiver>
                             (nodeHandle, interface.getSwitchedModelReferenceManagerPtr()->getMpcPolygonArrayPtr(), 
                             interface.getSwitchedModelReferenceManagerPtr()->getMpcNominalFeetholdsPtr(),
+                            interface.getSwitchedModelReferenceManagerPtr()->getMpcSwingHeightPtr(),
+                            interface.getSwitchedModelReferenceManagerPtr()->getMpcSwingMiddleTimePtr(),
                               robotName);
   // MPC
   // ocs2::GaussNewtonDDP_MPC mpc(interface.mpcSettings(), interface.ddpSettings(), interface.getRollout(), interface.getOptimalControlProblem(),

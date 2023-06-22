@@ -76,7 +76,7 @@ struct LimbsPosVel {
 };
 
 struct LimbsCommand
-{
+{   
     OneLimbData lf_tau;
     OneLimbData rf_tau;
     OneLimbData lh_tau;
@@ -91,6 +91,23 @@ struct LimbsCommand
     OneLimbData rf_vel;
     OneLimbData lh_vel;
     OneLimbData rh_vel;
+    void clear(){
+        lf_tau.clear();
+        rf_tau.clear();
+        lh_tau.clear();
+        rh_tau.clear();
+        lf_pos.clear();
+        rf_pos.clear();
+        lh_pos.clear();
+        rh_pos.clear();
+        lf_vel.clear();
+        rf_vel.clear();
+        lh_vel.clear();
+        rh_vel.clear();
+  }
+  LimbsCommand(){
+    clear();
+  }
 };
 
 }

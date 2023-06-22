@@ -39,7 +39,8 @@ RaisimRollout::RaisimRollout(std::string urdfFile, std::string resourcePath,
                              raisim_gen_coord_gen_vel_to_state_t raisimGenCoordGenVelToState,
                              input_to_raisim_generalized_force_t inputToRaisimGeneralizedForce,
                              data_extraction_callback_t dataExtractionCallback, RaisimRolloutSettings raisimRolloutSettings,
-                             input_to_raisim_pd_targets_t inputToRaisimPdTargets)
+                             input_to_raisim_pd_targets_t inputToRaisimPdTargets,
+                             input_to_raisim_wbc_generalized_force_t inputToRaisimWbcGeneralizedForce)
     : RolloutBase(raisimRolloutSettings.rolloutSettings_),
       raisimRolloutSettings_(std::move(raisimRolloutSettings)),
       urdfFile_(std::move(urdfFile)),
@@ -50,7 +51,8 @@ RaisimRollout::RaisimRollout(std::string urdfFile, std::string resourcePath,
       raisimGenCoordGenVelToState_(std::move(raisimGenCoordGenVelToState)),
       inputToRaisimGeneralizedForce_(std::move(inputToRaisimGeneralizedForce)),
       dataExtractionCallback_(std::move(dataExtractionCallback)),
-      inputToRaisimPdTargets_(std::move(inputToRaisimPdTargets)) {
+      inputToRaisimPdTargets_(std::move(inputToRaisimPdTargets)),
+      inputToRaisimWbcGeneralizedForce_(std::move(inputToRaisimWbcGeneralizedForce)) {
   world_.setTimeStep(this->settings().timeStep);
 
   system_ = world_.addArticulatedSystem(urdfFile_, resourcePath_, raisimRolloutSettings_.orderedJointNames_);
@@ -87,7 +89,7 @@ RaisimRollout::RaisimRollout(std::string urdfFile, std::string resourcePath,
 RaisimRollout::RaisimRollout(const RaisimRollout& other)
     : RaisimRollout(other.urdfFile_, other.resourcePath_, other.stateToRaisimGenCoordGenVel_, other.raisimGenCoordGenVelToState_,
                     other.inputToRaisimGeneralizedForce_, other.dataExtractionCallback_, other.raisimRolloutSettings_,
-                    other.inputToRaisimPdTargets_) {
+                    other.inputToRaisimPdTargets_, other.inputToRaisimWbcGeneralizedForce_) {
   if (other.heightMap_ != nullptr) {
     deleteGroundPlane();
     heightMap_ = world_.addHeightMap(other.heightMap_);
@@ -145,7 +147,10 @@ vector_t RaisimRollout::run(scalar_t initTime, const vector_t& initState, scalar
 
   // loop through intervals and integrate each separately
   for (const auto& interval : timeIntervalArray) {
-    runSimulation(interval, controller, timeTrajectory, stateTrajectory, inputTrajectory);
+    if(inputToRaisimWbcGeneralizedForce_)
+      runSimulation(interval, controller, modeSchedule.modeAtTime(initTime), timeTrajectory, stateTrajectory, inputTrajectory);
+    else
+      runSimulation(interval, controller, timeTrajectory, stateTrajectory, inputTrajectory);
     postEventIndices.push_back(stateTrajectory.size());
   }
   postEventIndices.pop_back();  // the last interval does not have any events afterwards
@@ -239,6 +244,80 @@ void RaisimRollout::runSimulation(const std::pair<scalar_t, scalar_t>& timeInter
         inputTrajectory.emplace_back(controller->computeInput(time, stateTrajectory.back()));
       }
       Eigen::VectorXd tau = inputToRaisimGeneralizedForce_(time, inputTrajectory.back(), stateTrajectory.back(), raisim_q, raisim_dq);
+      assert(tau.rows() == system_->getDOF());
+      system_->setGeneralizedForce(tau);
+
+      if (system_->getControlMode() != raisim::ControlMode::FORCE_AND_TORQUE) {
+        Eigen::VectorXd pGain, dGain;
+        std::tie(pGain, dGain) = inputToRaisimPdTargets_(time, inputTrajectory.back(), stateTrajectory.back(), raisim_q, raisim_dq);
+        system_->setPdTarget(pGain, dGain);
+      }
+    }
+
+    world_.integrate2();  // actually move time foward and change the state
+  }
+
+  world_.setTimeStep(this->settings().timeStep);
+
+  // also push back final state and input
+  timeTrajectory.push_back(timeInterval.second);
+
+  world_.integrate1();
+
+  Eigen::VectorXd raisim_q, raisim_dq;
+  system_->getState(raisim_q, raisim_dq);
+  stateTrajectory.emplace_back(raisimGenCoordGenVelToState_(raisim_q, raisim_dq));
+
+  if (dataExtractionCallback_) {
+    dataExtractionCallback_(timeTrajectory.back(), *system_);
+  }
+
+  vector_t input = controller->computeInput(timeTrajectory.back(), stateTrajectory.back());
+  inputTrajectory.push_back(input);
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void RaisimRollout::runSimulation(const std::pair<scalar_t, scalar_t>& timeInterval, ControllerBase* controller, size_t mode,
+                                  scalar_array_t& timeTrajectory, vector_array_t& stateTrajectory, vector_array_t& inputTrajectory) {
+  const auto numSteps = static_cast<int>(std::ceil((timeInterval.second - timeInterval.first) / this->settings().timeStep));
+
+  for (int i = 0; i < numSteps; i++) {
+    const auto time = timeInterval.first + i * this->settings().timeStep;
+
+    if (i == (numSteps - 1)) {
+      // last step uses potentially smaller time step
+      scalar_t shortened_dt = timeInterval.second - time;
+      if (shortened_dt < 1e-4) {
+        break;  // for numerical reasons, don't make a tiny step at the end
+      }
+      world_.setTimeStep(shortened_dt);
+    } else {
+      world_.setTimeStep(this->settings().timeStep);
+    }
+
+    world_.integrate1();  // prepares all kinematic and dynamic quantities for the current time step
+
+    if (i % raisimRolloutSettings_.controlDecimation_ == 0) {
+      timeTrajectory.push_back(time);
+
+      if (dataExtractionCallback_) {
+        dataExtractionCallback_(time, *system_);  // must run before evaluating controller
+      }
+
+      Eigen::VectorXd raisim_q, raisim_dq;
+      system_->getState(raisim_q, raisim_dq);
+      stateTrajectory.emplace_back(raisimGenCoordGenVelToState_(raisim_q, raisim_dq));
+      if (stateTrajectory.back().hasNaN()) {
+        throw std::runtime_error("[RaisimRollout::runSimulation] nan in state");
+      }
+
+      // input might have been computed by initialization already
+      if (inputTrajectory.size() < stateTrajectory.size()) {
+        inputTrajectory.emplace_back(controller->computeInput(time, stateTrajectory.back()));
+      }
+      Eigen::VectorXd tau = inputToRaisimWbcGeneralizedForce_(time, inputTrajectory.back(), stateTrajectory.back(), raisim_q, raisim_dq, mode);
       assert(tau.rows() == system_->getDOF());
       system_->setGeneralizedForce(tau);
 

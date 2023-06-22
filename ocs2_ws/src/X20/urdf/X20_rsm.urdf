@@ -113,7 +113,7 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.036"/>
+        <sphere radius="0.05"/>
       </geometry>
     </collision>
   </link>
@@ -200,7 +200,7 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.036"/>
+        <sphere radius="0.05"/>
       </geometry>
     </collision>
   </link>
@@ -287,7 +287,7 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.036"/>
+        <sphere radius="0.05"/>
       </geometry>
     </collision>
   </link>
@@ -374,7 +374,7 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.036"/>
+        <sphere radius="0.05"/>
       </geometry>
     </collision>
   </link>
@@ -422,6 +422,20 @@
     <origin xyz="0 0 -0.33" rpy = "0 0 0"/>
     <parent link="RH_SHANK"/>
     <child link = "RH_FOOT"/>
+  </joint>
+
+  <link name="lidar_link">
+    <visual>
+      <origin rpy="1.570795 0 0.0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://X20/meshes/velodyne.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <origin rpy="0 0.4 0" xyz="0.25 0 0.309"/>
+    <parent link="base"/>
+    <child link="lidar_link"/>
   </joint>
 
 </robot>
