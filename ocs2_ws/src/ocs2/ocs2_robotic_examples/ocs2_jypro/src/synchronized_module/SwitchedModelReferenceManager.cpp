@@ -293,15 +293,17 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // swingTrajectoryPtr_->update(modeSchedule, -0.44);
   // swingTrajectoryPtr_->update(modeSchedule, terrainEstDataPtr_->feetHeight.cast<scalar_t>());
   feet_array_t<vector3_t> feetCurrentEEPositions;
-  static feet_array_t<vector3_t> feetEETouchDownPositions;
+  
   feet_array_t<std::vector<vector3_t>> feetTargeEEPositions;
   const contact_flag_t& currentContactFlags = modeNumber2StanceLeg(mode); // {LF, RF, LH, RH}
 
   for(int leg = 0; leg < 4; leg++){ //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
     feetCurrentEEPositions[leg] = footPlacementPlannerPtr_->getCurrentEEPosition(leg, initState);
     if(currentContactFlags[leg] == true)
-      feetEETouchDownPositions[leg] = feetCurrentEEPositions[leg];
+      feetEETouchDownPositions_[leg] = feetCurrentEEPositions[leg];
+    std::cout << "leg: " << leg << "\t" << feetEETouchDownPositions_[leg].transpose() << "\t";
   }
+  std::cout << "\n";
   if(0){
     for(int leg = 0; leg < 4; leg++ ){
       vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.2*commandedVelocity;
@@ -331,7 +333,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
   //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
-  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
+  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
       footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions, isLateTouchdown_);

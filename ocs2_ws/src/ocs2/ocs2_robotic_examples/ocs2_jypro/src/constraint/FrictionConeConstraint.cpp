@@ -69,7 +69,7 @@ vector_t FrictionConeConstraint::getValue(scalar_t time, const vector_t& state, 
   const auto forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
-  R_w2t.setIdentity();
+  // R_w2t.setIdentity();
   const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
   return coneConstraint(localForce);
 }
@@ -83,7 +83,7 @@ VectorFunctionLinearApproximation FrictionConeConstraint::getLinearApproximation
   const vector3_t forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
-  R_w2t.setIdentity();
+  // R_w2t.setIdentity();
   const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
 
   const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame, R_w2t);
@@ -106,7 +106,7 @@ VectorFunctionQuadraticApproximation FrictionConeConstraint::getQuadraticApproxi
   const vector3_t forcesInWorldFrame = centroidal_model::getContactForces(input, contactPointIndex_, info_);
   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComp);
   matrix3_t R_w2t = preCompLegged.getTerrainEstDataPtr()->terrainQuat.cast<scalar_t>().toRotationMatrix();
-  R_w2t.setIdentity();
+  // R_w2t.setIdentity();
   const vector3_t localForce = R_w2t.transpose() * forcesInWorldFrame;
 
   const auto localForceDerivatives = computeLocalForceDerivatives(forcesInWorldFrame, R_w2t);

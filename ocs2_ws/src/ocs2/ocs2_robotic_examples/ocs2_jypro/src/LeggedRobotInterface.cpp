@@ -523,7 +523,7 @@ std::unique_ptr<StateInputConstraint> LeggedRobotInterface::getZeroVelocityConst
             "[LeggedRobotInterface::getZeroVelocityConstraint] The analytical end-effector zero velocity constraint is not implemented!");
     } else {
         return std::unique_ptr<StateInputConstraint>(new ZeroVelocityConstraintCppAd(*referenceManagerPtr_, eeKinematics, contactPointIndex,
-                                                                                     eeZeroVelConConfig(modelSettings_.positionErrorGain)));
+                                                                                     eeZeroVelConConfig(0.0)));
     }
 }
 

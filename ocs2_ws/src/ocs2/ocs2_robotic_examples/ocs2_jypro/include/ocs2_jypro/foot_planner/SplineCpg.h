@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ocs2 {
 namespace legged_robot {
 
-class SplineCpg {
+class SplineCpg : public Spline {
  public:
   SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, CubicSpline::Node touchDown);
   SplineCpg(CubicSpline::Node liftOff, scalar_t midHeight, scalar_t midTime, CubicSpline::Node touchDown);

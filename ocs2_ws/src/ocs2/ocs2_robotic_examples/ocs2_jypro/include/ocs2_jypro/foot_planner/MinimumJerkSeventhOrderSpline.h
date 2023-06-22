@@ -117,6 +117,7 @@ class MinimumJerkSeventhOrderSplineSolver {
   qpOASES::QProblem qp_;
   Eigen::Matrix<scalar_t, 16, 16, Eigen::RowMajor> H_;
   Eigen::Matrix<scalar_t, 14, 16, Eigen::RowMajor> Aeq_;
+  vector_t defaultSolution_;
 
   // scalar_t midTime_;
   // SevenOrderSpline leftSpline_;

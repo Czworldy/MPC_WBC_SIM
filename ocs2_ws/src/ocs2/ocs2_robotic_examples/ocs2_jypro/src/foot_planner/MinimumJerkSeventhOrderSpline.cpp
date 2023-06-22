@@ -46,13 +46,14 @@ MinimumJerkSeventhOrderSplineSolver::MinimumJerkSeventhOrderSplineSolver(scalar_
       std::cout << "H_:\n" << H_ << "\n";
 
       int nWsr = 10;
-      vector_t lbA = (vector_t(14) << 0,0.2,1,  0.12,  0.15,0, 0.15,0,  0,  0.1,  0,0,    0, 0).finished();
+      vector_t lbA = (vector_t(14) <<-0.42, 0.20, 1.0, -0.30, -0.22, 0.0, -0.22, 0.0, 0.0, -0.3, -0.42, 0.0, 0.0, 0.0).finished();
       vector_t g = vector_t::Zero(16);
       qp_.init(H_.data(), g.data(), Aeq_.data(), nullptr, nullptr, lbA.data(), lbA.data(), nWsr);
       
       vector_t primalSolution(H_.rows());
       qp_.getPrimalSolution(primalSolution.data());
-      std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
+      defaultSolution_ = primalSolution;
+      std::cout << "defaultSolution_: " << defaultSolution_.transpose() << "\n";
 }
 
 vector_t MinimumJerkSeventhOrderSplineSolver::solveCoffectient(Node liftOff, scalar_t leftMidHeight, Node apex, 
@@ -68,11 +69,20 @@ vector_t MinimumJerkSeventhOrderSplineSolver::solveCoffectient(Node liftOff, sca
     // std::cout << "lbA: " << lbA.transpose() << "\n";
     int nWsr = 10;
     vector_t g = vector_t::Zero(16);
-    qp_.hotstart(g.data(), nullptr, nullptr, lbA.data(), lbA.data(), nWsr);
-
+    // auto res = qp_.hotstart(g.data(), nullptr, nullptr, lbA.data(), lbA.data(), nWsr);
+    auto res = qp_.init(H_.data(), g.data(), Aeq_.data(), nullptr, nullptr, lbA.data(), lbA.data(), nWsr);
     vector_t primalSolution(H_.rows());
-    qp_.getPrimalSolution(primalSolution.data());
-    // std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
+    if(res != 0) {
+      std::cout << ">>>>>>>>>>>>>>[MinimumJerkSeventhOrderSplineSolver] QP Failed!<<<<<<<<<<<<<<\n";
+      std::cout << "lbA: " << lbA.transpose() << "\n";
+      std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
+      std::cout << "res = " << res << "\n";
+      primalSolution = defaultSolution_;
+    }
+    else{
+      qp_.getPrimalSolution(primalSolution.data());
+      // std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
+    }
 
     return primalSolution;
 }

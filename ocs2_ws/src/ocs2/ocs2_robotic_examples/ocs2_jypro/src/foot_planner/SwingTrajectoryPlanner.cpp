@@ -40,7 +40,7 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 SwingTrajectoryPlanner::SwingTrajectoryPlanner(Config config, size_t numFeet) : config_(std::move(config)), numFeet_(numFeet),
-  minimumJerkSolver_(4) {}
+  minimumJerkSolver_(2) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -664,12 +664,12 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
 
         // if (p >= 1){
           if (p == initIndex + 1) {
-            /* Node : T P V */
+            /* Node : T P V A */
             const scalar_t midHeight      = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][1];
             const scalar_t midHeightLeft  = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][0];
             const scalar_t midHeightRight = currentFeetEndEffectors[j].z() + scaling * swingHeightSequence[j][p][2];
-            const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
-            // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
+            // const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
+            const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
             const QuinticSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity, 1.0}; // without foothold from mapper, this with cause promblem in slope.
@@ -716,8 +716,8 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const scalar_t midHeight      = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][1];
             const scalar_t midHeightLeft  = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][0];
             const scalar_t midHeightRight = feetPlacement[j][m].z() + scaling * swingHeightSequence[j][p][2];
-            const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
-            // const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
+            // const scalar_t midTime = swingStartTime + swingMiddleTimeSequence[j][p];
+            const scalar_t midTime = (swingStartTime + swingFinalTime) / 2.;
             const scalar_t swingTime = swingFinalTime - swingStartTime;
             
             const QuinticSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity, 1.0}; // without foothold from mapper, this with cause promblem in slope.
@@ -764,15 +764,20 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             // feetYTrajectories_[j].emplace_back(yStart, yEnd);
           }
       } else {  // for a stance leg
-        const QuinticSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0, 0.0};
-        const QuinticSpline::Node middleLeft{0.25, feetPlacement[j][p].z(), 0.0, 0.0}; 
-        const QuinticSpline::Node middleRight{0.75, feetPlacement[j][p].z(), 0.0, 0.0}; 
-        const QuinticSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0, 0.0};
-        const QuinticSpline::Node apex{0.5, feetPlacement[j][p].z(), 0.0, 0.0};
+        // const QuinticSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0, 0.0};
+        // const QuinticSpline::Node middleLeft{0.25, feetPlacement[j][p].z(), 0.0, 0.0}; 
+        // const QuinticSpline::Node middleRight{0.75, feetPlacement[j][p].z(), 0.0, 0.0}; 
+        // const QuinticSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0, 0.0};
+        // const QuinticSpline::Node apex{0.5, feetPlacement[j][p].z(), 0.0, 0.0};
 
         // feetMultiHeightTrajectories_[j].emplace_back(liftOff, middleLeft, feetPlacement[j][p].z(), 0.5, middleRight, touchDown);
         // feetMultiHeightTrajectories_[j].emplace_back(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown);
-        std::unique_ptr<TwoSixthOrderSplineCpg> splinePtr(new TwoSixthOrderSplineCpg(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown));
+        const CubicSpline::Node liftOff{0.0, feetPlacement[j][p].z(), 0.0};
+        const CubicSpline::Node touchDown{1.0, feetPlacement[j][p].z(), 0.0};
+
+        std::unique_ptr<SplineCpg> splinePtr(new SplineCpg(liftOff, feetPlacement[j][p].z(), touchDown));
+
+       // std::unique_ptr<TwoSixthOrderSplineCpg> splinePtr(new TwoSixthOrderSplineCpg(liftOff, feetPlacement[j][p].z(), apex, feetPlacement[j][p].z(), touchDown));
         feetMultiHeightTrajectories_[j].emplace_back(std::move(splinePtr));
         
         const CubicSpline::Node xStart{0.0, feetPlacement[j][p].x(), 0.0};

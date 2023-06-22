@@ -97,8 +97,8 @@ void LegEndEffectorsPolygonReceiver::mpcPolygonMsgCallback(const ocs2_msgs::Regi
       receivedSwingHeight_[foot_id].push_back(Eigen::Map<const Eigen::VectorXf>(msg->region[i].swing_height.data(), 
                                                 msg->region[i].swing_height.size()).cast<scalar_t>());
       receivedSwingMiddleTime_[foot_id].push_back(msg->region[i].swing_time);
-      // std::cout << "swing_height: " << msg->region[i].swing_height << std::endl;
-      // std::cout << "transformedNominalPoint: " << transformedNominalPoint.head(3).transpose() << std::endl;
+      std::cout << "swing_height: " << receivedSwingHeight_[foot_id].back().transpose() << std::endl;
+      std::cout << "transformedNominalPoint: " << transformedNominalPoint.head(3).transpose() << std::endl;
   }
 
     polygonsUpdated_ = true;
