@@ -673,8 +673,8 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const scalar_t swingTime = swingFinalTime - swingStartTime;
 
             const QuinticSpline::Node liftOff{swingStartTime, currentFeetEndEffectors[j].z(), scaling * config_.liftOffVelocity, 1.0}; // without foothold from mapper, this with cause promblem in slope.
-            const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
-            const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
+            const QuinticSpline::Node middleLeft{swingStartTime + swingTime/4.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
+            const QuinticSpline::Node middleRight{swingStartTime + 3.0*swingTime/4.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
             const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity, 0.0};
 
             const QuinticSpline::Node apex{midTime, midHeight, 0.0, 0.0};
@@ -721,8 +721,8 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
             const scalar_t swingTime = swingFinalTime - swingStartTime;
             
             const QuinticSpline::Node liftOff{swingStartTime, feetPlacement[j][m].z(), scaling * config_.liftOffVelocity, 1.0}; // without foothold from mapper, this with cause promblem in slope.
-            const QuinticSpline::Node middleLeft{swingStartTime + swingMiddleTimeSequence[j][p]/2.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
-            const QuinticSpline::Node middleRight{(swingFinalTime + swingStartTime + swingMiddleTimeSequence[j][p])/2.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
+            const QuinticSpline::Node middleLeft{swingStartTime + swingTime/4.0, midHeightLeft, scaling * config_.liftOffVelocity, 0.0}; 
+            const QuinticSpline::Node middleRight{swingStartTime + 3.0*swingTime/4.0, midHeightLeft, scaling * config_.touchDownVelocity, 0.0}; 
             const QuinticSpline::Node touchDown{swingFinalTime, feetPlacement[j][p].z(), config_.touchDownVelocity, 0.0};
 
             const QuinticSpline::Node apex{midTime, midHeight, 0.0, 0.0};

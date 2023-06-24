@@ -322,20 +322,27 @@ int main(int argc, char* argv[]) {
   raisim::Mat<3, 3> inertia;
   inertia.setIdentity();
   const raisim::Vec<3> com = {0, 0, 0};
-  auto map = world->addMesh("/home/yjy/Documents/ICRA2023/meshes/part/map_easy.obj", 1.0, inertia, com);
+//   auto map = world->addMesh("/home/yjy/Documents/ICRA2023/meshes/part/map_easy.obj", 1.0, inertia, com, 1.0,"default");
+  double map_scale = 1.0;
+  nodeHandle.getParam("/map_scale", map_scale);
+  auto map = world->addMesh("/home/yjy/Downloads/map_fix.obj", 1.0, inertia, com, map_scale, "default");
   map->setName("terrain");
   map->setBodyType(raisim::BodyType::STATIC);
   map->setOrientation( 0.0, 0.0, std::sqrt(2)/2.0, std::sqrt(2)/2.0);
-  map->setPosition(13.0, -16.0, 0.0);
-  map->setBodyType(raisim::BodyType::STATIC);
+  double init_x = 0;
+  double init_y = 0;
+  nodeHandle.getParam("/map_init_x", init_x);
+  nodeHandle.getParam("/map_init_y", init_y);
+  map->setPosition(init_x, init_y, 0.0);
+
   
   auto robot = world->addArticulatedSystem(urdffile);
 
   robot->setName("X20");
-  robot->getCollisionBody("LF_SHANK/0").setMaterial("rubber");
-  robot->getCollisionBody("LH_SHANK/0").setMaterial("rubber");
-  robot->getCollisionBody("RF_SHANK/0").setMaterial("rubber");
-  robot->getCollisionBody("RH_SHANK/0").setMaterial("rubber");
+  // robot->getCollisionBody("LF_SHANK/0").setMaterial("rubber");
+  // robot->getCollisionBody("LH_SHANK/0").setMaterial("rubber");
+  // robot->getCollisionBody("RF_SHANK/0").setMaterial("rubber");
+  // robot->getCollisionBody("RH_SHANK/0").setMaterial("rubber");
 
       /// get robot data
   int gcDim_ = robot->getGeneralizedCoordinateDim();
@@ -391,13 +398,10 @@ int main(int argc, char* argv[]) {
   ROS_INFO_STREAM("\033[32m Initial policy has been received. \033[0m");
   mpcRunning_ = true;
 
-
   raisim::Vec<3> basePosWorldCur;
   raisim::Vec<3> baseLinearVelWorldCur;
   raisim::Vec<3> baseAngularVelWorldCur;
   raisim::Mat<3,3> baseOriWorldCur;
-
-
 
   int robotState = kWBCMPC; // skip standing process
   bool isSetUp_PDWaitForStanding(false);
@@ -405,7 +409,6 @@ int main(int argc, char* argv[]) {
   bool isSetUp_SafeState(false);
   bool isStandUp(false);
   bool isSetUp_WBCBaseMotion(false);
-
 
   bool isSafe(true);
   const double desired_fps_ = 45.0;
@@ -416,62 +419,6 @@ int main(int argc, char* argv[]) {
   uint64_t sim_loop = 0;
 Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
 
-
-  auto randomGenerateMpcTargetTrajtory = [&](const ocs2::vector_t& currentState) {
-
-    ocs2::vector_t currentPose = currentState.segment(6, 6);
-
-    // yawCommand_ = commandDist_(generator_);
-    // xCommand_   = 1.5*commandDist_(generator_) + 0.2;  //add bias
-    // yCommand_   = commandDist_(generator_);
-
-    ocs2::scalar_t lastYawCommand_ = 0;
-    ocs2::scalar_t lastXCommand_ = 0;
-    ocs2::scalar_t lastYCommand_ = 0;
-
-    double yawCommand_ = 0.;
-    double xCommand_   = 0.5;
-    double yCommand_   = 0.;
-    
-    // absLimiter(yawCommand_, 0.4);
-    // absLimiter(xCommand_, 1.0);
-    // absLimiter(yCommand_, 0.2);
-
-    filter(yawCommand_, lastYawCommand_, 0.2);
-    filter(xCommand_, lastXCommand_, 0.5);
-    filter(yCommand_, lastYCommand_, 0.5);
-
-    const ocs2::vector_t targetPose = [&]() {
-      ocs2::vector_t target(6);
-      // base p_x, p_y are relative to current state
-      target(0) = currentPose(0) + xCommand_;
-      target(1) = currentPose(1) + yCommand_;
-      // base z relative to the default height
-      target(2) = currentPose(2);
-      // theta_z relative to current
-      target(3) = currentPose(3) + yawCommand_;
-      // theta_y, theta_x
-      target(4) = 0;
-      target(5) = 0;
-      return target;
-    }();
-
-    // filter_->Process(commandDist_(generator_));
-    std::cout << "currentPose: " << currentPose.transpose() << std::endl;
-    std::cout << "targetPose: " << targetPose.transpose() << std::endl;
-
-    // desired state trajectory
-    ocs2::vector_array_t stateTrajectory(2, ocs2::vector_t::Zero(currentState.size()));
-    stateTrajectory[0] << ocs2::vector_t::Zero(6), currentPose, gc_init_.tail(nJoints_);
-    stateTrajectory[1] << ocs2::vector_t::Zero(6), targetPose, gc_init_.tail(nJoints_);
-
-    // desired input trajectory (just right dimensions, they are not used)
-   const ocs2::vector_array_t inputTrajectory(2, ocs2::vector_t::Zero(12 + nJoints_));
-
-    ocs2::TargetTrajectories initTargetTrajectories({0.0, 1.0}, stateTrajectory, inputTrajectory);
-    // mpc->setTargetTrajectories(initTargetTrajectories);
-
-  };
   auto estimateState = [&]() {
     estStatesOutput.time_stamp = sim_loop*world->getTimeStep();
     robot->getPosition(robot->getBodyIdx("base"), basePosWorldCur);
@@ -555,15 +502,15 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
   size_t generalizedCoordinatesNum = interfacePtr->getCentroidalModelInfo().generalizedCoordinatesNum;
 
   raisim::RaisimServer server(world.get());
-  auto scans = server.addInstancedVisuals("scan points",
-                                          raisim::Shape::Box,
-                                          {0.01, 0.01, 0.01},
-                                          {1,0,0,1},
-                                          {0,1,0,1});
+//   auto scans = server.addInstancedVisuals("scan points",
+//                                           raisim::Shape::Box,
+//                                           {0.01, 0.01, 0.01},
+//                                           {1,0,0,1},
+//                                           {0,1,0,1});
   int scanSize1 = 50;
   int scanSize2 = 100;
 
-  scans->resize(scanSize1*scanSize2);
+//   scans->resize(scanSize1*scanSize2);
   server.launchServer();
   std::vector<geometry_msgs::PointStamped> feet_pos;
   feet_pos.resize(4);
@@ -624,14 +571,14 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
                             rayDirection = lidarOri.e() * direction;
                             auto &col = world->rayTest(lidarPos.e(), rayDirection, 10);
                             if (col.size() > 0) {
-                                scans->setPosition(i * scanSize2 + j, col[0].getPosition());
+                                // scans->setPosition(i * scanSize2 + j, col[0].getPosition());
                                 float length = (col[0].getPosition() - lidarPos.e()).norm();
-                                scans->setColorWeight(i * scanSize2 + j, std::min(length/15.f, 1.0f));
+                                // scans->setColorWeight(i * scanSize2 + j, std::min(length/15.f, 1.0f));
                                 pcl::PointXYZ p(col[0].getPosition()[0], col[0].getPosition()[1], col[0].getPosition()[2]);
                                 cloud->points.push_back(p);
                             }
-                            else
-                                scans->setPosition(i*scanSize2+j, {0, 0, 100});
+                            // else
+                            //     scans->setPosition(i*scanSize2+j, {0, 0, 100});
                         }
                     }
                     // pcl::toROSMsg(*cloud, scanMsg);
@@ -710,7 +657,11 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     vector_t optimizedInput;
     size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
     mpcMrtInterface_->evaluatePolicy(currentObservation.time, currentObservation.state, optimizedState, optimizedInput, plannedMode);
+    ocs2::TargetTrajectories targetTrajectories(mpcMrtInterface_->getPolicy().timeTrajectory_,
+                                                mpcMrtInterface_->getPolicy().stateTrajectory_,
+                                                mpcMrtInterface_->getPolicy().inputTrajectory_);
     // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
+    optimizedInput = targetTrajectories.getDesiredInput(currentObservation.time); // disable feedback MPC.
     // std::cout << "optimizedState: " << optimizedState.transpose() << std::endl;
     // std::cout << "optimizedInput: " << optimizedInput.transpose() << std::endl;
     // std::cout << "plannedMode: " << plannedMode << std::endl;

@@ -18,12 +18,12 @@ public:
     // std::cerr << "\n###   Maximum : " << qpBenchmark_.getMaxIntervalInMilliseconds() << "[ms].";
     // std::cerr << "\n###   Average : " << qpBenchmark_.getAverageInMilliseconds() << "[ms].";
   }
-  void setQpProblem(const Task& trackingCost, const Task& Constraints, bool isInitRun);
+  int setQpProblem(const Task& trackingCost, const Task& Constraints, bool isInitRun);
   vector_t getSolutions() { return primalSolution_; }
   
 private:
   void solveProblem();
-  void solveSqpProblem(bool isInitRun);
+  int solveSqpProblem(bool isInitRun);
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h_, d_;
   vector_t c_, qpInequalityUpperBound_, qpInequalityLowerBound_;
   vector_t primalSolution_;

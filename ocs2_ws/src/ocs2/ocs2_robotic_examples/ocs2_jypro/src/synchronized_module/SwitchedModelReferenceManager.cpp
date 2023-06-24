@@ -301,9 +301,9 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     feetCurrentEEPositions[leg] = footPlacementPlannerPtr_->getCurrentEEPosition(leg, initState);
     if(currentContactFlags[leg] == true)
       feetEETouchDownPositions_[leg] = feetCurrentEEPositions[leg];
-    std::cout << "leg: " << leg << "\t" << feetEETouchDownPositions_[leg].transpose() << "\t";
+    // std::cout << "leg: " << leg << "\t" << feetEETouchDownPositions_[leg].transpose() << "\t";
   }
-  std::cout << "\n";
+  // std::cout << "\n";
   if(0){
     for(int leg = 0; leg < 4; leg++ ){
       vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.2*commandedVelocity;

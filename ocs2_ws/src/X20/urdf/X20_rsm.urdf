@@ -113,7 +113,13 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.02"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.17" />
+      <geometry>
+        <cylinder length="0.32" radius="0.02" />
       </geometry>
     </collision>
   </link>
@@ -200,7 +206,13 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.02"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.17" />
+      <geometry>
+        <cylinder length="0.32" radius="0.02" />
       </geometry>
     </collision>
   </link>
@@ -287,7 +299,13 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.02"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.17" />
+      <geometry>
+        <cylinder length="0.32" radius="0.02" />
       </geometry>
     </collision>
   </link>
@@ -374,7 +392,13 @@
     <collision>
       <origin xyz="0.00 0 -0.33" />
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.02"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.17" />
+      <geometry>
+        <cylinder length="0.32" radius="0.02" />
       </geometry>
     </collision>
   </link>

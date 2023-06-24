@@ -86,8 +86,19 @@ vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inpu
 
     // TrackingQP singQp(trackingTask, costraints);
 
-    qpPtr_->setQpProblem(trackingTask, constraints,isInitRun_);
+    int res = qpPtr_->setQpProblem(trackingTask, constraints,isInitRun_);
     isInitRun_ = false;
+    if(res != 0){
+        ROS_ERROR_STREAM(">>>>Whole-Body Control QP solver failed!<<<<");
+        std::cout << "rbdStateMeasured:\n" << rbdStateMeasured.transpose() << "\n";
+        std::cout << "stateDesired:\n" << stateDesired.transpose() << "\n";
+        std::cout << "inputDesired:\n" << inputDesired.transpose() << "\n";
+        std::cout << "mode: " << mode << " period: " << period << " time: " << time << "\n";
+        std::cout << "trackingTask\n";
+        trackingTask.print();
+        std::cout << "constraints\n";
+        constraints.print();
+    }
 
     vector_t x_optimal = qpPtr_->getSolutions();
     singleQpTimer_.endTimer();

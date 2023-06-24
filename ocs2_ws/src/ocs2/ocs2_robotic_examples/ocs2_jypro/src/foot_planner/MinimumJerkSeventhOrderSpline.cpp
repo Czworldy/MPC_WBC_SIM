@@ -25,7 +25,7 @@ MinimumJerkSeventhOrderSplineSolver::MinimumJerkSeventhOrderSplineSolver(scalar_
       Aeq_block_topLeft(0, 0) = 1;
       Aeq_block_topLeft(1, 1) = 1;
       Aeq_block_topLeft(2, 2) = 2;
-      scalar_t t = 0.4;
+      scalar_t t = 0.5;
       Aeq_block_topLeft.row(3) << 1.0, 1.0*t,1.0*pow(t,2),1.0*pow(t,3),1.0*pow(t,4),1.0*pow(t,5),1.0*pow(t,6),1.0*pow(t,7);
       Aeq_block_topLeft.row(4) << 1, 1, 1, 1, 1, 1, 1, 1;
       Aeq_block_topLeft.row(5) << 0, 1, 2, 3, 4, 5, 6, 7;

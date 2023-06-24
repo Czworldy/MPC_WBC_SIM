@@ -30,7 +30,7 @@ TrackingQP::TrackingQP(const Task& trackingCost, const Task& constraints) {
   solveProblem();
 }
 
-void TrackingQP::setQpProblem(const Task& trackingCost, const Task& constraints, bool isInitRun) {
+int TrackingQP::setQpProblem(const Task& trackingCost, const Task& constraints, bool isInitRun) {
   h_ = trackingCost.a_.transpose()*trackingCost.a_; // no need times 0.5
   c_ = -trackingCost.a_.transpose()*trackingCost.b_;
 
@@ -40,7 +40,7 @@ void TrackingQP::setQpProblem(const Task& trackingCost, const Task& constraints,
   infinityLowerBound.setConstant(-qpOASES::INFTY);
   qpInequalityLowerBound_ = Task::concatenateVectors(constraints.b_, infinityLowerBound);
 
-  solveSqpProblem(isInitRun);
+  return solveSqpProblem(isInitRun);
 }
 
 TrackingQP::TrackingQP(size_t nVar, size_t nC) {
@@ -74,22 +74,23 @@ void TrackingQP::solveProblem() {
   primalSolution_ = qpSol;
 }
 
-void TrackingQP::solveSqpProblem(bool isInitRun) {
+int TrackingQP::solveSqpProblem(bool isInitRun) {
   qpBenchmark_.startTimer();
   int nWsr = 100; // 20
-
+  int res;
   if(isInitRun)
-    sqpProblemPtr_->init(h_.data(), c_.data(), d_.data(), nullptr, nullptr, qpInequalityLowerBound_.data(),
+    res = sqpProblemPtr_->init(h_.data(), c_.data(), d_.data(), nullptr, nullptr, qpInequalityLowerBound_.data(),
                   qpInequalityUpperBound_.data(), nWsr);
   else
-    sqpProblemPtr_->hotstart(h_.data(), c_.data(), d_.data(), nullptr, nullptr, qpInequalityLowerBound_.data(),
+    res = sqpProblemPtr_->hotstart(h_.data(), c_.data(), d_.data(), nullptr, nullptr, qpInequalityLowerBound_.data(),
                   qpInequalityUpperBound_.data(), nWsr);
   vector_t qpSol(h_.rows());
-
-  sqpProblemPtr_->getPrimalSolution(qpSol.data());
+  if(res == qpOASES::SUCCESSFUL_RETURN){
+    sqpProblemPtr_->getPrimalSolution(qpSol.data());
+    primalSolution_ = qpSol;
+  }
   qpBenchmark_.endTimer();
-
-  primalSolution_ = qpSol;
+  return res;
 }
 
 }
