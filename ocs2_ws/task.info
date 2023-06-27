@@ -1,5 +1,5 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      true
+useFeetPlacementConstraint      false
 useIKresult                     true
 useEndEffectorTrackingCost      true
 
@@ -259,7 +259,7 @@ R
 
 frictionConeSoftConstraint
 {
-  frictionCoefficient    0.6
+  frictionCoefficient    0.5
 
   ; relaxed log barrier parameters
   mu                     0.1
@@ -270,7 +270,7 @@ footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
   mu                     0.01
-  delta                  0.2
+  delta                  0.15
 }
 
 Qee

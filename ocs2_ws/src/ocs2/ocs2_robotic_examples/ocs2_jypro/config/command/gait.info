@@ -17,6 +17,7 @@ list
   [14] jump1
   [15] stair
   [16] walk
+  [17] three_leg
 }
 
 stance
@@ -344,5 +345,21 @@ walk
     [2]     0.6
     [3]     0.9
     [4]     1.2
+  }
+}
+
+three_leg
+{
+  modeSequence
+  {
+    [0]     LF_RF_RH
+    [1]     FLY
+
+  }
+  switchingTimes
+  {
+    [0]     0.0
+    [1]     0.7
+    [2]     0.9
   }
 }

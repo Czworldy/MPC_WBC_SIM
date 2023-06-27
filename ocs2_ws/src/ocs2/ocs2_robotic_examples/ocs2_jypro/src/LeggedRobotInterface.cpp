@@ -177,10 +177,12 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   auto mpcSwingHeightPtr = std::make_shared<feet_array_t<std::vector<vector_t>>>();
   auto mpcSwingMiddleTimePtr = std::make_shared<feet_array_t<std::vector<scalar_t>>>();
 
-  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, -0.4},{__FOOT_X__, __FOOT_Y__, -0.4}};
-  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, -0.4},{__FOOT_X__, -__FOOT_Y__, -0.4}}; 
-  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, -0.4},{-__FOOT_X__, __FOOT_Y__, -0.4}};
-  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, -0.4},{-__FOOT_X__, -__FOOT_Y__, -0.4}};
+  const scalar_t terrainHeight = 0.02;
+
+  (*mpcNominalFootholdPtr)[0] = std::vector<vector3_t>{{__FOOT_X__, __FOOT_Y__, terrainHeight},{__FOOT_X__, __FOOT_Y__, terrainHeight}};
+  (*mpcNominalFootholdPtr)[1] = std::vector<vector3_t>{{__FOOT_X__, -__FOOT_Y__, terrainHeight},{__FOOT_X__, -__FOOT_Y__, terrainHeight}}; 
+  (*mpcNominalFootholdPtr)[2] = std::vector<vector3_t>{{-__FOOT_X__, __FOOT_Y__, terrainHeight},{-__FOOT_X__, __FOOT_Y__, terrainHeight}};
+  (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, terrainHeight},{-__FOOT_X__, -__FOOT_Y__, terrainHeight}};
   
   std::vector<vector_t> swingHeightDefault;
   vector_t defaultHeight = vector3_t{0.1, 0.15, 0.1};

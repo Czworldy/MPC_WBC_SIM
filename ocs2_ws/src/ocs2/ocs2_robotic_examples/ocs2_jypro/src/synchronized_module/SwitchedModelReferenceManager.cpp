@@ -171,19 +171,19 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //   // insert the new mode
   // if(isLateTouchdown_ && (insertContactTimes_ > 0) && (mode != currentMode)) {
   //     // delay the mode after the late touchdown
-  //     for(int i = modeIndex; i < modeSchedule.eventTimes.size(); i++) {
+  //     for(int i = 0; i < modeSchedule.eventTimes.size(); i++) {
   //       modeSchedule.eventTimes[i] += 0.05;
   //     }
   //     // for(int i = 0; i < modeIndex; i++) {
   //     //   modeSchedule.eventTimes[i] -= 0.02;
   //     // }
 
-  //     const auto& modeAfterRecover = modeSchedule.modeSequence[modeIndex+1]; // maybe change to closet mode according to time.
+  //     // const auto& modeAfterRecover = modeSchedule.modeSequence[modeIndex+1]; // maybe change to closet mode according to time.
 
-  //     modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, lateTouchdownTime_ - 0.01); // recover mode start time
-  //     modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex + 1, lateTouchdownTime_ + 0.05); // recover mode end time
-  //     modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags_));
-  //     modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 2, modeAfterRecover);
+  //     // modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex, lateTouchdownTime_ - 0.01); // recover mode start time
+  //     // modeSchedule.eventTimes.insert(modeSchedule.eventTimes.begin() + modeIndex + 1, lateTouchdownTime_ + 0.05); // recover mode end time
+  //     // modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 1, stanceLeg2ModeNumber(insertContactFlags_));
+  //     // modeSchedule.modeSequence.insert(modeSchedule.modeSequence.begin() + modeIndex + 2, modeAfterRecover);
   //     std::cout << "### After modeSchedule:" << std::endl;
   //     std::cout << modeSchedule;
   //     insertContactTimes_--;
@@ -236,30 +236,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
 
 
 
-  //   std::cout << "######## modify target state ########\n";
-  // }
 
-  // std::cout << "targetTrajectories:" << targetTrajectories.stateTrajectory.back().segment(6,6).transpose() << std::endl;
 
-  // std::cout << "init time:" << initTime<< "\t" << " final time:" << finalTime << std::endl;
-  // std::cout << modeSchedule << std::endl;
-
-  // const scalar_t terrainHeight = initState(8) - 0.42; //For JYPro
-
-  // std::cout << "targetFeetPlacement L size:" << targetFeetPlacement.targetFeetPlacemetLeft_.size() << "\n";
-  // std::cout << "targetFeetPlacement R size:" << targetFeetPlacement.targetFeetPlacemetRight_.size() << "\n";
-  // const auto& leftFront = targetFeetPlacement.targetFeetPlacemetLeftFront_;
-  // const auto& rightFront = targetFeetPlacement.targetFeetPlacemetRightFront_;
-  // const auto& leftBack = targetFeetPlacement.targetFeetPlacemetLeftBack_;
-  // const auto& rightBack = targetFeetPlacement.targetFeetPlacemetRightBack_;
-  // for(const auto& left_i : leftFront) {
-  //   std::cout << "left_i:" << left_i.transpose() << "\n";
-  // }
-  // for(const auto& right_i : right) {
-  //   std::cout << "right_i:" << right_i.transpose() << "\n";
-  // }
-  // footPlacementPlannerPtr_->setTargetPoints(leftFront, rightFront, leftBack, rightBack);
-  // std::cout << "mpcPolygonArrayPtr_[0][0][0]: " << (*mpcPolygonArrayPtr_)[0][0][0].transpose() << std::endl;
   LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
   const auto& _O_B_tfMatrix =  LeggedIKSolverPtr_->getBodyTfMatrix();
   feet_array_t<vector3_t> hipNominalPoints;
@@ -330,10 +308,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->setTargetSwingMiddleTime(*mpcSwingMiddleTimePtr_);
-  footPlacementPlannerPtr_->update(modeSchedule, targetTrajectories, initTime, initState);
+  std::cout << "footPlacementPlannerPtr_ update start!" << "\n";
+  footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
   //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
-  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
+  std::cout << "swingTrajectoryPtr_ update start!" << "\n";
+  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
       footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions, isLateTouchdown_);
@@ -349,7 +329,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  // std::cout << "modifyReferences Done!" << "\n";
+  std::cout << "modifyReferences Done!" << "\n";
 
 }
 
