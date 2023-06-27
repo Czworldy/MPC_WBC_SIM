@@ -5,9 +5,7 @@
 #include <unistd.h>
 #include <memory>
 #include <chrono>
-#include <thread>
 // ROS
-#include "ros/ros.h"
 #include "std_msgs/Float64.h"
 #include "sensor_msgs/JointState.h"
 // #include "gazebo_msgs/LinkStates.h"   //yjy::可以不用LinkStates而使用ModelStates
@@ -60,8 +58,8 @@ const double hfe_PDWaitForStanding(-1.23);
 const double kfe_PDWaitForStanding(2.79);
 
 const double haa_PDStandUpMotion(0);
-const double hfe_PDStandUpMotion(-0.95);
-const double kfe_PDStandUpMotion(1.78);
+const double hfe_PDStandUpMotion(-0.8);
+const double kfe_PDStandUpMotion(1.7);
 
 const double xBase(0.0);
 const double yBase(0.0);
@@ -131,7 +129,7 @@ int main(int argc, char**argv) {
     std_msgs::Float64 rf_haa_tau, rf_hfe_tau, rf_kfe_tau;
     std_msgs::Float64 rh_haa_tau, rh_hfe_tau, rh_kfe_tau;
 
-    ros::Rate rate(1000);
+    ros::Rate rate(400);
 
     mpc_terrain_sync_input = nh.advertise<ocs2_msgs::mpc_terrain>("/legged_robot_mpc_terrain", 1);
     jointStatesSub = nh.subscribe("/X20/joint_states", 1, &jointStatesCallback);
@@ -160,9 +158,6 @@ int main(int argc, char**argv) {
 	simpleMotion.reset(new SimpleMotion(verbose));
     // in_pose.open("/home/dqwang/pose.txt", ios::trunc);
     simpleMotion->setMPCMsgPtr(&mpcData);
-    // ros::AsyncSpinner s(4); 
-    // s.start();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     while(nh.ok()){
         // Estimator
         estStatesOutput.time_stamp = ros::Time::now().toSec();
@@ -510,9 +505,6 @@ void mpcCallback(const ocs2_msgs::mpc_wbc_conversion::ConstPtr& msg) {
             }
         }
     }
-    for(int i = 0; i < 12; i++)
-        mpcData.inputForce[i] = msg->inputForce[i];
-    std::cout << "mpcData.inputForce" << mpcData.inputForce.transpose() << std::endl;
 	isMPC = true;
 	isMPCMsgUpdate = true;
 }

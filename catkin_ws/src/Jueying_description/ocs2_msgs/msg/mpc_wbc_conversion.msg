@@ -4,4 +4,6 @@ float64[] firstGait
 float64[] secondGait
 float64[] thirdGait
 float64[] switchTime
-float64[] inputForce
+
+
+		

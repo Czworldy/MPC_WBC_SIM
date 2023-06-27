@@ -22,8 +22,6 @@ struct BodyStateEstData{
     Vec31<T> frame_c_rpy_in_world;
     Eigen::Quaternion<T> frame_c_quat_in_world;
     Vec31<T> frame_c_xyz_in_world;
-
-    Eigen::Quaternion<T> terrain_orientation;
 };
 
 template struct BodyStateEstData<double>;

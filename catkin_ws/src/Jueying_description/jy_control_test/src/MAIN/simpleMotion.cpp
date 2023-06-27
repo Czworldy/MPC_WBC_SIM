@@ -38,8 +38,6 @@ verbose_(verbose) {
     // in_foot_rh_x.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_x.txt", ios::trunc);
     // in_foot_rh_y.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_y.txt", ios::trunc);
     // in_foot_rh_z.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/wbc_analysis_foot_rh_z.txt", ios::trunc);
-
-    // in_foot_joint_lf.open("/home/yjy/MPC_WBC_sim/catkin_ws/src/Jueying_description/jy_control_test/Calculation_Analysis/WBC/ResultData/in_foot_joint_lf.txt", ios::trunc);
 }
 
 void SimpleMotion::EstimatedStatesInput(const EstimatorOutput& input) {
@@ -239,9 +237,9 @@ void SimpleMotion::PDMotionRun(LimbsCommand& command) {
     if(verbose_) {
         std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] timePD_Now: " << timeNowPD_;
         std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] timeCycle: " << timeCycle_;
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] paramf.Kp_lf_haa_pd: " <<  paramf.Kp_lf_haa_pd;
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] planedLimbsStates_.lf_pos.value[0]: " <<  planedLimbsStates_.lf_pos.value[0];
-        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] currentLimbsStates_.lf_pos.value[0]: " <<  currentLimbsStates_.lf_pos.value[0];
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] paramf.Kp_rh_kfe_pd: " <<  paramf.Kp_rh_kfe_pd;
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] planedLimbsStates_.rh_pos.value[2]: " <<  planedLimbsStates_.rh_pos.value[2];
+        std::cerr << "\n[yjy: SimpleMotion::PDMotionRun] currentLimbsStates_.rh_pos.value[2]: " <<  currentLimbsStates_.rh_pos.value[2];
     }
 }
 
@@ -266,13 +264,6 @@ void SimpleMotion::WBCSetUpGoalBaseStates(float x, float y, float z, float roll,
     goalBaseStates_.roll[0]  = currentStatesWBC_.bodyStateEst.base_rpy_world[0] + roll;
     goalBaseStates_.pitch[0] = currentStatesWBC_.bodyStateEst.base_rpy_world[1] + pitch;
     goalBaseStates_.yaw[0]   = currentStatesWBC_.bodyStateEst.base_rpy_world[2] + yaw;
-
-    // goalBaseStates_.x[0] = 0;
-    // goalBaseStates_.y[0] = 0;
-    // goalBaseStates_.z[0] = 0.48;
-    // goalBaseStates_.roll[0]  = 0;
-    // goalBaseStates_.pitch[0] = 0;
-    // goalBaseStates_.yaw[0]   = 0;
 }
 
 void SimpleMotion::WBCSetUpGoalTime(float timeGoal) {
@@ -397,23 +388,7 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
         desiredDataWBC_.vFoot_des[foot_id_] << planedFootStates_.x[1], planedFootStates_.y[1], planedFootStates_.z[1];
         desiredDataWBC_.aFoot_des[foot_id_] << planedFootStates_.x[2], planedFootStates_.y[2], planedFootStates_.z[2];
     }
-    Eigen::Vector3f qnormal;
-    qnormal << -0.04, -0.676, 1.317;
-    desiredDataWBC_.pLegJoint_des[legID::LF] = qnormal;
-    desiredDataWBC_.pLegJoint_des[legID::LB] = qnormal; 
-    desiredDataWBC_.pLegJoint_des[legID::RF] = qnormal;
-    desiredDataWBC_.pLegJoint_des[legID::RB] = qnormal;
 
-    desiredDataWBC_.vLegJoint_des[legID::LF].setZero();
-    desiredDataWBC_.vLegJoint_des[legID::LB].setZero();
-    desiredDataWBC_.vLegJoint_des[legID::RF].setZero();
-    desiredDataWBC_.vLegJoint_des[legID::RB].setZero();
-
-    desiredDataWBC_.aLegJoint_des[legID::LF].setZero();
-    desiredDataWBC_.aLegJoint_des[legID::LB].setZero();
-    desiredDataWBC_.aLegJoint_des[legID::RF].setZero();
-    desiredDataWBC_.aLegJoint_des[legID::RB].setZero();
-    
     currentStatesWBC_.bodyStateEst.frame_c_rpy_in_world[0] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_rpy_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_rpy_in_world[2] = 0;
@@ -427,15 +402,14 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[1] = 0;
     currentStatesWBC_.bodyStateEst.frame_c_xyz_in_world[2] = 0;
 
-    desiredDataWBC_.contact_force << 0, 0, 135, 
-                                     0, 0, 135, 
-                                     0, 0, 135, 
-                                     0, 0, 135;
+    // std::cout << "iteratorWBC_:" << iteratorWBC_ << " " << timeGoalWBC_ << " pBody_des:" << desiredDataWBC_.pBody_des.transpose() << "\n";
+    // std::cout << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des.transpose() << "\n";
+    // std::cout << "curpBody:" << currentStatesWBC_.bodyStateEst.base_pos_world.transpose() << "\n";
+    // std::cout << "rpy: " << currentStatesWBC_.bodyStateEst.base_rpy_world.transpose() << "\n";
+    // std::cout << "leg: " << currentStatesWBC_.legStateEst->q.transpose() << "\n";
 
-    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
-    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
     for (int i(0); i < 3; i++) {
         command.lf_tau.value[i] = tauWBC_[i];
@@ -454,7 +428,7 @@ void SimpleMotion::WBCMotionRun(LimbsCommand& command, bool& safeGuard) {
         safeGuard = false;
     }
 
-    // RecordData();
+    RecordData();
 }
 
 void SimpleMotion::WBCSetUpContactForSwingMotion(size_t foot_id) {
@@ -475,14 +449,9 @@ void SimpleMotion::WBCSetUpSwingFootInitialStates(){
     initialBaseStates_.yaw[0]   = currentStatesWBC_.bodyStateEst.base_rpy_world[2];
 
     Q_.head(3) << currentStatesWBC_.bodyStateEst.base_pos_world;
-    // Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
+    Q_.segment(3, 3)  << currentStatesWBC_.bodyStateEst.base_rpy_world;
     // Q_.head(3) << 0, 0, 0;
     // Q_.segment(3, 3)  << 0, 0, 0;
-    Q_[3]  = currentStatesWBC_.bodyStateEst.base_orientation_world.x();
-    Q_[4]  = currentStatesWBC_.bodyStateEst.base_orientation_world.y();
-    Q_[5]  = currentStatesWBC_.bodyStateEst.base_orientation_world.z();
-    Q_[18] = currentStatesWBC_.bodyStateEst.base_orientation_world.w();
-    
     Q_.segment(6, 3)  << currentStatesWBC_.legStateEst[legID::LF].q;
     Q_.segment(9, 3)  << currentStatesWBC_.legStateEst[legID::LB].q;
     Q_.segment(12, 3) << currentStatesWBC_.legStateEst[legID::RF].q;
@@ -662,11 +631,10 @@ size_t SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& sa
 
     // std::cerr << "6" << "\n";
     // StateTime
-    indexMPCStateTime_ = 1;
+    indexMPCStateTime_ = 0;
     while ((time_stamp) > mpcMsgPtr_->stateTime[indexMPCStateTime_] && indexMPCStateTime_ < mpcMsgPtr_->stateTime.size() - 1) {
         indexMPCStateTime_++;
     }
-    // std::cout << "indexMPCStateTime_ = " << indexMPCStateTime_ << "\n";
     // std::cerr << "7" << "\n";
     // Contact
     if(indexMPCStateTime_ >= mpcMsgPtr_->stateTime.size()) {
@@ -720,9 +688,6 @@ size_t SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& sa
     desiredDataWBC_.vBody_RPY_des = mpcMsgPtr_->baseVelocity[indexMPCStateTime_].tail(3);
     desiredDataWBC_.aBody_RPY_des = mpcMsgPtr_->baseAcceleration[indexMPCStateTime_].tail(3);
 
-    // std::cout << "pBody_RPY_des " << desiredDataWBC_.pBody_RPY_des.transpose() << "\n";
-    // std::cout << "vBody_RPY_des " << desiredDataWBC_.vBody_RPY_des.transpose() << "\n";
-
     desiredDataWBC_.pFoot_des[legID::LF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][0];
     desiredDataWBC_.pFoot_des[legID::RF] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][1];
     desiredDataWBC_.pFoot_des[legID::LB] = mpcMsgPtr_->swingFeetPosition[indexMPCStateTime_][2];
@@ -738,37 +703,15 @@ size_t SimpleMotion::MPCWBCRun(float time_stamp, LimbsCommand& command, bool& sa
     desiredDataWBC_.aFoot_des[legID::LB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][2];
     desiredDataWBC_.aFoot_des[legID::RB] = mpcMsgPtr_->swingFeetAcceleration[indexMPCStateTime_][3];
 
-    desiredDataWBC_.pLegJoint_des[legID::LF] = mpcMsgPtr_->actJointPos[indexMPCStateTime_].head(3);
-    desiredDataWBC_.pLegJoint_des[legID::LB] = mpcMsgPtr_->actJointPos[indexMPCStateTime_].segment(3, 3);
-    desiredDataWBC_.pLegJoint_des[legID::RF] = mpcMsgPtr_->actJointPos[indexMPCStateTime_].segment(6, 3);
-    desiredDataWBC_.pLegJoint_des[legID::RB] = mpcMsgPtr_->actJointPos[indexMPCStateTime_].tail(3);
-
-    std::cout << "des LH:" << desiredDataWBC_.pLegJoint_des[legID::LB].transpose() << "\n";
-    // std::cout << "cur LH:" << currentStatesWBC_.legStateEst[legID::LB].q.transpose() << "\n";
-
-    desiredDataWBC_.vLegJoint_des[legID::LF] = mpcMsgPtr_->actJointVel[indexMPCStateTime_].head(3);
-    desiredDataWBC_.vLegJoint_des[legID::LB] = mpcMsgPtr_->actJointVel[indexMPCStateTime_].segment(3, 3);
-    desiredDataWBC_.vLegJoint_des[legID::RF] = mpcMsgPtr_->actJointVel[indexMPCStateTime_].segment(6, 3);
-    desiredDataWBC_.vLegJoint_des[legID::RB] = mpcMsgPtr_->actJointVel[indexMPCStateTime_].tail(3);
-
-    // std::cout << "mpcMsgPtr_->actJointVel " << mpcMsgPtr_->actJointVel[indexMPCStateTime_].transpose() << "\n";
-
-    // desiredDataWBC_.aLegJoint_des[legID::LF] = mpcMsgPtr_->actJointAcc[indexMPCStateTime_].head(3);
-    // desiredDataWBC_.aLegJoint_des[legID::LB] = mpcMsgPtr_->actJointAcc[indexMPCStateTime_].segment(3, 3);
-    // desiredDataWBC_.aLegJoint_des[legID::RF] = mpcMsgPtr_->actJointAcc[indexMPCStateTime_].segment(6, 3);
-    // desiredDataWBC_.aLegJoint_des[legID::RB] = mpcMsgPtr_->actJointAcc[indexMPCStateTime_].tail(3);
-
-    desiredDataWBC_.contact_force = mpcMsgPtr_->inputForce;
-
-    std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
+    // std::cerr << "pBody_RPY_des:" << desiredDataWBC_.pBody_RPY_des[0] << "\t" << desiredDataWBC_.pBody_RPY_des[1] <<"\n";
 
     // desiredDataWBC_.pBody_RPY_des[0] = slope_delta_roll;
     // desiredDataWBC_.pBody_RPY_des[1] = slope_delta_pitch;
 
 
-    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     wbc_ctrl_->run(&desiredDataWBC_, currentStatesWBC_,tauWBC_);
-    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     // std::cerr << "wbc run time: "<< std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count() << "us\n";
 
     command.lf_tau.value[0] = tauWBC_[0] + paramf.Kp_joint_lf[0] * (mpcMsgPtr_->actJointPos[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].q[0]) + paramf.Kd_joint_lf[0] * (mpcMsgPtr_->actJointVel[indexMPCStateTime_][0] - currentStatesWBC_.legStateEst[legID::LF].qd[0]);
@@ -873,8 +816,6 @@ TerrainEstData SimpleMotion::TerrainEst(const Vec41<int>& contact_flag){
     terrainEstData.terrainQuat = terrainQuat;
     terrainEstData.terrainParams = terrParam;
     terrainEstData.feetHeight = terrEst.getFeetHeight(); //lf lh rf rh 
-
-    currentStatesWBC_.bodyStateEst.terrain_orientation = terrainQuat;
 
     return terrainEstData;
 

@@ -132,44 +132,26 @@ void WBC<T>::MakeTorque(DVec<T>& cmd){
     f_ineqConstraint.bottomRows(task->getDimTaskInEq()) = task->get_f();
 
     //  cost function task 4,5,6,7 
-    // taskList.push_back(_eomTask);
-    // taskList.push_back(_torqueLimits);
-    // taskList.push_back(_contactForceLimits);
-    // taskList.push_back(_noContactMotion);
-    // taskList.push_back(_comLinearMotion);
-    // taskList.push_back(_comAngularMotion);
-    // taskList.push_back(_swingLegJointMotion);
-    // taskList.push_back(_contactForceMin);
     DMat<T> H_cost = DMat<T>::Zero(dim_n_, dim_n_);
     DVec<T> c_cost = DVec<T>::Zero(dim_n_);
     task = (*_task_list)[4];
     int dim_cost = (*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq() + (*_task_list)[6]->getDimTaskEq() + (*_task_list)[7]->getDimTaskEq();
     DMat<T> A_cost = DMat<T>::Zero(dim_cost, dim_n_);
     DVec<T> b_cost = DVec<T>::Zero(dim_cost);
-    A_cost.topRows(task->getDimTaskEq()) = task->get_A()*Q_[4];
-    b_cost.topRows(task->getDimTaskEq()) = task->get_b()*Q_[4];
+    A_cost.topRows(task->getDimTaskEq()) = task->get_A()*10;
+    b_cost.topRows(task->getDimTaskEq()) = task->get_b()*10;
     task = (*_task_list)[5];
-    A_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A()*Q_[5];//*(T)std::sqrt(10.);
-    b_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b()*Q_[5];//*(T)std::sqrt(10.);
+    A_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A();
+    b_cost.middleRows((*_task_list)[4]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b();
     task = (*_task_list)[6];
-    if(task->getDimTaskEq() != 0){
-        A_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A()*Q_[6];  // sqrt(weights)
-        b_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b()*Q_[6];
-    }
-
+    A_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_A();
+    b_cost.middleRows((*_task_list)[4]->getDimTaskEq() + (*_task_list)[5]->getDimTaskEq(), task->getDimTaskEq()) = task->get_b();
     task = (*_task_list)[7];
-    if(task->getDimTaskEq() != 0){
-        A_cost.bottomRows(task->getDimTaskEq()) = task->get_A()*Q_[7];
-        b_cost.bottomRows(task->getDimTaskEq()) = task->get_b()*Q_[7];
-    }
+    A_cost.bottomRows(task->getDimTaskEq()) = task->get_A()*0.1;
+    b_cost.bottomRows(task->getDimTaskEq()) = task->get_b()*0.1;
 
     H_cost = A_cost.transpose()*A_cost;
-    H_cost.diagonal() += DVec<T>::Ones(dim_n_)*1e-6;
-    c_cost = -A_cost.transpose()*b_cost; //不用乘2 
-
-    // std::cout << "Q_:" << Q_.transpose() << std::endl;
-    // std::cout << "dim_n_:" << dim_n_ << std::endl;
-    // std::cout << "dim_cost:" << dim_cost << std::endl;
+    c_cost = -A_cost.transpose()*b_cost;
 
         //Var for Osqp
         // std::cout << "osqp\n";

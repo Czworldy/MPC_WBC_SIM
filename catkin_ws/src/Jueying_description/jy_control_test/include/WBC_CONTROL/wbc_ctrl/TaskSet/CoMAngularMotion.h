@@ -1,9 +1,9 @@
 #ifndef COMANGULARMOTION_H
 #define COMANGULARMOTION_H
 
-#include<WBC_CONTROL/wbc/task.h>
-#include<WBC_CONTROL/dynamics/quadruped_dynamics_model.h>
-#include "Math/utility.h"
+#include<task.h>
+#include<quadruped_dynamics_model.h>
+#include "utility.h"
 //TODO：未测试函数计算是否正确
 
 template <typename T>

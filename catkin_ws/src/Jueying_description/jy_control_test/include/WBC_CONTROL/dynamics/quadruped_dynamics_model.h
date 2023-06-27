@@ -2,8 +2,8 @@
 #define QUADRUPED_DYNAMICS_MODEL_H
 
 //ROS related
-// #include<ros/ros.h>
-// #include<ros/node_handle.h>
+#include<ros/ros.h>
+#include<ros/node_handle.h>
 
 //RBDL related
 #include <rbdl/rbdl.h>
@@ -12,10 +12,9 @@
 #include <rbdl/Dynamics.h>
 #include <rbdl/Kinematics.h>
 #include <rbdl/Constraints.h>
-#include <rbdl/addons/urdfreader/urdfreader.h>
 
 #include<cppTypes.h>
-#include"PARAMETER/UserParameter.h"
+#include"UserParameter.h"
 #include<eigen3/Eigen/Geometry>
 
 using namespace RigidBodyDynamics;

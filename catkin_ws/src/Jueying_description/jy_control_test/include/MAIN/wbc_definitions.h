@@ -139,8 +139,6 @@ public:
 
     vector_array_t actJointPos;
     vector_array_t actJointVel;
-    vector_array_t actJointAcc;
-    Eigen::Matrix<float, 12, 1> inputForce;
 };
 
 // for MPC comunication  float base

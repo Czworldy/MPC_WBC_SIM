@@ -7,4 +7,3 @@ float32    b
 float32    d
 
 float32[4] feetHeight # [lf lh rf rh]    
-bool[4] contact # [lf lh rf rh]    

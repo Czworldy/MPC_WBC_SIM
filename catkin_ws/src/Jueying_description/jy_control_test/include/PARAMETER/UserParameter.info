@@ -1,4 +1,4 @@
-cycle_time                0.001
+cycle_time                0.0025
 
 WBC
 {
@@ -336,67 +336,9 @@ WBC
         [1]                  1
         [2]                  1
         [3]                  1
-        [4]                  5    ;;base  linear  task
-        [5]                  1    ;;base  angular task
-        [6]                  2      ;;swing legs    task
-        [7]                  0.01   ;;min   contact force
-    }
-
-    Kd_LegJoint_lf
-    {
-        [0]                 10
-        [1]                 10
-        [2]                 10 
-    }
-
-    Kp_LegJoint_lf
-    {
-        [0]                 100
-        [1]                 100
-        [2]                 100 
-    }
-
-    Kd_LegJoint_rf
-    {
-        [0]                 10
-        [1]                 10
-        [2]                 10
-    }
-
-    Kp_LegJoint_rf
-    {
-        [0]                 100
-        [1]                 100
-        [2]                 100 
-    }
-
-
-    Kd_LegJoint_lb
-    {
-        [0]                 10
-        [1]                 10
-        [2]                 10
-    }
-
-    Kp_LegJoint_lb
-    {
-        [0]                 100
-        [1]                 100
-        [2]                 100 
-    }
-
-    Kd_LegJoint_rb
-    {
-        [0]                 10
-        [1]                 10
-        [2]                 10
-    }
-
-    Kp_LegJoint_rb
-    {
-        [0]                 100
-        [1]                 100
-        [2]                 100 
+        [4]                  1
+        [5]                  3
+        [6]                  1
     }
 
 
@@ -435,12 +377,12 @@ PD
 
 SafeGuard
 {
-    x_delta                  0.4
-    y_delta                  0.18
-    z_delta                  0.18
-    roll_delta               0.18
-    pitch_delta              0.18
-    yaw_delta                0.18
+    x_delta                  0.05
+    y_delta                  0.05
+    z_delta                  0.05
+    roll_delta               0.05
+    pitch_delta              0.05
+    yaw_delta                0.05
 
     Kd_lf_haa_pd_safe        5
     Kp_lf_haa_pd_safe        10

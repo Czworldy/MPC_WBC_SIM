@@ -1,8 +1,8 @@
 #ifndef COMLINEARMOTION_H
 #define COMLINEARMOTION_H
 
-#include<WBC_CONTROL/wbc/task.h>
-#include<WBC_CONTROL/dynamics/quadruped_dynamics_model.h>
+#include<task.h>
+#include<quadruped_dynamics_model.h>
 
 template <typename T>
 class CoMLinearMotion: public Task<T>{

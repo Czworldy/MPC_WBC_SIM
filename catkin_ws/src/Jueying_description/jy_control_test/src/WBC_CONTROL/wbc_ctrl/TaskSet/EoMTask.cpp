@@ -1,4 +1,4 @@
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/EoMTask.h"
+#include "EoMTask.h"
 #include "cppTypes.h"
 
 //Floating base equations of motion
@@ -48,7 +48,7 @@ bool EoMTask<T>::Update_b(){
 
 template<typename T>
 void EoMTask<T>::TaskPrint(){
-    printf("TASK_PRINT_EOMTASK");
+    ROS_INFO("TASK_PRINT_EOMTASK");  
 }
 
 
@@ -56,7 +56,7 @@ template<typename T>
 bool EoMTask<T>::UpdateTask(const DVec<T>& pos_des, 
                             const DVec<T>& vel_des,
                             const DVec<T>& acc_des){
-    printf("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
+    ROS_INFO("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 }
 
 template<typename T>
@@ -64,7 +64,7 @@ bool EoMTask<T>::UpdateTask(const DVec<T>& pos_des,
                             const DVec<T>& vel_des,
                             const DVec<T>& acc_des,
                             const Vec41<T>& contact_state){
-printf("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");  return true;                          
+ROS_INFO("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                            
 }
 
 template<typename T>
@@ -72,14 +72,14 @@ bool EoMTask<T>::UpdateTask(const Vec31<T>* pos_des,
                             const Vec31<T>* vel_des,
                             const Vec31<T>* acc_des,
                             const Vec41<T>& contact_state){
-printf("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");   return true;                         
+ROS_INFO("EoMTask ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                            
 }
 
 template<typename T>
-bool EoMTask<T>::Update_D(){return true; }
+bool EoMTask<T>::Update_D(){ }
 
 template<typename T>
-bool EoMTask<T>::Update_f(){return true; }
+bool EoMTask<T>::Update_f(){ }
 
 template class EoMTask<double>;
 template class EoMTask<float>;

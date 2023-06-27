@@ -1,4 +1,4 @@
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/CoMLinearMotion.h"
+#include "CoMLinearMotion.h"
 
 template<typename T>
 CoMLinearMotion<T>::CoMLinearMotion(QuadrupedDynamicsModel* model)
@@ -20,22 +20,22 @@ bool CoMLinearMotion<T>::UpdateTask(const DVec<T>& pos_des,
     Kp = user_p_.Kp_body;
     Kd = user_p_.Kd_body;
 
-    // if(!contactState[legID::LF]){
-    //     Kp = user_p_.Kp_body_lf;
-    //     Kd = user_p_.Kd_body_lf;
-    // }
-    // if(!contactState[legID::LB]){
-    //     Kp = user_p_.Kp_body_lb;
-    //     Kd = user_p_.Kd_body_lb;
-    // }
-    // if(!contactState[legID::RF]){
-    //     Kp = user_p_.Kp_body_rf;
-    //     Kd = user_p_.Kd_body_rf;
-    // }
-    // if(!contactState[legID::RB]){
-    //     Kp = user_p_.Kp_body_rb;
-    //     Kd = user_p_.Kd_body_rb;
-    // }
+    if(!contactState[legID::LF]){
+        Kp = user_p_.Kp_body_lf;
+        Kd = user_p_.Kd_body_lf;
+    }
+    if(!contactState[legID::LB]){
+        Kp = user_p_.Kp_body_lb;
+        Kd = user_p_.Kd_body_lb;
+    }
+    if(!contactState[legID::RF]){
+        Kp = user_p_.Kp_body_rf;
+        Kd = user_p_.Kd_body_rf;
+    }
+    if(!contactState[legID::RB]){
+        Kp = user_p_.Kp_body_rb;
+        Kd = user_p_.Kd_body_rb;
+    }
 
     Update_size();
     Update_A();
@@ -51,7 +51,6 @@ bool CoMLinearMotion<T>::Update_size(){
     TK::dim_task_ineq_ = 0; 
     TK::dim_optVar_ = TK::dim_config_+ 3*  TK::dim_contact_;
 
-
     TK::A_ = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
     TK::b_ = DVec<T>::Zero(TK::dim_task_eq_);
     TK::D_ = DMat<T>::Zero(TK::dim_task_ineq_, TK::dim_optVar_);
@@ -64,8 +63,7 @@ template<typename T>
 bool CoMLinearMotion<T>::Update_A(){
     DMat<T> A_in_frame_c = DMat<T>::Zero(TK::dim_task_eq_, TK::dim_optVar_);
     A_in_frame_c = _robot_sys->getCoM6DJacobian_c_frame().topRows(3).cast<T>();
-    TK::A_.leftCols(TK::dim_config_) = A_in_frame_c;
-    // TK::A_ = A_in_frame_c;
+    TK::A_ = A_in_frame_c * _robot_sys->rotMatForTracking.cast<T>();
 
     return true;
 }
@@ -85,19 +83,19 @@ bool CoMLinearMotion<T>::Update_b(){
 
 template<typename T>
 void CoMLinearMotion<T>::TaskPrint(){
-    printf("TASK_PRINT_COMLINEARMOTION");
+    ROS_INFO("TASK_PRINT_COMLINEARMOTION");
 }
 
 template<typename T>
 bool CoMLinearMotion<T>::UpdateTask(){
-    printf("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");return true;
+    ROS_INFO("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 }
 
 template<typename T>
 bool CoMLinearMotion<T>::UpdateTask(const DVec<T>& pos_des, 
                                     const DVec<T>& vel_des,
                                     const DVec<T>& acc_des){
-    printf("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");    return true;                                          
+    ROS_INFO("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                              
 }
 
 template<typename T>
@@ -105,14 +103,14 @@ bool CoMLinearMotion<T>::UpdateTask(const Vec31<T>* pos_des,
                                     const Vec31<T>* vel_des,
                                     const Vec31<T>* acc_des,
                                     const Vec41<T>& contact_state){
-    printf("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");  return true;                                            
+    ROS_INFO("COMLINEARMOTION ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                              
 }
 
 template<typename T>
-bool CoMLinearMotion<T>::Update_D(){return true;}
+bool CoMLinearMotion<T>::Update_D(){}
 
 template<typename T>
-bool CoMLinearMotion<T>::Update_f(){return true;}
+bool CoMLinearMotion<T>::Update_f(){}
 
 template class CoMLinearMotion<double>;
 template class CoMLinearMotion<float>;

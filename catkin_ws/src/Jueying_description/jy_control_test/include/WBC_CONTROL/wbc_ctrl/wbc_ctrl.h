@@ -1,22 +1,21 @@
 #ifndef  WBC_CONTROLLER_H
 #define WBC_CONTROLLER_H
 
-#include "WBC_CONTROL/dynamics/quadruped_dynamics_model.h"
-#include "WBC_CONTROL/wbc/wbc.h"
+#include "quadruped_dynamics_model.h"
+#include "wbc.h"
 #include <cppTypes.h>
-#include "FSM_States/ControlFSMData.h"
-#include "PARAMETER/UserParameter.h"
+#include "ControlFSMData.h"
+#include "UserParameter.h"
 
-#include "WBC_CONTROL/wbc/task.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/EoMTask.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/NoContactMotion.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/ContactForceLimits.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/TorqueLimits.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/CoMLinearMotion.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/CoMAngularMotion.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/SwingLegMotion.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/SwingLegJointMotion.h"
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/ContactForceMin.h"
+#include "task.h"
+#include "EoMTask.h"
+#include "NoContactMotion.h"
+#include "ContactForceLimits.h"
+#include "TorqueLimits.h"
+#include "CoMLinearMotion.h"
+#include "CoMAngularMotion.h"
+#include "SwingLegMotion.h"
+#include "ContactForceMin.h"
 
 #define WBCtrl WBC_Ctrl<T>
 
@@ -34,12 +33,7 @@ class LocomotionCtrlData{
         Vec31<T> vFoot_des[4];
         Vec31<T> aFoot_des[4];
 
-        Vec31<T> pLegJoint_des[4];
-        Vec31<T> vLegJoint_des[4];
-        Vec31<T> aLegJoint_des[4];
-
         Vec41<T> contact_state; 
-        Eigen::Matrix<T, 12, 1> contact_force;
 };
 
 template<typename T>
@@ -51,7 +45,7 @@ class WBC_Ctrl{
         void run(void* input, ControlFSMData<T>& data, DVec<T>&tau);
     
     protected:
-        void _AllTaskUpdate(void* input, const BodyStateEstData<T> & bodyEst);
+        void _AllTaskUpdate(void* input);
         void _UpdateModel(const BodyStateEstData<T> & bodyEst, 
                                                   const LegStateEstData<T> * legEst);
         void _ComputeWBC();
@@ -80,7 +74,6 @@ class WBC_Ctrl{
         Task<T>* _comLinearMotion;
         Task<T>* _comAngularMotion;
         Task<T>* _swingLegMotion;
-        Task<T>* _swingLegJointMotion;
         Task<T>* _contactForceMin;
 };
 #endif

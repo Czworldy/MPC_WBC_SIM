@@ -1,12 +1,13 @@
 #ifndef WBC_H
 #define WBC_H
 
-#include "QuadProg++/Array.hh"
-#include "QuadProg++/QuadProg++.hh"
-#include "WBC_CONTROL/wbc/task.h"
+#include "Array.hh"
+#include "QuadProg++.hh"
+#include "task.h"
 #include "cppTypes.h"
 #include <vector>
-#include "PARAMETER/UserParameter.h"
+#include "UserParameter.h"
+#include "OsqpEigen/OsqpEigen.h"
 
 #define WB WBC<T>
 

@@ -1,4 +1,4 @@
-#include "WBC_CONTROL/wbc_ctrl/TaskSet/ContactForceLimits.h"
+#include "ContactForceLimits.h"
 
 //Friction cone and lambda modulation
 
@@ -10,10 +10,8 @@ template<typename T>
 ContactForceLimits<T>::~ContactForceLimits(){}
 
 template<typename T>
-bool ContactForceLimits<T>::UpdateTask(const Eigen::Quaternion<T>& terrainOri) {
+bool ContactForceLimits<T>::UpdateTask(){
 
-    terrainRotMat_ = terrainOri.toRotationMatrix();
-    // std::cout << "terrainRotMat_ = \n" << terrainRotMat_ << std::endl;
     Update_size();
     Update_D();
 
@@ -38,20 +36,10 @@ bool ContactForceLimits<T>::Update_size(){
 
 template<typename T>
 bool ContactForceLimits<T>::Update_D(){
-
-    Mat13<T> HContact, NContact, IContact;
-    HContact << terrainRotMat_(0,0), terrainRotMat_(1,0), terrainRotMat_(2,0);
-    NContact << terrainRotMat_(0,2), terrainRotMat_(1,2), terrainRotMat_(2,2);
-    IContact << terrainRotMat_(0,1), terrainRotMat_(1,1), terrainRotMat_(2,1);
-
-    // HContact << 1,0,0;
-    // NContact << 0,0,1;
-    // IContact << 0,1,0;
-
-    friction_cone_.row(0) =  (HContact - user_p_.mu * NContact).transpose();
-    friction_cone_.row(1) = -(HContact + user_p_.mu * NContact).transpose();
-    friction_cone_.row(2) =  (IContact - user_p_.mu * NContact).transpose();
-    friction_cone_.row(3) = -(IContact + user_p_.mu * NContact).transpose();
+    friction_cone_.row(0) = (user_p_.HContact -user_p_.mu*user_p_.NContact).transpose();
+    friction_cone_.row(1) = -(user_p_.HContact + user_p_.mu*user_p_.NContact).transpose();
+    friction_cone_.row(2) = (user_p_.IContact - user_p_.mu*user_p_.NContact).transpose();
+    friction_cone_.row(3) = -(user_p_.IContact + user_p_.mu*user_p_.NContact).transpose();
 
     for(int i = 0; i<TK::dim_contact_; i++){
         TK::D_.block(0, TK::dim_config_+i*3, 4, 3) = friction_cone_;
@@ -62,14 +50,14 @@ bool ContactForceLimits<T>::Update_D(){
 
 template<typename T>
 void ContactForceLimits<T>::TaskPrint(){
-    //ROS_INFO("TASK_PRINT_CONTACTFORCELIMITS");
+    ROS_INFO("TASK_PRINT_CONTACTFORCELIMITS");
 }
 
 template<typename T>
 bool ContactForceLimits<T>::UpdateTask(const DVec<T>& pos_des, 
                                        const DVec<T>& vel_des,
                                        const DVec<T>& acc_des){
-    //ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
+    ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");
 }
 
 template<typename T>
@@ -77,7 +65,7 @@ bool ContactForceLimits<T>::UpdateTask(const DVec<T>& pos_des,
                                        const DVec<T>& vel_des,
                                        const DVec<T>& acc_des,
                                        const Vec41<T>& contact_state){
-    //ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                      
+    ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                      
 }
 
 template<typename T>
@@ -85,11 +73,7 @@ bool ContactForceLimits<T>::UpdateTask(const Vec31<T>* pos_des,
                                        const Vec31<T>* vel_des,
                                        const Vec31<T>* acc_des,
                                        const Vec41<T>& contact_state){
-    //ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                      
-}
-
-template<typename T>
-bool ContactForceLimits<T>::UpdateTask(){
+    ROS_INFO("ContactForceLimits ERROR: YOU LOAD WRONG UPDATE TASK FUNCTION!");                                      
 }
 
 template<typename T>
