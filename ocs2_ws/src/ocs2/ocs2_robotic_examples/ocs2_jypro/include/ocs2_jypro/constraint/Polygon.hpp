@@ -139,6 +139,9 @@ class Polygon
    */
   bool convertToInequalityConstraints(Eigen::MatrixXd& A,
                                       Eigen::VectorXd& b) const;
+  bool convert2InequalityConstraints();
+  Eigen::MatrixXd constraintA_;
+  Eigen::VectorXd constraintb_;
 
   /*!
    * Offsets the polygon inward (buffering) by a margin.
