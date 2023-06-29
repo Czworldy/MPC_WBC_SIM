@@ -1,7 +1,7 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      false
-useIKresult                     false
-useEndEffectorTrackingCost      false
+useFeetPlacementConstraint      true
+useIKresult                     true
+useEndEffectorTrackingCost      true
 
 legged_robot_interface
 {
@@ -26,7 +26,7 @@ swing_trajectory_config
   touchDownVelocity             0.0     ;-0.2
   swingHeight                   0.25
   touchdownAfterHorizon         0.2
-  swingTimeScale                0.15
+  swingTimeScale                 0.15
 }
 
 initialModeSchedule

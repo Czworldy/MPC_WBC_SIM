@@ -2,4 +2,4 @@
 cd ocs2_ws/
 source devel/setup.bash
 sleep 2s
-rosrun ocs2_jypro MPCProntoConversion
+roslaunch ocs2_jypro legged_robot_param.launch
