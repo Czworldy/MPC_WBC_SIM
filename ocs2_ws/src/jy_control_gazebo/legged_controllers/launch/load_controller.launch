@@ -3,7 +3,7 @@
 <launch>
     <arg name="robot_type" default="x20" doc="Robot type: [a1, aliengo, go1, laikago, x20]"/>
 
-    <arg name="cheater" default="false"/>
+    <arg name="cheater" default="true"/>
 
     <!-- make the files into global parameters -->
     <!-- <param name="urdfFile" value="/tmp/legged_control/x20.urdf"/> -->
