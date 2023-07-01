@@ -221,12 +221,22 @@ void LeggedController::updateStateEstimation(const ros::Time& time, const ros::D
 
   terrainReceiverPtr_->setMpcTerrain(terrainInfo);
 
+  const vector3_t& bodyPosition = currentObservation_.state.segment(6, 3);
+  const vector3_t& bodyZyxEulerAngles = currentObservation_.state.segment(9, 3);
+  Eigen::Matrix<scalar_t, 4, 4> _O_B_tfMatrix = Eigen::Matrix<scalar_t, 4, 4>::Identity();
+  
+  _O_B_tfMatrix.topLeftCorner(3, 3) = ocs2::getRotationMatrixFromZyxEulerAngles(bodyZyxEulerAngles);
+  _O_B_tfMatrix.topRightCorner(3, 1) = bodyPosition;
+  const auto _B_O_tfMatrix = _O_B_tfMatrix.inverse();
+
   std::vector<geometry_msgs::PointStamped> feet_pos;
   feet_pos.resize(4);
-    for(size_t leg = 0; leg < 4; leg++) {
-    feet_pos[leg].point.x = posDesired[leg].x();
-    feet_pos[leg].point.y = posDesired[leg].y();
-    feet_pos[leg].point.z = posDesired[leg].z();
+  for(size_t leg = 0; leg < 4; leg++){
+    vector3_t posDesiredinBodyFrame = (_B_O_tfMatrix * posDesired[leg].homogeneous()).head(3);
+
+    feet_pos[leg].point.x = posDesiredinBodyFrame.x();
+    feet_pos[leg].point.y = posDesiredinBodyFrame.y();
+    feet_pos[leg].point.z = posDesiredinBodyFrame.z();
   }
   lf_foot_pub_.publish(feet_pos[0]);
   rf_foot_pub_.publish(feet_pos[1]);
