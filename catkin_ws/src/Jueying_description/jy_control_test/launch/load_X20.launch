@@ -11,7 +11,7 @@
 
     <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/slope_X.world"/> -->
-  <arg name="world_name" value="$(find jueying_gazebo)/worlds/jiange_1.world"/>
+  <arg name="world_name" value="$(find jueying_gazebo)/worlds/mhz_11.world"/>
 
   <!-- <arg name="world_name" value="$(find jueying_gazebo)/worlds/wall.world"/> -->
   <!-- <arg name="world_name" value="/home/dqwang/MPC_WBC_sim/catkin_ws/src/Jueying_description/X20/world/jypro_world"/> -->
