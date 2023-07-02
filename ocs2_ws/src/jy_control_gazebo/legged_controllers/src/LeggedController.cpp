@@ -127,7 +127,11 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   vector_t optimizedState, optimizedInput;
   size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
   mpcMrtInterface_->evaluatePolicy(currentObservation_.time, currentObservation_.state, optimizedState, optimizedInput, plannedMode);
-
+  ocs2::TargetTrajectories targetTrajectories(mpcMrtInterface_->getPolicy().timeTrajectory_,
+                                              mpcMrtInterface_->getPolicy().stateTrajectory_,
+                                              mpcMrtInterface_->getPolicy().inputTrajectory_);
+  // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
+  optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
   // Whole body control
   currentObservation_.input = optimizedInput;
 
@@ -155,6 +159,7 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   // selfCollisionVisualization_->update(currentObservation_);
 
   // Publish the observation. Only needed for the command interface
+  currentObservation_.mode = plannedMode;
   observationPublisher_.publish(ros_msg_conversions::createObservationMsg(currentObservation_));
 }
 
@@ -201,7 +206,7 @@ void LeggedController::updateStateEstimation(const ros::Time& time, const ros::D
   scalar_t yawLast = currentObservation_.state(9);
   currentObservation_.state = rbdConversions_->computeCentroidalStateFromRbdModel(measuredRbdState_);
   currentObservation_.state(9) = yawLast + angles::shortest_angular_distance(yawLast, currentObservation_.state(9));
-  currentObservation_.mode = stateEstimate_->getMode();
+  // currentObservation_.mode = stateEstimate_->getMode();
 
   vector_t qMeasured_(leggedInterface_->getCentroidalModelInfo().generalizedCoordinatesNum);
   qMeasured_.head<3>() = measuredRbdState_.segment<3>(3);

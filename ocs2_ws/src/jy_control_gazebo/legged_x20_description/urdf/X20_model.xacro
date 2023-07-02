@@ -548,7 +548,7 @@
     <child link = "RH_FOOT"/>
   </joint>
   
-  <xacro:property name="foot_mass" value="0.06"/>
+  <xacro:property name="foot_mass" value="0.001"/>
   <xacro:property name="foot_radius" value="0.036"/>
   <xacro:macro name="setup_foot" params="link_name">
     <link name="${link_name}">

@@ -458,7 +458,8 @@ void SwingTrajectoryPlanner::update(const ModeSchedule& modeSchedule, const feet
   }
 
   for (size_t j = 0; j < numFeet_; j++) {
-    if (eesContactFlagStocks[j][initIndex] || true){
+    // if (eesContactFlagStocks[j][initIndex] || true){
+    if (eesContactFlagStocks[j][initIndex]){
     feetHeightTrajectories_[j].clear();
     feetHeightTrajectories_[j].reserve(modeSequence.size());
 
@@ -629,7 +630,8 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
   }
 
   for (size_t j = 0; j < numFeet_; j++) {
-    if (eesContactFlagStocks[j][initIndex] || true){
+    // if (eesContactFlagStocks[j][initIndex] || true){
+    if (eesContactFlagStocks[j][initIndex]){
     // feetHeightTrajectories_[j].clear();
     // feetHeightTrajectories_[j].reserve(modeSequence.size());
 
