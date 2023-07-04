@@ -161,6 +161,10 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   // Publish the observation. Only needed for the command interface
   currentObservation_.mode = plannedMode;
   observationPublisher_.publish(ros_msg_conversions::createObservationMsg(currentObservation_));
+
+  // Publish mpc modeSchedule
+  policyPublisher_.publish
+    ((ros_msg_conversions::createModeScheduleMsg(mpcMrtInterface_->getPolicy().modeSchedule_)));
 }
 
 void LeggedController::updateStateEstimation(const ros::Time& time, const ros::Duration& period) {
@@ -307,6 +311,7 @@ void LeggedController::setupMpc() {
   mpc_->getSolverPtr()->addSynchronizedModule(footPlacementPublisher);       //for preRun
   mpc_->getSolverPtr()->addSynchronizedModule(polygonReceiverPtr);
   observationPublisher_ = nodeHandle.advertise<ocs2_msgs::mpc_observation>(robotName + "_mpc_observation", 1);
+  policyPublisher_ = nodeHandle.advertise<ocs2_msgs::mode_schedule>(robotName + "_mpc_activepolicy", 1);
 }
 
 void LeggedController::setupMrt() {
