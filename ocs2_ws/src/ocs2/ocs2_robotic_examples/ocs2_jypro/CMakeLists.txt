@@ -301,6 +301,22 @@ set_target_properties(LeggedRobotPyBindings
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
 )
 
+# python bindings
+pybind11_add_module(Polygon SHARED
+  script/pyPolygon.cpp
+)
+add_dependencies(Polygon
+  ${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(Polygon PRIVATE
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+set_target_properties(Polygon
+    PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/script
+)
+
 catkin_python_setup()
 
 #test publisher

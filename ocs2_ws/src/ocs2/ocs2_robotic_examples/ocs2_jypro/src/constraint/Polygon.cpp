@@ -160,6 +160,46 @@ bool Polygon::convertToInequalityConstraints(Eigen::MatrixXd& A, Eigen::VectorXd
   return true;
 }
 
+bool Polygon::convert2InequalityConstraints() 
+{
+  Eigen::MatrixXd A; Eigen::VectorXd b;
+  Eigen::MatrixXd V(nVertices(), 2);
+  for (unsigned int i = 0; i < nVertices(); ++i)
+    V.row(i) = vertices_[i];
+
+  // Create k, a list of indices from V forming the convex hull.
+  // TODO: Assuming counter-clockwise ordered convex polygon.
+  // MATLAB: k = convhulln(V);
+  Eigen::MatrixXi k;
+  k.resizeLike(V);
+  for (unsigned int i = 0; i < V.rows(); ++i)
+    k.row(i) << i, (i+1) % V.rows();
+  Eigen::RowVectorXd c = V.colwise().mean();
+  V.rowwise() -= c;
+  A = Eigen::MatrixXd::Constant(k.rows(), V.cols(), NAN);
+
+  unsigned int rc = 0;
+  for (unsigned int ix = 0; ix < k.rows(); ++ix) {
+    Eigen::MatrixXd F(2, V.cols());
+    F.row(0) << V.row(k(ix, 0));
+    F.row(1) << V.row(k(ix, 1));
+    Eigen::FullPivLU<Eigen::MatrixXd> luDecomp(F);
+    if (luDecomp.rank() == F.rows()) {
+      A.row(rc) = F.colPivHouseholderQr().solve(Eigen::VectorXd::Ones(F.rows()));
+      ++rc;
+    }
+  }
+
+  A = A.topRows(rc).eval();
+  b = Eigen::VectorXd::Ones(A.rows());
+  b = b + A * c.transpose();
+
+  constraintA_ = A;
+  constraintb_ = b;
+
+  return true;
+}
+
 bool Polygon::offsetInward(const double margin)
 {
   // Create a list of indices of the neighbours of each vertex.
