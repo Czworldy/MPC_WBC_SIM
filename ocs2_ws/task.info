@@ -1,5 +1,5 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      false
+useFeetPlacementConstraint      true
 useIKresult                     true
 useEndEffectorTrackingCost      true
 
