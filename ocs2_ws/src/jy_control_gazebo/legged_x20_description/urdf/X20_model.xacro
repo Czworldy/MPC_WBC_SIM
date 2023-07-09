@@ -96,7 +96,9 @@
 
  <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
   <xacro:HDL-32E parent="BASE" name="lidar_link" topic="/point_cloud2"  hz="10" samples="220" >
+
     <origin xyz="0.35 0 0.5" rpy="0 0.9 0" />
+
   </xacro:HDL-32E>
   
     <!-- <link name="camerlink">
