@@ -341,6 +341,16 @@ Task WbcBase::formulateBaseXYZMotionTask() {
     return {a, b, matrix_t(), vector_t()};
 }
 
+Task WbcBase::formulateBaseAccelTask() {
+  matrix_t a(6, numDecisionVars_);
+  a.setZero();
+  a.block(0, 0, 6, 6) = matrix_t::Identity(6, 6);
+
+  Vector6 b = baseAccDesired_;
+
+  return {a, b, matrix_t(), vector_t()};
+}
+
 // [J, 0] x = \dot V - \dotJ v
 Task WbcBase::formulateSwingLegTask() {
     eeKinematics_->setPinocchioInterface(pinocchioInterfaceMeasured_);

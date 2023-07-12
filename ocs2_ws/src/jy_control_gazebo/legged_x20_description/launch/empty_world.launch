@@ -10,10 +10,11 @@
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/stair_pipe4_swing.world"/> -->
         <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_14_wainiu.world"/>
+        <!-- <arg name="pause" value="true"/> -->
     </include>
     <!-- push robot_description to factory and spawn robot in gazebo -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
-          args="-z 0.65 -param legged_robot_description -urdf -model X20" output="screen"/>
+          args="-z 1.2 -param legged_robot_description -urdf -model X20" output="screen"/>
     <!-- <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model X20 -param legged_robot_description
         -z 0.6"/> -->
 
