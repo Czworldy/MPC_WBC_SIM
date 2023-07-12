@@ -75,8 +75,9 @@ vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inpu
     singleQpTimer_.startTimer();
     WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
 
-    Task trackingTask = formulateBaseXYZMotionTask() * taskWeight_(0)
-                        + formulateBaseAngularMotionTask() * taskWeight_(1)
+    // Task trackingTask = formulateBaseXYZMotionTask() * taskWeight_(0)
+    Task trackingTask = formulateBaseAccelTask() * taskWeight_(0)
+                        // + formulateBaseAngularMotionTask() * taskWeight_(1)
                         + formulateSwingLegTask() * taskWeight_(2)
                         + formulateContactForceTask(inputDesired) * taskWeight_(3) ;
 

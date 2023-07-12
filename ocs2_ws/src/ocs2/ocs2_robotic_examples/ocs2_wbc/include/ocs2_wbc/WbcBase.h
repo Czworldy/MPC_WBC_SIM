@@ -61,6 +61,7 @@ protected:
     Task formulateSwingLegTask();
 
     Task formulateBaseXYZMotionTask(); //yujiyu
+    Task formulateBaseAccelTask(); // acording to the TRO paper in wbc part, they tracking linear and auglar acc in wbc.
 
     // Task formulateArmJointNomalTrackingTask();
     // Task formulateEeLinearMotionTrackingTask();
