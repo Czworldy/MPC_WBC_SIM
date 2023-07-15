@@ -38,6 +38,7 @@
     <node pkg="ocs2_legged_robot_ros" type="legged_robot_gait_command" name="legged_robot_gait_command"
           output="screen"/>
 
+    <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
     <!-- <node pkg="legged_controllers" type="legged_target_trajectories_publisher" name="legged_robot_target"
           output="screen"/> -->
 </launch>

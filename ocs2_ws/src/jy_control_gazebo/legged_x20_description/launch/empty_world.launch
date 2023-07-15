@@ -9,7 +9,9 @@
     <rosparam file="$(find legged_gazebo)/config/default.yaml" command="load"/>
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/stair_pipe4_swing.world"/> -->
-        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_14_wainiu.world"/>
+        <!-- niuqu test  -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_22_shousuo.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_6.world"/> -->
         <!-- <arg name="pause" value="true"/> -->
     </include>
     <!-- push robot_description to factory and spawn robot in gazebo -->

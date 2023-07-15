@@ -9,5 +9,5 @@
   <xacro:include filename="$(find legged_x20_description)/urdf/gazebo_x20/imu.xacro"/>
 
   <xacro:IMU connected_to="BASE" imu_name="unitree_imu" xyz="0. 0. 0." rpy="0. 0. 0."/>
-  <xacro:include filename="$(find legged_x20_description)/urdf/gazebo_x20/gazebo.xacro"/>s
+  <xacro:include filename="$(find legged_x20_description)/urdf/gazebo_x20/gazebo.xacro"/>
 </robot>

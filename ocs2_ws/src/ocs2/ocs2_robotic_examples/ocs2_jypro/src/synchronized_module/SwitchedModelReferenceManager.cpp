@@ -308,11 +308,11 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->setTargetSwingMiddleTime(*mpcSwingMiddleTimePtr_);
-  std::cout << "footPlacementPlannerPtr_ update start!" << "\n";
+  // std::cout << "footPlacementPlannerPtr_ update start!" << "\n";
   footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
   //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
-  std::cout << "swingTrajectoryPtr_ update start!" << "\n";
+  // std::cout << "swingTrajectoryPtr_ update start!" << "\n";
   swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
       footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
@@ -329,7 +329,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << "modifyReferences Done!" << "\n";
 
 }
 
