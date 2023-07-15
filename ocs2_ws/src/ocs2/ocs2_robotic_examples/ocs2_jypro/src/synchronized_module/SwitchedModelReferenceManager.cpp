@@ -209,7 +209,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   if(abs(terrainZyx[2]) < 0.05) terrainZyx[2] = 0;
   // std::cout << "\tterrainZyx After: " << terrainZyx.transpose() << std::endl;
   // std::cout << "stanceLegs: " << stanceLegs[0] << stanceLegs[1] << stanceLegs[2] << stanceLegs[3] << "\n";
-  const scalar_t distance2Terrain = 0.436; //For X20
+  // const scalar_t distance2Terrain = 0.436; //For X20
+  const scalar_t distance2Terrain = 0.27; //For A1
   const scalar_t D2 = terrainParams[2] - distance2Terrain * terrainNormal.norm(); // D1 - h*sqrt(A^2 + B^2 + 1)
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
   // std::cout << "zReference: " << zReference << "\t D2: " << D2 << " terrainNormal.norm: " << terrainNormal.norm() << std::endl;
@@ -308,11 +309,11 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->setTargetPolygonVerteices(*mpcPolygonArrayPtr_, *mpcNominalFeetholdsPtr_);
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->setTargetSwingMiddleTime(*mpcSwingMiddleTimePtr_);
-  std::cout << "footPlacementPlannerPtr_ update start!" << "\n";
+  // std::cout << "footPlacementPlannerPtr_ update start!" << "\n";
   footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
   //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
-  std::cout << "swingTrajectoryPtr_ update start!" << "\n";
+  // std::cout << "swingTrajectoryPtr_ update start!" << "\n";
   swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
       footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
@@ -329,7 +330,8 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->gettouchDownHeightSequence(),
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
-  std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << targetTrajectories;
 
 }
 

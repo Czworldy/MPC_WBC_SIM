@@ -7,19 +7,29 @@
 
     <!-- make the files into global parameters -->
     <!-- <param name="urdfFile" value="/tmp/legged_control/x20.urdf"/> -->
-    <param name="urdfFile" value="$(find legged_x20_description)/urdf/X20_rsm.urdf"/>
+    <group if="$(eval arg('robot_type') == 'x20')">
+      <param name="urdfFile" value="$(find legged_x20_description)/urdf/X20_rsm.urdf"/>
+      <param name="taskFile" value="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
+      <param name="referenceFile" value="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
+    </group>
+
+    <group if="$(eval arg('robot_type') == 'a1')">
+      <param name="urdfFile" value="$(find legged_unitree_description)/urdf/a1.urdf"/>
+      <param name="taskFile" value="$(find legged_controllers)/config/$(arg robot_type)/task_a1.info"/>
+      <param name="referenceFile" value="$(find legged_controllers)/config/$(arg robot_type)/reference.info"/>
+    </group>
+
+    
     <!-- <param name="taskFile" value="$(find legged_controllers)/config/$(arg robot_type)/task.info"/> -->
 
     <!-- <param name="referenceFile" value="$(find legged_controllers)/config/$(arg robot_type)/targetTrajectories.info"/>
     <param name="gaitCommandFile" value="$(find legged_controllers)/config/$(arg robot_type)/gait.info"/> -->
 
     <!-- <param name="urdfFile" value="$(find X20)/urdf/X20_rsm.urdf"/> -->
-    <param name="taskFile" value="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
 
-    <param name="referenceFile" value="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
     <param name="gaitCommandFile" value="$(find ocs2_jypro)/config/command/gait.info"/>
 
-    <param name="wbcFile" value="$(find legged_controllers)/config/$(arg robot_type)/UserParameter_sdk_ws.info"/>
+    <param name="wbcFile" value="$(find legged_controllers)/config/x20/UserParameter_sdk_ws.info"/>
 
     <rosparam file="$(find legged_controllers)/config/controllers.yaml" command="load"/>
 
@@ -37,6 +47,7 @@
 
     <node pkg="ocs2_legged_robot_ros" type="legged_robot_gait_command" name="legged_robot_gait_command"
           output="screen"/>
+      <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
 
     <!-- <node pkg="legged_controllers" type="legged_target_trajectories_publisher" name="legged_robot_target"
           output="screen"/> -->

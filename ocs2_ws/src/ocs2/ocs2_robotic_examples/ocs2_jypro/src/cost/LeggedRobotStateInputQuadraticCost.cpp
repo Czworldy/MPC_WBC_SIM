@@ -126,7 +126,7 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   // std::cout << "xNominal: " << xNominal.transpose() << std::endl;
   // std::cout << "xDeviation: " << xDeviation.transpose() << std::endl;
 
-  const auto currentPoseError = xDeviation.segment<2>(6);
+  // const auto currentPoseError = xDeviation.segment<2>(6);
   // // static Eigen::Vector2d integralError;
   // integralError_ = integralError_+currentPoseError*0.01;
   // if(integralError_[0] > 1)
@@ -139,7 +139,8 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   //   integralError_[1] = -1;
   // std::cout << "integralError_: " << integralError_.transpose() << std::endl;
 
-  xDeviation.segment<2>(6) = currentPoseError + 10*integralError_;
+  // xDeviation.segment<2>(6) = currentPoseError + 10*integralError_;
+  std::cout << "xDeviation: " << xDeviation.transpose() << std::endl;
   return {xDeviation, input - uNominal};
 
 }

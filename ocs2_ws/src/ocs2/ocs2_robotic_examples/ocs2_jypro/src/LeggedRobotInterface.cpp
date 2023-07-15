@@ -185,7 +185,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
   (*mpcNominalFootholdPtr)[3] = std::vector<vector3_t>{{-__FOOT_X__, -__FOOT_Y__, terrainHeight},{-__FOOT_X__, -__FOOT_Y__, terrainHeight}};
   
   std::vector<vector_t> swingHeightDefault;
-  vector_t defaultHeight = vector3_t{0.1, 0.15, 0.1};
+  vector_t defaultHeight = vector3_t{0.05, 0.07, 0.05};
     swingHeightDefault.push_back(defaultHeight);
     swingHeightDefault.push_back(defaultHeight);
     

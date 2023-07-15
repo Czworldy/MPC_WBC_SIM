@@ -50,8 +50,8 @@ bool LeggedController::init(hardware_interface::RobotHW* robot_hw, ros::NodeHand
   CentroidalModelPinocchioMapping pinocchioMapping(leggedInterface_->getCentroidalModelInfo());
   eeKinematicsPtr_ = std::make_shared<PinocchioEndEffectorKinematics>(leggedInterface_->getPinocchioInterface(), pinocchioMapping,
                                                                       leggedInterface_->modelSettings().contactNames3DoF);
-  // robotVisualizer_ = std::make_shared<LeggedRobotVisualizer>(leggedInterface_->getPinocchioInterface(),
-  //                                                            leggedInterface_->getCentroidalModelInfo(), *eeKinematicsPtr_, nh);
+  robotVisualizer_ = std::make_shared<LeggedRobotVisualizer>(leggedInterface_->getPinocchioInterface(),
+                                                             leggedInterface_->getCentroidalModelInfo(), *eeKinematicsPtr_, nh);
   // selfCollisionVisualization_.reset(new LeggedSelfCollisionVisualization(leggedInterface_->getPinocchioInterface(),
   //                                                                        leggedInterface_->getGeometryInterface(), pinocchioMapping, nh));
 
@@ -96,7 +96,7 @@ void LeggedController::starting(const ros::Time& time) {
   updateStateEstimation(time, ros::Duration(0.002));
   currentObservation_.input.setZero(leggedInterface_->getCentroidalModelInfo().inputDim);
   currentObservation_.mode = ModeNumber::STANCE;
-  currentObservation_.state = leggedInterface_->getInitialState();
+  // currentObservation_.state = leggedInterface_->getInitialState();
 
   TargetTrajectories target_trajectories({currentObservation_.time}, {currentObservation_.state}, {currentObservation_.input});
 
@@ -155,7 +155,7 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   }
 
   // Visualization
-//   robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+  robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
   // selfCollisionVisualization_->update(currentObservation_);
 
   // Publish the observation. Only needed for the command interface
