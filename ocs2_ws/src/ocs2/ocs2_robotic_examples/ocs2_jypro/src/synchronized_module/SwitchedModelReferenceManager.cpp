@@ -332,6 +332,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //                               footPlacementPlannerPtr_->getfeetPlacementEvents(), initTime);
 
   // std::cout << "modifyReferences Done!" << "\n";
+  std::cout << targetTrajectories;
 
 }
 

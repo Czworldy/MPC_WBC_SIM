@@ -1,0 +1,45 @@
+<launch>
+  <arg name="robot_type" default="spirit" />
+  <arg name="multiple_robots" default="false" />
+  <arg name="gui" default="true" />
+  <arg name="paused" default="false" />
+  <arg name="controller" default="inverse_dynamics" />
+  <arg name="live_plot" default="false" />
+  <arg name="dash" default="false" />
+  <arg name="world" default="mhz_easy" />
+  <arg name="logging" default="false" />
+  <param name="/use_sim_time" value="true" />
+
+
+  <!-- We resume the logic in gazebo_ros package empty_world.launch, -->
+  <!-- changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="world_name" value="$(find gazebo_scripts)/worlds/$(arg world)/$(arg world).world" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="physics" value="ode" />
+    <arg name="verbose" value="$(arg gui)" />
+  </include>
+
+  <group ns="robot_1">
+    <!-- Load the parameters and the sdf description -->
+    <include file="$(find quad_utils)/launch/load_robot_params.launch">
+      <arg name="robot_type" value="$(arg robot_type)" />
+    </include>
+    <rosparam file="$(find gazebo_scripts)/config/quad_control.yaml" command="load" />
+    <include file="$(find quad_utils)/launch/quad_spawn.launch">
+      <arg name="robot_type" value="$(arg robot_type)" />
+      <arg name="controller" default="$(arg controller)" />
+      <arg name="init_pose" value="-x 0.0 -y 0.0 -z 0.5" />
+      <arg name="namespace" value="robot_1" />
+    </include>
+    <param name="robot_type" value="$(arg robot_type)" />
+  </group>
+
+  <include file="$(find quad_utils)/launch/quad_visualization.launch">
+    <arg name="robot_type" value="$(arg robot_type)" />
+    <arg name="live_plot" value="$(arg live_plot)" />
+    <arg name="dash" value="$(arg dash)" />
+  </include>
+
+</launch>

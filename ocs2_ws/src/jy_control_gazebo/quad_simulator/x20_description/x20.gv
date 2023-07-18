@@ -1,0 +1,56 @@
+digraph G {
+node [shape=box];
+"body" [label="body"];
+"hip2" [label="hip2"];
+"upper2" [label="upper2"];
+"lower2" [label="lower2"];
+"toe2" [label="toe2"];
+"hip3" [label="hip3"];
+"upper3" [label="upper3"];
+"lower3" [label="lower3"];
+"toe3" [label="toe3"];
+"hip0" [label="hip0"];
+"upper0" [label="upper0"];
+"lower0" [label="lower0"];
+"toe0" [label="toe0"];
+"hip1" [label="hip1"];
+"upper1" [label="upper1"];
+"lower1" [label="lower1"];
+"toe1" [label="toe1"];
+"imu_link" [label="imu_link"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"body" -> "10" [label="xyz: 0.292 -0.08 0 \nrpy: 0 -0 0"]
+"10" -> "hip2"
+"hip2" -> "4" [label="xyz: 0 -0.12325 0 \nrpy: 0 -0 0"]
+"4" -> "upper2"
+"upper2" -> "5" [label="xyz: 0 0 -0.3 \nrpy: 0 -0 0"]
+"5" -> "lower2"
+"lower2" -> "jtoe2" [label="xyz: 0 0 -0.33 \nrpy: 0 -0 0"]
+"jtoe2" -> "toe2"
+"body" -> "11" [label="xyz: -0.292 -0.08 0 \nrpy: 0 -0 0"]
+"11" -> "hip3"
+"hip3" -> "6" [label="xyz: 0 -0.12325 0 \nrpy: 0 -0 0"]
+"6" -> "upper3"
+"upper3" -> "7" [label="xyz: 0 0 -0.3 \nrpy: 0 -0 0"]
+"7" -> "lower3"
+"lower3" -> "jtoe3" [label="xyz: 0 0 -0.33 \nrpy: 0 -0 0"]
+"jtoe3" -> "toe3"
+"body" -> "8" [label="xyz: 0.292 0.08 0 \nrpy: 0 -0 0"]
+"8" -> "hip0"
+"hip0" -> "0" [label="xyz: 0 0.12325 0 \nrpy: 0 -0 0"]
+"0" -> "upper0"
+"upper0" -> "1" [label="xyz: 0 0 -0.3 \nrpy: 0 -0 0"]
+"1" -> "lower0"
+"lower0" -> "jtoe0" [label="xyz: 0 0 -0.33 \nrpy: 0 -0 0"]
+"jtoe0" -> "toe0"
+"body" -> "9" [label="xyz: -0.292 0.08 0 \nrpy: 0 -0 0"]
+"9" -> "hip1"
+"hip1" -> "2" [label="xyz: 0 0.12325 0 \nrpy: 0 -0 0"]
+"2" -> "upper1"
+"upper1" -> "3" [label="xyz: 0 0 -0.3 \nrpy: 0 -0 0"]
+"3" -> "lower1"
+"lower1" -> "jtoe1" [label="xyz: 0 0 -0.33 \nrpy: 0 -0 0"]
+"jtoe1" -> "toe1"
+"body" -> "imu_joint" [label="xyz: 0 0 0 \nrpy: 0 -0 0"]
+"imu_joint" -> "imu_link"
+}

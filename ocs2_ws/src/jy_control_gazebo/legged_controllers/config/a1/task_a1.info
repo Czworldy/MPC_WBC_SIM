@@ -17,7 +17,7 @@ model_settings
 
   verboseCppAd                  true
   recompileLibrariesCppAd       true 
-  modelFolderCppAd              /tmp/ocs2_jypro/a1
+  modelFolderCppAd              /tmp/ocs2_a1/
 }
 
 swing_trajectory_config

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="X20" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Transmissions for ros_control -->
+  <xacro:macro name="transmission_block" params="joint_name">
+    <transmission name="transmission_${joint_name}">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${joint_name}">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="$motor_{joint_name}">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:transmission_block joint_name="0"/>
+  <xacro:transmission_block joint_name="1"/>
+  <xacro:transmission_block joint_name="2"/>
+  <xacro:transmission_block joint_name="3"/>
+  <xacro:transmission_block joint_name="4"/>
+  <xacro:transmission_block joint_name="5"/>
+  <xacro:transmission_block joint_name="6"/>
+  <xacro:transmission_block joint_name="7"/>
+  <xacro:transmission_block joint_name="8"/>
+  <xacro:transmission_block joint_name="9"/>
+  <xacro:transmission_block joint_name="10"/>
+  <xacro:transmission_block joint_name="11"/>
+
+</robot>
