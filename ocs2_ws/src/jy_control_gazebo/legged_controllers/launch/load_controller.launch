@@ -49,6 +49,7 @@
           output="screen"/>
       <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
 
+    <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
     <!-- <node pkg="legged_controllers" type="legged_target_trajectories_publisher" name="legged_robot_target"
           output="screen"/> -->
 </launch>

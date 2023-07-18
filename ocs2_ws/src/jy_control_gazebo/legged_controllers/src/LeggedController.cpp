@@ -131,7 +131,13 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
                                               mpcMrtInterface_->getPolicy().stateTrajectory_,
                                               mpcMrtInterface_->getPolicy().inputTrajectory_);
   // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
-  optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
+  if (optimizedInput.maxCoeff() > 1500.0 || optimizedInput.minCoeff() < -1500.0) {
+    std::cout << "feedback optimizedInput: " << optimizedInput.transpose() << std::endl;
+    optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
+    ROS_WARN_STREAM("MPC input is too large, using the desired input instead.");
+    std::cout << "get desired optimizedInput: " << optimizedInput.transpose() << std::endl;
+  }
+  // optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
   // Whole body control
   currentObservation_.input = optimizedInput;
 
@@ -155,7 +161,7 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   }
 
   // Visualization
-  robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+  // robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
   // selfCollisionVisualization_->update(currentObservation_);
 
   // Publish the observation. Only needed for the command interface
