@@ -10,7 +10,9 @@
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/stair_pipe4_swing.world"/> -->
         <!-- niuqu test  -->
-        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_22_shousuo.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_22_shousuo.world"/>  -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_19_wainiu_1.world"/> 
+        <!-- mhz_19_wainiu_1 -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_6.world"/> -->
         <!-- <arg name="pause" value="true"/> -->
     </include>
