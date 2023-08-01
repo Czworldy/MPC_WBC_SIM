@@ -1,0 +1,221 @@
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+
+#include "ocs2_jypro/cost/LeggedRobotEndEffectorCost.h"
+#include "ocs2_jypro/LeggedRobotPreComputation.h"
+
+
+namespace ocs2 {
+namespace legged_robot {
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+LeggedRobotEndEffectorCost::LeggedRobotEndEffectorCost(matrix_t Q, matrix_t R, const SwitchedModelReferenceManager& referenceManager,
+                                                       const EndEffectorKinematics<scalar_t>& endEffectorKinematics,
+                                                       size_t contactPointIndex) 
+  : Q_(std::move(Q)), R_(std::move(R)), referenceManagerPtr_(&referenceManager),
+  endEffectorKinematicsPtr_(endEffectorKinematics.clone()),
+  contactPointIndex_(contactPointIndex) {
+    endEffectorKinematics_ = dynamic_cast<PinocchioEndEffectorKinematicsCppAd*>(endEffectorKinematicsPtr_.get());
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+bool LeggedRobotEndEffectorCost::isActive(scalar_t time) const {
+  return !referenceManagerPtr_->getContactFlags(time)[contactPointIndex_];
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+LeggedRobotEndEffectorCost* LeggedRobotEndEffectorCost::clone() const {
+  return new LeggedRobotEndEffectorCost(Q_, R_, *referenceManagerPtr_, *endEffectorKinematicsPtr_, contactPointIndex_);
+}
+
+// ad_vector_t LeggedRobotEndEffectorCost::costVectorFunction(ad_scalar_t time, const ad_vector_t& state, const ad_vector_t& input, 
+//                                                      const ad_vector_t& parameters) const {
+//   ad_vector_t position, velocity, x(state.rows() + input.rows());
+//   ad_vector_t cost(6);
+//   positionFunc_(state, position);
+//   x << state, input;
+//   velocityFunc_(x, velocity);
+
+//   // cost = ocs2::ad_scalar_t(0.5) * (position - parameters.head(3)).dot(Q_.cast<ad_scalar_t>() * (position - parameters.head(3)));
+//   // cost += ocs2::ad_scalar_t(0.5) * (velocity - parameters.tail(3)).dot(R_.cast<ad_scalar_t>() * (velocity - parameters.tail(3)));
+//   cost.head(3) = position - parameters.head(3);
+//   cost.tail(3) = velocity - parameters.tail(3);
+//   return cost;
+// }
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+scalar_t LeggedRobotEndEffectorCost::getValue(scalar_t time, const vector_t& state, const vector_t& input,
+                                               const TargetTrajectories& targetTrajectories, const PreComputation& preComputation) const {
+
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComputation);
+  auto eeReference = preCompLegged.getEEReference()[contactPointIndex_];
+
+  scalar_t cost = 0;
+  cost += 0.5 * (endEffectorKinematics_->getPosition(state).front() - eeReference.head(3)).dot(Q_ * (endEffectorKinematics_->getPosition(state).front() - eeReference.head(3)));
+  cost += 0.5 * (endEffectorKinematics_->getVelocity(state, input).front() - eeReference.tail(3)).dot(R_ * (endEffectorKinematics_->getVelocity(state, input).front() - eeReference.tail(3)));
+
+  // std::cout << "endEffectorKinematics_->getPosition(state).front()  " << endEffectorKinematics_->getPosition(state).front().transpose() << std::endl;
+  // std::cout << "endEffectorKinematics_->getVelocity(state, input).front()  " << endEffectorKinematics_->getVelocity(state, input).front().transpose() << std::endl;
+  // std::cout << "eeReference  " << eeReference.transpose() << std::endl;
+  // return 0.5 * costVector.squaredNorm();
+  // return 0.5 * (costVector.head(3).dot(Q_ * costVector.head(3)) + costVector.tail(3).dot(R_ * costVector.tail(3)));
+  return cost;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ScalarFunctionQuadraticApproximation LeggedRobotEndEffectorCost::getQuadraticApproximation(scalar_t time, const vector_t& state,
+                                                                                            const vector_t& input,
+                                                                                            const TargetTrajectories& targetTrajectories,
+                                                                                            const PreComputation& preComputation) const {
+  const auto stateDim = state.rows();
+  const auto inputDim = input.rows();
+
+  const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComputation);
+  auto eeReference = preCompLegged.getEEReference()[contactPointIndex_];
+
+  const auto posLinearApprox = endEffectorKinematics_->getPositionLinearApproximation(state).front();
+  const auto velLinearApprox = endEffectorKinematics_->getVelocityLinearApproximation(state, input).front();
+
+  ScalarFunctionQuadraticApproximation L;
+  // L.f = getValue(time, state, input, targetTrajectories, preComputation); //use override.
+  // auto cost = getValue(time, state, input, targetTrajectories, preComputation); //use override.
+  L.f = 0.5 * ( (posLinearApprox.f - eeReference.head(3)).dot(Q_ * (posLinearApprox.f - eeReference.head(3))) 
+                      + (velLinearApprox.f - eeReference.tail(3)).dot(R_ * (velLinearApprox.f - eeReference.tail(3))) );
+  // std::cout << "posLinearApprox.f  " << posLinearApprox.f.transpose() << std::endl;
+  // std::cout << "velLinearApprox.f  " << velLinearApprox.f.transpose() << std::endl;
+  // std::cout << "eeReference  " << eeReference.transpose() << std::endl;
+  // std::cout << "cost: " << cost << " L.f: " << L.f << std::endl;
+
+
+  matrix_t W = matrix_t::Zero(6, 6);
+  W.topLeftCorner(3, 3) = Q_; W.bottomRightCorner(3, 3) = R_;
+
+  vector_t de1dx = posLinearApprox.dfdx.transpose() * Q_ * (posLinearApprox.f - eeReference.head(3)); // 24x3 * 3x3 * 3x1 = 24x1
+  vector_t de2dx = velLinearApprox.dfdx.transpose() * R_ * (velLinearApprox.f - eeReference.tail(3));
+  vector_t de2du = velLinearApprox.dfdu.transpose() * R_ * (velLinearApprox.f - eeReference.tail(3));
+
+  L.dfdx.noalias() = de1dx +  de2dx;
+  L.dfdu.noalias() = de2du;
+
+  matrix_t dpdw(3, stateDim + inputDim);
+  dpdw.setZero();
+  dpdw.leftCols(stateDim) = posLinearApprox.dfdx;
+
+  matrix_t dvdw(3, stateDim + inputDim);
+  dvdw.setZero();
+  dvdw.leftCols(stateDim) = velLinearApprox.dfdx;
+  dvdw.rightCols(inputDim) = velLinearApprox.dfdu;
+
+  auto dpdww = dpdw.transpose() * Q_ * dpdw;
+  auto dvdww = dvdw.transpose() * R_ * dvdw;
+
+  auto dfdww = dpdww + dvdww;
+  L.dfdxx.noalias() = dfdww.block(0, 0, stateDim, stateDim);
+  L.dfdux.noalias() = dfdww.block(stateDim, 0, inputDim, stateDim);
+  L.dfduu.noalias() = dfdww.block(stateDim, stateDim, inputDim, inputDim);
+
+  // std::cout << "Gauss Newton Hessian" << std::endl;
+
+  // dfdw << L.dfdx, L.dfdu;
+  // auto dfdww = dfdw * dfdw.transpose();
+  // L.dfdxx.noalias() = dfdww.block(0, 0, stateDim, stateDim);
+  // L.dfdux.noalias() = dfdww.block(0, stateDim, stateDim, inputDim);
+  // L.dfduu.noalias() = dfdww.block(stateDim, stateDim, inputDim, inputDim);
+
+  // const auto dfdx_dfdu = J.transpose() * W * costVector;
+  // const auto approxHessian = J.transpose() * W * J;
+  // L.dfdx.noalias() = dfdx_dfdu.middleRows(1, stateDim);
+  // L.dfdu.noalias() = dfdx_dfdu.bottomRows(inputDim);
+  // L.dfdxx = approxHessian.block(1, 1, stateDim, stateDim);
+  // L.dfdux.noalias() = approxHessian.block(1 + stateDim, 1, inputDim, stateDim);
+  // L.dfduu.noalias() = approxHessian.block(1 + stateDim, 1 + stateDim, inputDim, inputDim);
+  return L;
+}
+
+
+
+// vector_t LeggedRobotEndEffectorCost::getParameters(scalar_t time, const TargetTrajectories& targetTrajectories,
+//                                  const PreComputation& preComputation ) const {
+//   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComputation);
+//   return preCompLegged.getEEReference()[contactPointIndex_];
+// }
+
+// scalar_t LeggedRobotEndEffectorCost::getValue(scalar_t time, const vector_t& state, const vector_t& input, 
+//                                               const TargetTrajectories& targetTrajectories, const PreComputation& preComputation) const {
+//   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComputation);
+//   const vector_t parameters = preCompLegged.getEEReference()[contactPointIndex_];
+
+//   const vector_t position = endEffectorKinematics_.getPosition(state);
+//   const vector_t velocity = endEffectorKinematics_.getVelocity(state, input);
+//   scalar_t cost = 0.0;
+//   cost += 0.5 * (position - parameters.head(3)).dot(Q_ * (position - parameters.head(3)));
+//   cost += 0.5 * (velocity - parameters.tail(3)).dot(R_ * (velocity - parameters.tail(3)));
+//   return cost;
+// }
+
+// ScalarFunctionQuadraticApproximation getQuadraticApproximation(scalar_t time, const vector_t& state, const vector_t& input,
+//                                                                  const TargetTrajectories& targetTrajectories,
+//                                                                  const PreComputation& preComputation) const {
+
+//   ScalarFunctionQuadraticApproximation cost;
+//   const auto& preCompLegged = cast<LeggedRobotPreComputation>(preComputation);        
+//   const vector_t parameters = preCompLegged.getEEReference()[contactPointIndex_];
+
+//   cost.f = getValue(time, state, input, targetTrajectories, preComputation);
+
+//   cost.dfdx = endEffectorKinematics_.getPositionLinearApproximation(state).front().dfdx.transpose() 
+//                 * Q_ * (endEffectorKinematics_.getPosition(state) - parameters.head(3));
+//   cost.dfdu = endEffectorKinematics_.getVelocityLinearApproximation(state, input).front().dfdu.transpose() 
+//                 * R_ * (endEffectorKinematics_.getVelocity(state, input) - parameters.tail(3));
+
+// }
+// ad_vector_t LeggedRobotEndEffectorCost::getPositionCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+//                                                                   const PinocchioStateInputMapping<ad_scalar_t>& mapping,
+//                                                                   const ad_vector_t& state) const {
+//   const auto& model = pinocchioInterfaceCppAd.getModel();
+//   auto& data = pinocchioInterfaceCppAd.getData();
+//   const ad_vector_t q = mapping.getPinocchioJointPosition(state);
+
+//   pinocchio::forwardKinematics(model, data, q);
+//   pinocchio::updateFramePlacements(model, data);
+
+//   ad_vector_t positions(3 * endEffectorKinematics_.getendEffectorFrameIds().size());
+//   for (int i = 0; i < endEffectorKinematics_.getendEffectorFrameIds().size(); i++) {
+//     const size_t frameId = endEffectorKinematics_.getendEffectorFrameIds()[i];
+//     positions.segment<3>(3 * i) = data.oMf[frameId].translation();
+//   }
+//   return positions;
+// }
+
+// ad_vector_t LeggedRobotEndEffectorCost::getVelocityCppAd(PinocchioInterfaceCppAd& pinocchioInterfaceCppAd,
+//                                                                   const PinocchioStateInputMapping<ad_scalar_t>& mapping,
+//                                                                   const ad_vector_t& state, const ad_vector_t& input) const {
+//   const pinocchio::ReferenceFrame rf = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
+//   const auto& model = pinocchioInterfaceCppAd.getModel();
+//   auto& data = pinocchioInterfaceCppAd.getData();
+//   const ad_vector_t q = mapping.getPinocchioJointPosition(state);
+//   const ad_vector_t v = mapping.getPinocchioJointVelocity(state, input);
+
+//   pinocchio::forwardKinematics(model, data, q, v);
+//   pinocchio::updateFramePlacements(model, data);
+
+//   ad_vector_t velocities(3 * endEffectorKinematics_.getendEffectorFrameIds().size());
+//   for (int i = 0; i < endEffectorKinematics_.getendEffectorFrameIds().size(); i++) {
+//     const size_t frameId = endEffectorKinematics_.getendEffectorFrameIds()[i];
+//     velocities.segment<3>(3 * i) = pinocchio::getFrameVelocity(model, data, frameId, rf).linear();
+//   }
+//   return velocities;
+// }
+
+}  // namespace legged_robot
+}  // namespace ocs2

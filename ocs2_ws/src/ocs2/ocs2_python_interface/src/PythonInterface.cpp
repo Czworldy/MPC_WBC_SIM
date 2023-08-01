@@ -94,7 +94,6 @@ void PythonInterface::getMpcSolution(scalar_array_t& t, vector_array_t& x, vecto
   t = mpcMrtInterface_->getPolicy().timeTrajectory_;
   x = mpcMrtInterface_->getPolicy().stateTrajectory_;
   u = mpcMrtInterface_->getPolicy().inputTrajectory_;
-  modeSchedule_ = mpcMrtInterface_->getPolicy().modeSchedule_;
 }
 
 /******************************************************************************************************/
@@ -203,7 +202,7 @@ vector_t PythonInterface::valueFunctionStateDerivative(scalar_t t, Eigen::Ref<co
 /******************************************************************************************************/
 vector_t PythonInterface::stateInputEqualityConstraint(scalar_t t, Eigen::Ref<const vector_t> x, Eigen::Ref<const vector_t> u) {
   problem_.preComputationPtr->request(Request::Constraint, t, x, u);
-  return problem_.equalityConstraintPtr->getValue(t, x, u, *problem_.preComputationPtr);
+  return toVector(problem_.equalityConstraintPtr->getValue(t, x, u, *problem_.preComputationPtr));
 }
 
 /******************************************************************************************************/

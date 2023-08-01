@@ -108,15 +108,6 @@ class PinocchioEndEffectorKinematicsCppAd final : public EndEffectorKinematics<s
                                                                                 const vector_t& input) const override;
   std::vector<VectorFunctionLinearApproximation> getOrientationErrorLinearApproximation(
       const vector_t& state, const std::vector<quaternion_t>& referenceOrientations) const override;
-  
-  const std::vector<size_t>& getendEffectorFrameIds() const { return endEffectorFrameIds_;}
-
-  const PinocchioInterface& pinocchioInterface_;
-  const PinocchioStateInputMapping<ad_scalar_t>& mapping_;
-  update_pinocchio_interface_callback updateCallback_;
-  std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr;
-  std::function<void(const ad_vector_t&, ad_vector_t&)> positionFunc_, velocityFunc_;
- 
 
  private:
   PinocchioEndEffectorKinematicsCppAd(const PinocchioEndEffectorKinematicsCppAd& rhs);

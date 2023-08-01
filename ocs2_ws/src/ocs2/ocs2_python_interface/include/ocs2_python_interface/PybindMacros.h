@@ -119,8 +119,6 @@ using namespace pybind11::literals;
              "x"_a.noconvert(), "u"_a.noconvert())                                                                                         \
         .def("stateInputEqualityConstraintLagrangian", &PY_INTERFACE::stateInputEqualityConstraintLagrangian, "t"_a, "x"_a.noconvert(),    \
              "u"_a.noconvert())                                                                                                            \
-                     .def("setModule", &PY_INTERFACE::setModule)                                                                           \
-        .def("getInitState", &PY_INTERFACE::getInitState)                                                                                  \
         .def("visualizeTrajectory", &PY_INTERFACE::visualizeTrajectory, "t"_a.noconvert(), "x"_a.noconvert(), "u"_a.noconvert(),           \
              "speed"_a);                                                                                                                   \
   }

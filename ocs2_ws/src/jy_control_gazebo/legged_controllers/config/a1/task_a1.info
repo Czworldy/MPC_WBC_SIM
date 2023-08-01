@@ -1,7 +1,7 @@
-centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
+centroidalModelType             0     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
 useFeetPlacementConstraint      false
 useIKresult                     false
-useEndEffectorTrackingCost      false
+useEndEffectorTrackingCost      true
 
 legged_robot_interface
 {
@@ -16,17 +16,23 @@ model_settings
   phaseTransitionStanceTime     0.4
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       true 
-  modelFolderCppAd              /tmp/ocs2_a1/
+  recompileLibrariesCppAd       false 
+  modelFolderCppAd              /tmp/ocs2_a1_cd/
 }
 
 swing_trajectory_config
 {
-  liftOffVelocity               0.2
-  touchDownVelocity            -0.4     ;-0.2
-  swingHeight                   0.25
+  liftOffVelocity               0.05
+  touchDownVelocity            -0.05     ;-0.2
+  swingHeight                   0.15
   touchdownAfterHorizon         0.2
   swingTimeScale                0.15
+
+  defaultFootXposition            0.2
+  defaultFootYposition            0.1
+  useDefaultHeuristicFootholds    true
+
+  comHeight                     0.3
 }
 
 initialModeSchedule
@@ -58,9 +64,9 @@ defaultModeSequenceTemplate
 ; multiple_shooting settings
 multiple_shooting
 {
-  nThreads                              1
+  nThreads                              3
   dt                                    0.015
-  sqpIteration                          2
+  sqpIteration                          1
   deltaTol                              1e-4
   g_max                                 1e-2
   g_min                                 1e-6
@@ -70,7 +76,7 @@ multiple_shooting
   printSolverStatistics                 true
   printSolverStatus                     false
   printLinesearch                       false
-  useFeedbackPolicy                     true
+  useFeedbackPolicy                     false
   integratorType                        RK2
   threadPriority                        10
 }
@@ -124,7 +130,8 @@ rollout
 {
   AbsTolODE                       1e-5
   RelTolODE                       1e-3
-  timeStep                        1e-3
+  timeStep                        0.015
+  integratorType                  ODE45
   maxNumStepsPerSecond            10000
   checkNumericalStability         false
 }
@@ -149,7 +156,7 @@ mpc
 
   solutionTimeWindow              -1  ; [s]
 
-  mpcDesiredFrequency             -1  ; [Hz]
+  mpcDesiredFrequency             100  ; [Hz]
   mrtDesiredFrequency             500 ; [Hz]
 }
 
@@ -259,7 +266,7 @@ R
 
 frictionConeSoftConstraint
 {
-  frictionCoefficient    0.3
+  frictionCoefficient    0.5
 
   ; relaxed log barrier parameters
   mu                     0.1
@@ -277,16 +284,16 @@ Qee
 {
   scaling 1e+0
 
-  (0,0)   90.0     ; vcom_x0
-  (1,1)   90.0     ; vcom_y
-  (2,2)   30.0     ; vcom_z
+  (0,0)   10.0     ; vcom_x
+  (1,1)   10.0     ; vcom_y
+  (2,2)   10.0     ; vcom_z
 }
 
 Ree
 {
   scaling 1e+0
 
-  (0,0)   15.0     ; vcom_x0
-  (1,1)   15.0     ; vcom_y
+  (0,0)   5.0     ; vcom_x0
+  (1,1)   5.0     ; vcom_y
   (2,2)   5.0     ; vcom_z
 }

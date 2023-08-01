@@ -1,11 +1,11 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      true
-useIKresult                     true
-useEndEffectorTrackingCost      true
+useFeetPlacementConstraint      false
+useIKresult                     false
+useEndEffectorTrackingCost      false
 
 legged_robot_interface
 {
-  verbose                               false  // show the loaded parameters
+  verbose                               true  // show the loaded parameters
   useAnalyticalGradientsDynamics        false
   useAnalyticalGradientsConstraints     false
 }
@@ -22,11 +22,17 @@ model_settings
 
 swing_trajectory_config
 {
-  liftOffVelocity               0.2
-  touchDownVelocity            -0.4     ;-0.2
+  liftOffVelocity               0.4
+  touchDownVelocity             0.0     ;-0.2
   swingHeight                   0.25
   touchdownAfterHorizon         0.2
   swingTimeScale                0.15
+
+  defaultFootXposition            0.301
+  defaultFootYposition            0.183
+  useDefaultHeuristicFootholds    false
+
+  comHeight                       0.436
 }
 
 initialModeSchedule
@@ -60,7 +66,7 @@ multiple_shooting
 {
   nThreads                              3
   dt                                    0.015
-  sqpIteration                          2
+  sqpIteration                          1
   deltaTol                              1e-4
   g_max                                 1e-2
   g_min                                 1e-6
@@ -124,7 +130,8 @@ rollout
 {
   AbsTolODE                       1e-5
   RelTolODE                       1e-3
-  timeStep                        1e-3
+  timeStep                        0.015
+  integratorType                  ODE45 ;; 影响wbc的base
   maxNumStepsPerSecond            10000
   checkNumericalStability         false
 }
@@ -142,7 +149,7 @@ mpc
   initMinStepLength               1e-2
   initMaxStepLength               1.0
 
-  debugPrint                      false
+  debugPrint                      true
   coldStart                       false
 
   useParallelRiccatiSolver        true ; use disjoint riccati solver in multi-thread case
@@ -200,7 +207,7 @@ Q
   (4,4)   30.0     ; L_y / robotMass
   (5,5)   30.0     ; L_z / robotMass
 
-  ;; Base Pose: [position, orientation] ;;'
+  ;; Base Pose: [position, orientation] ;;
   (6,6)   300.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
   (7,7)   300.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
   (8,8)   100.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
@@ -209,18 +216,18 @@ Q
   (11,11) 100.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;; 不能太低
-  (12,12) 2.0     ; LF_HAA
-  (13,13) 2.0     ; LF_HFE
-  (14,14) 1.0     ; LF_KFE
-  (15,15) 2.0     ; LH_HAA
-  (16,16) 2.0     ; LH_HFE
-  (17,17) 1.0     ; LH_KFE
-  (18,18) 2.0     ; RF_HAA
-  (19,19) 2.0     ; RF_HFE
-  (20,20) 1.0     ; RF_KFE
-  (21,21) 2.0     ; RH_HAA
-  (22,22) 2.0     ; RH_HFE
-  (23,23) 1.0     ; RH_KFE
+  (12,12) 10.0     ; LF_HAA
+  (13,13) 10.0     ; LF_HFE
+  (14,14) 10.0     ; LF_KFE
+  (15,15) 10.0     ; LH_HAA
+  (16,16) 10.0     ; LH_HFE
+  (17,17) 10.0     ; LH_KFE
+  (18,18) 10.0     ; RF_HAA
+  (19,19) 10.0     ; RF_HFE
+  (20,20) 10.0     ; RF_KFE
+  (21,21) 10.0     ; RH_HAA
+  (22,22) 10.0     ; RH_HFE
+  (23,23) 10.0     ; RH_KFE
 }
 
 ; control weight matrix
@@ -243,18 +250,18 @@ R
   (11,11) 1.0       ; right_hind_force
 
   ;; Leg Joint Velocities: [LF, LH, RF, RH] ;;
-  (12,12) 100.0    ; LF_HAA
-  (13,13) 100.0    ; LF_HFE
-  (14,14) 100.0    ; LF_KFE
-  (15,15) 100.0    ; LH_HAA
-  (16,16) 100.0    ; LH_HFE
-  (17,17) 100.0    ; LH_KFE
-  (18,18) 100.0    ; RF_HAA
-  (19,19) 100.0    ; RF_HFE
-  (20,20) 100.0    ; RF_KFE
-  (21,21) 100.0    ; RH_HAA
-  (22,22) 100.0    ; RH_HFE
-  (23,23) 100.0    ; RH_KFE
+  (12,12) 3000.0    ; LF_HAA
+  (13,13) 3000.0    ; LF_HFE
+  (14,14) 3000.0    ; LF_KFE
+  (15,15) 3000.0    ; LH_HAA
+  (16,16) 3000.0    ; LH_HFE
+  (17,17) 3000.0    ; LH_KFE
+  (18,18) 3000.0    ; RF_HAA
+  (19,19) 3000.0    ; RF_HFE
+  (20,20) 3000.0    ; RF_KFE
+  (21,21) 3000.0    ; RH_HAA
+  (22,22) 3000.0    ; RH_HFE
+  (23,23) 3000.0    ; RH_KFE
 }
 
 frictionConeSoftConstraint
@@ -269,8 +276,8 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.01
-  delta                  0.07
+  mu                     0.1
+  delta                  0.01
 }
 
 Qee
@@ -289,4 +296,33 @@ Ree
   (0,0)   15.0     ; vcom_x0
   (1,1)   15.0     ; vcom_y
   (2,2)   5.0     ; vcom_z
+}
+
+selfCollision
+{ 
+  ; activate self-collision constraint
+  activate  true
+  visualizer_activate true
+
+  ; Self Collision raw object pairs
+  collisionObjectPairs
+  {
+
+  }
+
+  ; Self Collision pairs
+  collisionLinkPairs
+  {
+    [0] "LF_SHANK, RF_SHANK"
+    [1] "LH_SHANK, RH_SHANK"
+  }
+
+  ; minimum distance allowed between the pairs
+  minimumDistance  0.01
+
+  ; relaxed log barrier mu
+  mu     1e-2
+
+  ; relaxed log barrier delta
+  delta  1e-3
 }

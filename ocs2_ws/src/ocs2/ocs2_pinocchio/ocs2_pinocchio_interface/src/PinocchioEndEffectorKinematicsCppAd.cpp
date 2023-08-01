@@ -63,8 +63,7 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
     const PinocchioInterface& pinocchioInterface, const PinocchioStateInputMapping<ad_scalar_t>& mapping,
     std::vector<std::string> endEffectorIds, size_t stateDim, size_t inputDim, update_pinocchio_interface_callback updateCallback,
     const std::string& modelName, const std::string& modelFolder, bool recompileLibraries, bool verbose)
-    : endEffectorIds_(std::move(endEffectorIds)), pinocchioInterface_(pinocchioInterface), mapping_(mapping),
-    updateCallback_(updateCallback){
+    : endEffectorIds_(std::move(endEffectorIds)) {
   for (const auto& bodyName : endEffectorIds_) {
     endEffectorFrameIds_.push_back(pinocchioInterface.getModel().getBodyId(bodyName));
   }
@@ -73,7 +72,7 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
   auto pinocchioInterfaceCppAd = pinocchioInterface.toCppAd();
 
   // set pinocchioInterface to mapping
-  mappingPtr.reset(mapping_.clone());
+  std::unique_ptr<PinocchioStateInputMapping<ad_scalar_t>> mappingPtr(mapping.clone());
   mappingPtr->setPinocchioInterface(pinocchioInterfaceCppAd);
 
   // position function
@@ -81,9 +80,8 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
     updateCallback(x, pinocchioInterfaceCppAd);
     y = getPositionCppAd(pinocchioInterfaceCppAd, *mappingPtr, x);
   };
-
-  positionFunc_ = positionFunc; 
   positionCppAdInterfacePtr_.reset(new CppAdInterface(positionFunc, stateDim, modelName + "_position", modelFolder));
+
   // velocity function
   auto velocityFunc = [&, this](const ad_vector_t& x, ad_vector_t& y) {
     const ad_vector_t state = x.head(stateDim);
@@ -91,7 +89,6 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(
     updateCallback(state, pinocchioInterfaceCppAd);
     y = getVelocityCppAd(pinocchioInterfaceCppAd, *mappingPtr, state, input);
   };
-  velocityFunc_ = velocityFunc; 
   velocityCppAdInterfacePtr_.reset(new CppAdInterface(velocityFunc, stateDim + inputDim, modelName + "_velocity", modelFolder));
 
   // orientation function
@@ -121,12 +118,8 @@ PinocchioEndEffectorKinematicsCppAd::PinocchioEndEffectorKinematicsCppAd(const P
       positionCppAdInterfacePtr_(new CppAdInterface(*rhs.positionCppAdInterfacePtr_)),
       velocityCppAdInterfacePtr_(new CppAdInterface(*rhs.velocityCppAdInterfacePtr_)),
       orientationErrorCppAdInterfacePtr_(new CppAdInterface(*rhs.orientationErrorCppAdInterfacePtr_)),
-      endEffectorIds_(rhs.endEffectorIds_), 
-      pinocchioInterface_(rhs.pinocchioInterface_), mapping_(rhs.mapping_),updateCallback_(rhs.updateCallback_),
-      endEffectorFrameIds_(rhs.endEffectorFrameIds_) {
-        positionFunc_ = rhs.positionFunc_;  velocityFunc_ = rhs.velocityFunc_;
-        // std::cout << "PinocchioEndEffectorKinematicsCppAd clone\n";
-        }
+      endEffectorIds_(rhs.endEffectorIds_),
+      endEffectorFrameIds_(rhs.endEffectorFrameIds_) {}
 
 /******************************************************************************************************/
 /******************************************************************************************************/

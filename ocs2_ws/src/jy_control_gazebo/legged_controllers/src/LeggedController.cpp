@@ -20,7 +20,7 @@
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
 #include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
-#include <ocs2_sqp/MultipleShootingMpc.h>
+#include <ocs2_sqp/SqpMpc.h>
 
 #include <angles/angles.h>
 #include <legged_estimation/FromTopiceEstimate.h>
@@ -127,16 +127,16 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   vector_t optimizedState, optimizedInput;
   size_t plannedMode = 0;  // The mode that is active at the time the policy is evaluated at.
   mpcMrtInterface_->evaluatePolicy(currentObservation_.time, currentObservation_.state, optimizedState, optimizedInput, plannedMode);
-  ocs2::TargetTrajectories targetTrajectories(mpcMrtInterface_->getPolicy().timeTrajectory_,
-                                              mpcMrtInterface_->getPolicy().stateTrajectory_,
-                                              mpcMrtInterface_->getPolicy().inputTrajectory_);
+  // ocs2::TargetTrajectories targetTrajectories(mpcMrtInterface_->getPolicy().timeTrajectory_,
+  //                                             mpcMrtInterface_->getPolicy().stateTrajectory_,
+  //                                             mpcMrtInterface_->getPolicy().inputTrajectory_);
   // optimizedInput = mpcMrtInterface_->getPolicy().inputTrajectory_.front(); // disable feedback MPC.
-  if (optimizedInput.maxCoeff() > 1500.0 || optimizedInput.minCoeff() < -1500.0) {
-    std::cout << "feedback optimizedInput: " << optimizedInput.transpose() << std::endl;
-    optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
-    ROS_WARN_STREAM("MPC input is too large, using the desired input instead.");
-    std::cout << "get desired optimizedInput: " << optimizedInput.transpose() << std::endl;
-  }
+  // if (optimizedInput.maxCoeff() > 1500.0 || optimizedInput.minCoeff() < -1500.0) {
+  //   std::cout << "feedback optimizedInput: " << optimizedInput.transpose() << std::endl;
+    // optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
+  //   ROS_WARN_STREAM("MPC input is too large, using the desired input instead.");
+  //   std::cout << "get desired optimizedInput: " << optimizedInput.transpose() << std::endl;
+  // }
   // optimizedInput = targetTrajectories.getDesiredInput(currentObservation_.time); // disable feedback MPC.
   // Whole body control
   currentObservation_.input = optimizedInput;
@@ -157,7 +157,7 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   }
 
   for (size_t j = 0; j < leggedInterface_->getCentroidalModelInfo().actuatedDofNum; ++j) {
-    hybridJointHandles_[j].setCommand(posDes(j), velDes(j), 50, 5, torque(j));
+    hybridJointHandles_[j].setCommand(posDes(j), velDes(j), 10, 1, torque(j));
   }
 
   // Visualization
@@ -280,7 +280,7 @@ void LeggedController::setupLeggedInterface(const std::string& taskFile, const s
 }
 
 void LeggedController::setupMpc() {
-  mpc_ = std::make_unique<ocs2::MultipleShootingMpc>(leggedInterface_->mpcSettings(), leggedInterface_->sqpSettings(), 
+  mpc_ = std::make_unique<ocs2::SqpMpc>(leggedInterface_->mpcSettings(), leggedInterface_->sqpSettings(), 
                                                      leggedInterface_->getOptimalControlProblem(), leggedInterface_->getInitializer());
   rbdConversions_ = std::make_shared<CentroidalModelRbdConversions>(leggedInterface_->getPinocchioInterface(),
                                                                     leggedInterface_->getCentroidalModelInfo());
@@ -294,7 +294,7 @@ void LeggedController::setupMpc() {
       nodeHandle, leggedInterface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robotName);
 
   // ROS ReferenceManager
-  auto rosReferenceManagerPtr = std::make_shared<ocs2::LeggedRobotRosReferenceManager>(robotName, leggedInterface_->getSwitchedModelReferenceManagerPtr());
+  auto rosReferenceManagerPtr = std::make_shared<ocs2::RosReferenceManager>(robotName, leggedInterface_->getSwitchedModelReferenceManagerPtr());
   rosReferenceManagerPtr->subscribe(nodeHandle);
 
   // Terrain receiver

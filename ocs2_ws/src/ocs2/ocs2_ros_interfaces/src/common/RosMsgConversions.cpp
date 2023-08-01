@@ -216,7 +216,22 @@ TargetTrajectories readTargetTrajectoriesMsg(const ocs2_msgs::mpc_target_traject
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-ocs2_msgs::lagrangian_metrics createMetricsMsg(scalar_t time, LagrangianMetricsConstRef metrics) {
+ocs2_msgs::constraint createConstraintMsg(scalar_t time, const vector_t& constraint) {
+  ocs2_msgs::constraint constraintMsg;
+
+  constraintMsg.time = time;
+  constraintMsg.value.resize(constraint.size());
+  for (size_t i = 0; i < constraint.size(); i++) {
+    constraintMsg.value[i] = constraint(i);
+  }  // end of i loop
+
+  return constraintMsg;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+ocs2_msgs::lagrangian_metrics createLagrangianMetricsMsg(scalar_t time, LagrangianMetricsConstRef metrics) {
   ocs2_msgs::lagrangian_metrics metricsMsg;
 
   metricsMsg.time = time;
@@ -245,58 +260,6 @@ ocs2_msgs::multiplier createMultiplierMsg(scalar_t time, MultiplierConstRef mult
   }  // end of i loop
 
   return multiplierMsg;
-}
-
-TargetFeetPlacement readFootholdRegionGroupMsg(const ocs2_msgs::FootholdRegionGroup& footholdRegionGroupMsg){
-  using vector3_t = Eigen::Matrix<scalar_t, 3, 1>;
-
-  int leftFrontSize = footholdRegionGroupMsg.footholdRegion_LF.size();
-  int righFronttSize = footholdRegionGroupMsg.footholdRegion_RF.size();
-  int leftBackSize = footholdRegionGroupMsg.footholdRegion_LH.size();
-  int rightBackSize = footholdRegionGroupMsg.footholdRegion_RH.size();
-  std::vector<vector3_t> leftFrontPoints, rightFrontPoints, leftBackPoints, rightBackPonits;
-  leftFrontPoints.reserve(leftFrontSize);
-  rightFrontPoints.reserve(righFronttSize);
-  leftBackPoints.reserve(leftBackSize);
-  rightBackPonits.reserve(rightBackSize);
-
-
-  for(auto& LF:footholdRegionGroupMsg.footholdRegion_LF){
-    vector3_t point;
-    point.x() = LF.rectCenter_Position.x;
-    point.y() = LF.rectCenter_Position.y;
-    point.z() = LF.rectCenter_Position.z;
-    leftFrontPoints.emplace_back(point);
-  }
-
-  for(auto& LH:footholdRegionGroupMsg.footholdRegion_LH){
-    vector3_t point;
-    point.x() = LH.rectCenter_Position.x;
-    point.y() = LH.rectCenter_Position.y;
-    point.z() = LH.rectCenter_Position.z;
-    leftBackPoints.emplace_back(point);
-  }
-
-  for(auto& RF:footholdRegionGroupMsg.footholdRegion_RF){
-    vector3_t point;
-    point.x() = RF.rectCenter_Position.x;
-    point.y() = RF.rectCenter_Position.y;
-    point.z() = RF.rectCenter_Position.z;
-    rightFrontPoints.emplace_back(point);
-  }
-
-  for(auto& RH:footholdRegionGroupMsg.footholdRegion_RH){
-    vector3_t point;
-    point.x() = RH.rectCenter_Position.x;
-    point.y() = RH.rectCenter_Position.y;
-    point.z() = RH.rectCenter_Position.z;
-    rightBackPonits.emplace_back(point);
-  }
-
-  TargetFeetPlacement targetFeetPlacement(leftFrontPoints, rightFrontPoints, leftBackPoints, rightBackPonits);
-
-  return targetFeetPlacement;
-
 }
 
 }  // namespace ros_msg_conversions

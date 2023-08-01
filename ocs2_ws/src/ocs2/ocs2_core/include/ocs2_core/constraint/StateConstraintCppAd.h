@@ -64,8 +64,7 @@ class StateConstraintCppAd : public StateConstraint {
                                                            const PreComputation& preComputation) const override;
   VectorFunctionQuadraticApproximation getQuadraticApproximation(scalar_t time, const vector_t& state,
                                                                  const PreComputation& preComputation) const override;
-  const std::unique_ptr<ocs2::CppAdInterface>& getCppAdInterface() const { return adInterfacePtr_; } 
-  
+
  protected:
   StateConstraintCppAd(const StateConstraintCppAd& rhs);
 

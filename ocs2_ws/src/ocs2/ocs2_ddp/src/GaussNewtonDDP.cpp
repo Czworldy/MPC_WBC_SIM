@@ -126,7 +126,7 @@ GaussNewtonDDP::GaussNewtonDDP(ddp::Settings ddpSettings, const RolloutBase& rol
 /******************************************************************************************************/
 /******************************************************************************************************/
 GaussNewtonDDP::~GaussNewtonDDP() {
-  if (1) {
+  if (ddpSettings_.displayInfo_ || ddpSettings_.displayShortSummary_) {
     std::cerr << getBenchmarkingInfo() << std::endl;
   }
 }

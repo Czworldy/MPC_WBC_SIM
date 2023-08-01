@@ -10,17 +10,7 @@
       <arg name="taskFile"    value="$(find ocs2_mobile_manipulator)/config/franka/task.info" />
       <!-- The library folder to generate CppAD codegen into -->
       <arg name="libFolder"   value="$(find ocs2_mobile_manipulator)/auto_generated/franka" />
-
-      <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" /> -->
-      <node  name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-      <param name="publish_frequency" type="double" value="50.0" />
-      </node>
-
-      <node  pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" >
-      <param name="publish_frequency" type="double" value="50.0" />
-      </node>
-
-        <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_camera_init" args="0 0 0 0 0 0  world root " /> -->
+      
       <include file="$(find ocs2_mobile_manipulator_ros)/launch/include/mobile_manipulator.launch">
             <arg name="rviz"        value="$(arg rviz)" />
             <arg name="debug"       value="$(arg debug)" />

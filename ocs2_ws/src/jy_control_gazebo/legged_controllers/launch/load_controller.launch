@@ -11,12 +11,16 @@
       <param name="urdfFile" value="$(find legged_x20_description)/urdf/X20_rsm.urdf"/>
       <param name="taskFile" value="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
       <param name="referenceFile" value="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
+      <param name="wbcFile" value="$(find legged_controllers)/config/x20/UserParameter_sdk_ws.info"/>
+      <param name="gaitCommandFile" value="$(find ocs2_jypro)/config/command/gait.info"/>
     </group>
 
     <group if="$(eval arg('robot_type') == 'a1')">
       <param name="urdfFile" value="$(find legged_unitree_description)/urdf/a1.urdf"/>
       <param name="taskFile" value="$(find legged_controllers)/config/$(arg robot_type)/task_a1.info"/>
       <param name="referenceFile" value="$(find legged_controllers)/config/$(arg robot_type)/reference.info"/>
+      <param name="wbcFile" value="$(find legged_controllers)/config/a1/UserParameter_a1.info"/>
+      <param name="gaitCommandFile" value="$(find legged_controllers)/config/a1/gait.info"/>
     </group>
 
     
@@ -27,9 +31,9 @@
 
     <!-- <param name="urdfFile" value="$(find X20)/urdf/X20_rsm.urdf"/> -->
 
-    <param name="gaitCommandFile" value="$(find ocs2_jypro)/config/command/gait.info"/>
+    <!-- <param name="gaitCommandFile" value="$(find ocs2_jypro)/config/command/gait.info"/> -->
 
-    <param name="wbcFile" value="$(find legged_controllers)/config/x20/UserParameter_sdk_ws.info"/>
+    <!-- <param name="wbcFile" value="$(find legged_controllers)/config/x20/UserParameter_sdk_ws.info"/> -->
 
     <rosparam file="$(find legged_controllers)/config/controllers.yaml" command="load"/>
 

@@ -181,40 +181,13 @@ class PythonInterface {
     throw std::runtime_error("PythonInterface::visualizeTrajectory must be implemented by robot-specific derived class.");
   }
 
-  virtual void setModule(const std::string& module) {
-    throw std::runtime_error("PythonInterface::setModule must be implemented by robot-specific derived class.");
-  }
-
-  virtual vector_t getInitState() {
-    throw std::runtime_error("PythonInterface::getInitState must be implemented by robot-specific derived class.");
-  }
-
-  // call after getMpcSolution()
-  void getModeSchedule(ModeSchedule& modeSchedule) {
-    modeSchedule = modeSchedule_;
-  }
-
-  // virtual int getStateDim() {
-  //   throw std::runtime_error("PythonInterface::getStateDim must be implemented by robot-specific derived class.");
-  // }
-
-  // virtual int getInputDim() {
-  //   throw std::runtime_error("PythonInterface::getInputDim must be implemented by robot-specific derived class.");
-  // }
-
-  bool isProblemSolved() {
-    return mpcMrtInterface_->getcontrollerIsUpdated();
-  }
-  std::unique_ptr<MPC_BASE> mpcPtr_;
-
  protected:
   int stateDim_ = -1;  // -1 indicates that it is not initialized
   int inputDim_ = -1;  // -1 indicates that it is not initialized
 
  private:
-  // std::unique_ptr<MPC_BASE> mpcPtr_;
+  std::unique_ptr<MPC_BASE> mpcPtr_;
   std::unique_ptr<MPC_MRT_Interface> mpcMrtInterface_;
-  ModeSchedule modeSchedule_;
 
   TargetTrajectories targetTrajectories_;
   OptimalControlProblem problem_;

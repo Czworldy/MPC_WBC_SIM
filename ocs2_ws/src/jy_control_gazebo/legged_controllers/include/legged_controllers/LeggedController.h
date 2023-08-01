@@ -19,7 +19,7 @@
 #include <ocs2_jypro/gait/MotionPhaseDefinition.h>
 #include <ocs2_jypro/BodyPositionEstimator/BodyPositionEstimator.h>
 #include "ocs2_jypro/gait/GaitReceiver.h"
-#include <ocs2_jypro/synchronized_module/LeggedRobotRosReferenceManager.h>
+#include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 #include <ocs2_jypro/LeggedRobotPyBindings.h>
 #include "ocs2_wbc_ros/SingleWbcRos.h"

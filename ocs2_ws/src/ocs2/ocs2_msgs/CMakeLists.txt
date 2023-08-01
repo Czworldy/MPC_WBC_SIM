@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
 
 add_message_files(
   FILES
+    constraint.msg
     mpc_state.msg
     mpc_input.msg
     mode_schedule.msg

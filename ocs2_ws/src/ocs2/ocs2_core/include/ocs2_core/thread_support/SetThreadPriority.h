@@ -51,12 +51,6 @@ inline void setThreadPriority(int priority, pthread_t thread) {
                    "that the user and the group permissions are not set properly.)"
                 << std::endl;
     }
-    // for x20 hardware move to other cpu.
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-    CPU_SET(2, &mask);
-    CPU_SET(3, &mask);
-    pthread_setaffinity_np(thread, sizeof(cpu_set_t), &mask);
   }
 }
 

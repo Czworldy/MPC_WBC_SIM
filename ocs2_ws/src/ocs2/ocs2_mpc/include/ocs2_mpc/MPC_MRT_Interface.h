@@ -115,7 +115,6 @@ class MPC_MRT_Interface final : public MRT_BASE {
    */
   MultiplierCollection getIntermediateDualSolution(scalar_t time) const;
 
-  const bool getcontrollerIsUpdated() const { return controllerIsUpdated; };
  private:
   /**
    * Updates the buffer variables from the MPC object. This method is automatically called by advanceMpc()
@@ -130,7 +129,6 @@ class MPC_MRT_Interface final : public MRT_BASE {
   // MPC inputs
   SystemObservation currentObservation_;
   std::mutex observationMutex_;
-  bool controllerIsUpdated;
 };
 
 }  // namespace ocs2
