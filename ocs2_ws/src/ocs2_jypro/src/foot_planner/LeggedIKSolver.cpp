@@ -67,6 +67,7 @@ namespace legged_robot {
         const auto& footPositionInBodyFrame = _O_B_tfMatrixLocal.inverse() * footPositionInWorldFrame.homogeneous();
         // solve ik
         //{"LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"};
+        std::cout << "bodyPose: " << bodyPose.transpose() << std::endl;
         matrix4_t _B_S_tfMatrix;
         _B_S_tfMatrix.setIdentity();
         switch (leg_id) {
@@ -91,7 +92,7 @@ namespace legged_robot {
             break;
         }
         vector3_t footPositionInShoulderFrame = (_B_S_tfMatrix.inverse() * footPositionInBodyFrame).head(3);
-        // std::cout <<"leg: " << leg_id << " in world: " << footPositionInWorldFrame.transpose() << " in shoulder: " << footPositionInShoulderFrame.transpose() << std::endl;   
+        std::cout <<"leg: " << leg_id << " in world: " << footPositionInWorldFrame.transpose() << " in shoulder: " << footPositionInShoulderFrame.transpose() << std::endl;   
         vector3_t angles = inverseKinematics(footPositionInShoulderFrame);
         // add offset
         return angles;

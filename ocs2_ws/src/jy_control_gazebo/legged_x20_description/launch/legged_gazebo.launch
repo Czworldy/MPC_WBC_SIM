@@ -6,7 +6,7 @@
 
     <arg name="gui" default="true" />
     <arg name="paused" default="false" />
-    <arg name="world" default="mhz_easy" />
+    <arg name="world" default="stair_mhz_nogap" />
     <param name="/use_sim_time" value="true" />
 
     <rosparam file="$(find legged_gazebo)/config/default.yaml" command="load"/>

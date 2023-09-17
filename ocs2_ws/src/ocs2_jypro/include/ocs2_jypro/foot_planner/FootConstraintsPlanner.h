@@ -35,6 +35,10 @@ class FootConstraintsPlanner{
    vector3_t getCurrentEEPosition(size_t leg, const vector_t& initstate);
 
    vector3_t getFootPlacementNominal(size_t leg,  scalar_t time) const;
+
+   void setMpcTrajectoryAccordingToFootPlacement(const scalar_t initTime, const ModeSchedule& modeSchedule,
+                                                 TargetTrajectories& targetTrajectories, scalar_t comHeight);
+
    const FootConstraints& getFootPolygonConstraint(size_t leg,  scalar_t time) const;
 
    const feet_array_t<scalar_array_t>& getliftOffHeightSequence() const{ return liftOffHeightSequence_; }
@@ -72,6 +76,7 @@ class FootConstraintsPlanner{
    * @return contactFlagStock
    */
     feet_array_t<std::vector<bool>> extractContactFlags(const std::vector<size_t>& phaseIDsStock) const;
+    feet_array_t<std::vector<bool>> extractSwingFlags(const std::vector<size_t>& phaseIDsStock) const;
 
   /**
    * Finds the take-off and touch-down times indices for a specific leg.

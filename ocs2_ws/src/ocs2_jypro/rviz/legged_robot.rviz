@@ -69,6 +69,11 @@ Visualization Manager:
       Enabled: true
       Links:
         All Links Enabled: true
+        BASE:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
@@ -77,17 +82,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        LF_calf:
+        LF_HIP:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        LF_hip:
+        LF_SHANK:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        LF_thigh:
+        LF_THIGH:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -97,17 +102,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        LH_calf:
+        LH_HIP:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        LH_hip:
+        LH_SHANK:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        LH_thigh:
+        LH_THIGH:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -118,17 +123,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_calf:
+        RF_HIP:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_hip:
+        RF_SHANK:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_thigh:
+        RF_THIGH:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -138,22 +143,32 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_calf:
+        RH_HIP:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_hip:
+        RH_SHANK:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_thigh:
+        RH_THIGH:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base:
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        lidar_link_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -191,7 +206,9 @@ Visualization Manager:
       Marker Topic: /legged_robot/optimizedStateTrajectory
       Name: Optimized State Trajectory
       Namespaces:
-        {}
+        CoM Trajectory: true
+        EE Trajectories: true
+        Future footholds: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -199,7 +216,10 @@ Visualization Manager:
       Marker Topic: /legged_robot/currentState
       Name: Current State
       Namespaces:
-        {}
+        Center of Pressure: true
+        EE Forces: true
+        EE Positions: true
+        Support Polygon: true
       Queue Size: 100
       Value: true
     - Class: rviz/Group
@@ -302,7 +322,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -313,11 +333,11 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.029999999329447746
       Style: Flat Squares
-      Topic: /velodyne_points_32
+      Topic: /point_cloud2
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
@@ -365,7 +385,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.827701568603516
+      Distance: 4.63323974609375
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -381,9 +401,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.18479710817337036
+      Pitch: 0.08479703217744827
       Target Frame: <Fixed Frame>
-      Yaw: 5.153585910797119
+      Yaw: 4.535403251647949
     Saved: ~
 Window Geometry:
   Displays:
@@ -403,5 +423,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1535
-  X: 5083
-  Y: 1467
+  X: 3410
+  Y: 882

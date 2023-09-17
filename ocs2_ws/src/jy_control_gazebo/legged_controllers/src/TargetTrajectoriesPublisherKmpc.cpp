@@ -92,7 +92,7 @@ TargetTrajectories cmdVelToTargetTrajectories(const vector_t& cmdVel, const Syst
 TargetTrajectories gbplToTargetTrajectories(const quad_msgs::RobotPlan::ConstPtr& msg, const SystemObservation& observation) {
   scalar_array_t timeTrajectory(msg->plan_indices.size(), 0);
   vector_array_t stateTrajectory(msg->plan_indices.size(), vector_t::Zero(observation.state.size()));
-  const vector_array_t inputTrajectory(msg->plan_indices.size(), vector_t::Zero(observation.input.size()));
+  vector_array_t inputTrajectory(msg->plan_indices.size(), vector_t::Zero(observation.input.size()));
 
   std::cout << "current ob time: " << observation.time << std::endl;
   std::cout << "msg->states[0].header.stamp.toSec(): " << msg->states[0].header.stamp.toSec() << std::endl;
@@ -103,15 +103,22 @@ TargetTrajectories gbplToTargetTrajectories(const quad_msgs::RobotPlan::ConstPtr
   
   for(size_t i = 0; i < msg->plan_indices.size(); i++) {
     
-    // double time = msg->states[i].header.stamp.toSec();
     double time = msg->states[i].header.stamp.toSec() - currentRosTime + currentTime;
     timeTrajectory[i] = time;
 
     vector_t robotState = quad_utils::bodyStateMsgToEigen(msg->states[i].body); // [position rpy linearvel angularvel]
-    stateTrajectory[i].head(3) = robotState.segment<3>(6);
-    stateTrajectory[i].segment<3>(3) = robotState.tail(3);
-    stateTrajectory[i].segment<3>(6) = robotState.segment<3>(0);
-    stateTrajectory[i].segment<3>(9) = robotState.segment<3>(3).reverse();
+    // stateTrajectory[i].head(3) = robotState.segment<3>(6);
+    // stateTrajectory[i].segment<3>(3) = robotState.tail(3);
+    // stateTrajectory[i].segment<3>(6) = robotState.segment<3>(0);
+    // stateTrajectory[i].segment<3>(9) = robotState.segment<3>(3).reverse();
+
+    // Kmpc
+    stateTrajectory[i].head(3) = robotState.head(3); //xyz
+    stateTrajectory[i].segment<3>(3) = robotState.segment<3>(3).reverse(); //rpy
+    inputTrajectory[i].head(3) = robotState.segment<3>(3); //linear vel
+    inputTrajectory[i].segment<3>(3) = robotState.tail(3); //angular vel
+
+
     stateTrajectory[i].tail(12) = DEFAULT_JOINT_STATE;
     // Eigen::Quaterniond quat;
     // quat.x() = msg->states[i].body.pose.orientation.x;
@@ -124,7 +131,8 @@ TargetTrajectories gbplToTargetTrajectories(const quad_msgs::RobotPlan::ConstPtr
 }
 
 int main(int argc, char** argv) {
-  const std::string robotName = "legged_robot";
+  // const std::string robotName = "legged_robot";
+  const std::string robotName = "mobile_manipulator";
 
   // Initialize ros node
   ::ros::init(argc, argv, robotName + "_target");

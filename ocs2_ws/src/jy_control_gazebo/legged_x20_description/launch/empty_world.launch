@@ -11,14 +11,18 @@
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/stair_pipe4_swing.world"/> -->
         <!-- niuqu test  -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_22_shousuo.world"/>  -->
-        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_19_wainiu_1.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_11_hard_gaodi.world"/>  -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_gaodi_nostair.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_19_wainiu_1.world"/>  -->
+        
+        
         <!-- mhz_19_wainiu_1 -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_6.world"/> -->
         <!-- <arg name="pause" value="true"/> -->
     </include>
     <!-- push robot_description to factory and spawn robot in gazebo -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
-          args="-z 1.2 -param legged_robot_description -urdf -model X20" output="screen"/>
+          args="-z 0.9 -param legged_robot_description -urdf -model X20" output="screen"/>
     <!-- <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model X20 -param legged_robot_description
         -z 0.6"/> -->
 

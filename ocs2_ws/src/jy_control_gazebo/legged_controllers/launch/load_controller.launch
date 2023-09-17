@@ -8,7 +8,8 @@
     <!-- make the files into global parameters -->
     <!-- <param name="urdfFile" value="/tmp/legged_control/x20.urdf"/> -->
     <group if="$(eval arg('robot_type') == 'x20')">
-      <param name="urdfFile" value="$(find legged_x20_description)/urdf/X20_rsm.urdf"/>
+      <!-- <param name="urdfFile" value="$(find legged_x20_description)/urdf/X20_rsm.urdf"/> -->
+      <param name="urdfFile" value="$(find X20)/urdf/X20_rsm.urdf"/>
       <param name="taskFile" value="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
       <param name="referenceFile" value="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
       <param name="wbcFile" value="$(find legged_controllers)/config/x20/UserParameter_sdk_ws.info"/>
@@ -53,6 +54,12 @@
           output="screen"/>
 
     <include file="$(find ocs2_jypro)/launch/visualize.launch"/>
+
+        <!-- x y z yaw pitch roll -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="odom_init_to_map"
+        args="0 0 0 0
+    0 0 map odom" />
+
     <!-- <node pkg="legged_controllers" type="legged_target_trajectories_publisher" name="legged_robot_target"
           output="screen"/> -->
 </launch>

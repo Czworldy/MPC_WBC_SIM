@@ -28,6 +28,9 @@
 #include <ocs2_wbc_ros/SingleWbcRos.h>
 #include <pluginlib/class_list_macros.hpp>
 
+#include <quad_msgs/RobotState.h>
+#include <quad_utils/ros_utils.h>
+
 namespace legged {
 bool LeggedController::init(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& controller_nh) {
   // Initialize OCS2
@@ -82,6 +85,9 @@ bool LeggedController::init(hardware_interface::RobotHW* robot_hw, ros::NodeHand
   lh_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
   rf_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
   rh_foot_pub_ = nh.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
+
+  robot_state_pub_ =
+      nh.advertise<quad_msgs::RobotState>("/robot_state", 1);
 
 
   // Safety Checker
@@ -157,11 +163,11 @@ void LeggedController::update(const ros::Time& time, const ros::Duration& period
   }
 
   for (size_t j = 0; j < leggedInterface_->getCentroidalModelInfo().actuatedDofNum; ++j) {
-    hybridJointHandles_[j].setCommand(posDes(j), velDes(j), 10, 1, torque(j));
+    hybridJointHandles_[j].setCommand(posDes(j), velDes(j), 0, 3, torque(j));
   }
 
   // Visualization
-  // robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
+  robotVisualizer_->update(currentObservation_, mpcMrtInterface_->getPolicy(), mpcMrtInterface_->getCommand());
   // selfCollisionVisualization_->update(currentObservation_);
 
   // Publish the observation. Only needed for the command interface
@@ -211,7 +217,20 @@ void LeggedController::updateStateEstimation(const ros::Time& time, const ros::D
   stateEstimate_->updateJointTorque(jointTorque);
   stateEstimate_->updateContact(contactFlag);
   stateEstimate_->updateImu(quat, angularVel, linearAccel, orientationCovariance, angularVelCovariance, linearAccelCovariance);
-  measuredRbdState_ = stateEstimate_->update(time, period);
+  measuredRbdState_ = stateEstimate_->update(time, period); // [ EularAngleZyx, Position, qj, AngularVel, LinearVel, qjdot ]
+  
+  // RobotState
+  vector_t robot_state = vector_t::Zero(12);
+  robot_state << measuredRbdState_.segment<3>(3), measuredRbdState_.segment<3>(0).reverse(), 
+                  measuredRbdState_.segment<3>(leggedInterface_->getCentroidalModelInfo().generalizedCoordinatesNum + 3),
+                  measuredRbdState_.segment<3>(leggedInterface_->getCentroidalModelInfo().generalizedCoordinatesNum);
+  quad_msgs::RobotState robotStateMsg;
+  robotStateMsg.header.stamp = time;
+  robotStateMsg.header.frame_id = "odom";
+  robotStateMsg.body = quad_utils::eigenToBodyStateMsg(robot_state);
+  robot_state_pub_.publish(robotStateMsg);
+  
+  // CurrentObservation
   currentObservation_.time += period.toSec();
   scalar_t yawLast = currentObservation_.state(9);
   currentObservation_.state = rbdConversions_->computeCentroidalStateFromRbdModel(measuredRbdState_);
@@ -327,6 +346,10 @@ void LeggedController::setupMrt() {
 
   controllerRunning_ = true;
   mpcThread_ = std::thread([&]() {
+    pid_t tid = gettid();
+    std::cout << "MPC Thread TID: " << tid << std::endl;
+    pid_t pid = getpid();
+    std::cout << "MPC Thread PID: " << pid << std::endl;
     while (controllerRunning_) {
       try {
         executeAndSleep(

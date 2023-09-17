@@ -20,7 +20,7 @@
         xyz="0.005 0.000413 0.004"
         rpy="0 0 0" />
       <mass
-        value="26.398" />
+        value="26.398" />  <!-- 29.398 -->
       <inertia ixx="0.1632" ixy="-5.2136E-05" ixz="-0.00019406" iyy="0.40648" iyz="8.2679E-05" izz="0.52596" />
     </inertial>
     <visual>
@@ -97,7 +97,7 @@
  <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
   <xacro:HDL-32E parent="BASE" name="lidar_link" topic="/point_cloud2"  hz="10" samples="220" >
 
-    <origin xyz="0.7 0 0.4" rpy="0 1 0" />
+    <origin xyz="0.4 0 0.8" rpy="0 1.05 0" />
 
   </xacro:HDL-32E>
   

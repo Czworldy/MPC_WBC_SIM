@@ -33,6 +33,7 @@
     <inertial>
       <origin xyz="0.005 0.000413 0.004" />
       <mass value="32.398" />
+      <!-- <mass value="29.398" /> -->
       <inertia ixx="0.1632" ixy="-5.2136E-05" ixz="-0.00019406" iyy="0.40648" iyz="8.2679E-05" izz="0.52596" />
     </inertial>
   </link>

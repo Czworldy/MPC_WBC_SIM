@@ -12,7 +12,8 @@
     <arg name="description_file"   default="$(find X20)/urdf/X20_rsm.urdf"/>
 
       <!-- The task file for the mpc. -->
-    <arg name="taskFile"          default="$(find ocs2_jypro)/config/mpc/task.info"/>
+    <!-- <arg name="taskFile"          default="$(find ocs2_jypro)/config/mpc/task.info"/> -->
+    <arg name="taskFile"          default="/home/yjy/MPC_WBC_sim/ocs2_ws/task.info"/>
     <!-- The reference related config file of the robot -->
     <arg name="referenceFile"     default="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
     <!-- The URDF model of the robot -->

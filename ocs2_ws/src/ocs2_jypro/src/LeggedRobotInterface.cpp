@@ -489,6 +489,7 @@ std::unique_ptr<StateInputCost> LeggedRobotInterface::getCBFFootPlacementConstra
     // std::unique_ptr<PenaltyBase> penalty(new RelaxedBarrierPenalty(barrierPenaltyConfig));
 
     // return std::unique_ptr<StateInputCost>(new StateInputSoftConstraint(std::move(footplacementConstraintPtr), std::move(penalty)));
+    return  nullptr;
 }
 
 /******************************************************************************************************/

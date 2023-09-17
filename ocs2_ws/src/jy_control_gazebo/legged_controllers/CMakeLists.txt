@@ -14,6 +14,8 @@ find_package(catkin REQUIRED
         ocs2_legged_robot_ros
         ocs2_self_collision_visualization
         angles
+        quad_msgs
+        quad_utils
         )
 
 find_package(PkgConfig REQUIRED)
@@ -33,6 +35,8 @@ catkin_package(
         ocs2_legged_robot_ros
         ocs2_self_collision_visualization
         angles
+        quad_msgs
+        quad_utils
 )
 
 ###########
@@ -75,6 +79,20 @@ target_link_libraries(legged_target_trajectories_publisher
         ${catkin_LIBRARIES}
         )
 target_compile_options(legged_target_trajectories_publisher PRIVATE ${OCS2_CXX_FLAGS})
+
+# Target trajectories publish node
+add_executable(legged_target_trajectories_publisher_kmpc
+        src/TargetTrajectoriesPublisherKmpc.cpp
+        )
+add_dependencies(legged_target_trajectories_publisher_kmpc
+        ${PROJECT_NAME}
+        ${catkin_EXPORTED_TARGETS}
+        )
+target_link_libraries(legged_target_trajectories_publisher_kmpc
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+target_compile_options(legged_target_trajectories_publisher_kmpc PRIVATE ${OCS2_CXX_FLAGS})
 
 #########################
 ###   CLANG TOOLING   ###

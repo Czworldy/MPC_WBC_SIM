@@ -102,7 +102,7 @@ void TargetTrajectoriesPublisher::publishKeyboardCommand(const std::string &comm
         if (isJoyMsgsCome && isMpcPolicyCome) {
             std::lock_guard<std::mutex> lock(latestJoyMsgsMutex_);
 
-            std::cout << "The following command is received: [" << receivedTargetTrajectories_ << "]\n\n";
+            std::cout << "The following command is received: [\n" << receivedTargetTrajectories_ << "]\n\n";
 
             SystemObservation observation;
             {
@@ -164,6 +164,9 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
     const vector_t currentPose = observation.state.segment<6>(6);
     const vector_t currentMometum = observation.state.head(6);
 
+    std::cout << "currentPose " << currentPose.transpose() << std::endl;
+    std::cout << "current Time" << observation.time << std::endl;
+
     // 3x3 transform matrix from odom base to odom frame
     const scalar_t currentYaw = currentPose(3), currentX = currentPose(0), currentY = currentPose(1);
 
@@ -205,9 +208,9 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
         commandGeneralizedVelocity(0) = currentqVelocity(0) + commandVelInOdomFrame(0);  // X 
         commandGeneralizedVelocity(1) = currentqVelocity(1) + commandVelInOdomFrame(1);  // Y 
         commandGeneralizedVelocity(3) = currentqVelocity(3) + input(2);  // Yaw
-        std::cout << "cmd vel:" << input_xy.transpose() << " " << "commandVelInOdomFrame:"
-            << commandVelInOdomFrame.transpose() << " " 
-            << "final vel: " << commandGeneralizedVelocity.head(4).transpose() << "\n";
+        // std::cout << "cmd vel:" << input_xy.transpose() << " " << "commandVelInOdomFrame:"
+        //     << commandVelInOdomFrame.transpose() << " " 
+        //     << "final vel: " << commandGeneralizedVelocity.head(4).transpose() << "\n";
 
         const auto commandMometum = getCentroidalMomentumMatrix(pinocchioInterface_) * commandGeneralizedVelocity / centroidalModelInfo_.robotMass;
         // std::cout << "commandMometum: " << commandMometum.transpose() << "\n";
@@ -215,6 +218,13 @@ TargetTrajectories TargetTrajectoriesPublisher::getTargetTrajectories(const Syst
         stateTrajectory[pointCounter].head(6) = commandMometum;
 
     }
+
+    // scalar_t timeOffset = receivedTargetTrajectories_.timeTrajectory.front() - observation.time;
+    // for (size_t i = 0; i < timeTrajectory.size(); i++) {
+    //     timeTrajectory[i] -= timeOffset;
+    // }
+    
+
     // ----------------------------------
 
     // 4x4 transform matrix from odom base to odom frame

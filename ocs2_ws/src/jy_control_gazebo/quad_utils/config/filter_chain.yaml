@@ -6,6 +6,12 @@ grid_map_filters:
       input_layer: z
       output_layer: z_finite
 
+  - name: duplicate_elevation
+    type: gridMapFilters/DuplicationFilter
+    params:
+      input_layer: z
+      output_layer: elevation
+
   # Fill holes in the map with inpainting.
   - name: inpaint
     type: gridMapCv/InpaintFilter

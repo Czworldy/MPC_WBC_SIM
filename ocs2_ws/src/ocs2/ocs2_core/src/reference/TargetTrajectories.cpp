@@ -110,7 +110,8 @@ std::ostream& operator<<(std::ostream& out, const TargetTrajectories& targetTraj
   for (size_t i = 0; i < targetTrajectories.size(); i++) {
     out << "time: " << targetTrajectories.timeTrajectory[i] << "\n";
     out << "state: [" << toDelimitedString(targetTrajectories.stateTrajectory[i]) << "]\n";
-    out << "input: [" << toDelimitedString(targetTrajectories.inputTrajectory[i]) << "]\n";
+    if (!targetTrajectories.inputTrajectory.empty())
+      out << "input: [" << toDelimitedString(targetTrajectories.inputTrajectory[i]) << "]\n";
   }  // end of i loop
 
   return out;

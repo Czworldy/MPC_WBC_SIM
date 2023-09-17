@@ -127,7 +127,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   //update gait table and get predictive mode
   const auto timeHorizon = finalTime - initTime;
   // modeSchedule = tempModeSchedule_;
-  modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - timeHorizon, finalTime + timeHorizon);
+  modeSchedule = gaitSchedulePtr_->getModeSchedule(initTime - 0.1, finalTime + 0.1);
   tempModeSchedule_ = modeSchedule;
 
   int modeIndex = lookup::findIndexInTimeArray(modeSchedule.eventTimes, initTime); // before or closet?
@@ -150,14 +150,14 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   const scalar_t zReference = - (terrainParams(0) * initState(6) + terrainParams(1) * initState(7) + D2);
 
   
-  if(targetTrajectories.timeTrajectory.size() >= 2){
-    for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
-      stateTrajectory(8) = zReference;
-      stateTrajectory(10) = 0.7*terrainZyx[1]; //pitch
-      stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
-    }
-    std::cout << "desired pitch: " << targetTrajectories.stateTrajectory[1](10) << "\t desired roll: " << targetTrajectories.stateTrajectory[1](11) << std::endl;
-  }
+  // if(targetTrajectories.timeTrajectory.size() >= 2){
+  //   for(auto& stateTrajectory : targetTrajectories.stateTrajectory){
+  //     stateTrajectory(8) = zReference;
+  //     stateTrajectory(10) = 0.7*terrainZyx[1]; //pitch
+  //     stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
+  //   }
+  //   // std::cout << "desired pitch: " << targetTrajectories.stateTrajectory[1](10) << "\t desired roll: " << targetTrajectories.stateTrajectory[1](11) << std::endl;
+  // }
   
   //Default Heuristic Footholds
   const auto& bodyPose = initState.segment<6>(6);
@@ -214,7 +214,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
       (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
       feetTargeEEPositions[leg].clear();
       feetTargeEEPositions[leg].push_back(footHold);
-      std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << " normal: " << hipNominalPoints[leg].transpose() << "\n";
+      // std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << " normal: " << hipNominalPoints[leg].transpose() << "\n";
       
       footHold = hipNominalPoints[leg] + 0.1 * (currentVelocity - commandedVelocity) + 0.4*commandedVelocity;
       feetTargeEEPositions[leg].push_back(footHold);
@@ -233,12 +233,24 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   footPlacementPlannerPtr_->setTargetSwingHeight(*mpcSwingHeightPtr_);
   footPlacementPlannerPtr_->setTargetSwingMiddleTime(*mpcSwingMiddleTimePtr_);
   footPlacementPlannerPtr_->update(tempModeSchedule_, targetTrajectories, initTime, initState);
-
+  if(swingConfig.useFootholdsAdjuestTrajectory) {
+    footPlacementPlannerPtr_->setMpcTrajectoryAccordingToFootPlacement(initTime, modeSchedule, targetTrajectories, swingConfig.comHeight);
+  }
+  else {
+    // if(targetTrajectories.timeTrajectory.size() >= 2) {
+    // for(auto& stateTrajectory : targetTrajectories.stateTrajectory) {
+    //   stateTrajectory(8) = zReference;
+    //   stateTrajectory(10) = 0.7*terrainZyx[1]; //pitch
+    //   stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
+    // }
+    // // std::cout << "desired pitch: " << targetTrajectories.stateTrajectory[1](10) << "\t desired roll: " << targetTrajectories.stateTrajectory[1](11) << std::endl;
+    // }
+  }
   // Swing Trajectory Planner
   swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
       footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
 
-  std::cout << "modifyReferences Done!" << "\n";
+  // std::cout << "modifyReferences Done!" << "\n";
 }
 
 }  // namespace legged_robot

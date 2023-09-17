@@ -103,10 +103,13 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
   if(useIKresult_){
     // leggedIKSolverPtr_->setBodyState(xNominal.segment<6>(6));
     for (size_t i = 0; i < 4; i++) {
-      if(contactFlags[i] == 1)
+      // if(contactFlags[i] == 1) {
+      if(0) {
+
         referenceQj[i] = xNominal.segment<3>(12+3*i);
+      }
       else{
-        referenceQj[i] = leggedIKSolverPtr_->solveIK(xNominal.segment<6>(6), getEEReference[i], i);
+        referenceQj[i] = leggedIKSolverPtr_->solveIK(xNominal.segment<6>(6), getEEReference[i].head(3), i);
         if(referenceQj[i].hasNaN()){
           referenceQj[i] = xNominal.segment<3>(12+3*i);
           std::cerr << "######### IK solver Failed #########\n";
@@ -117,8 +120,9 @@ std::pair<vector_t, vector_t> LeggedRobotStateInputQuadraticCost::getStateInputD
     Eigen::Matrix<scalar_t, 12, 1> qj; //[LF, LH, RF, RH] 
 
     qj << referenceQj[0], referenceQj[2], referenceQj[1], referenceQj[3];
+    // std::cout << "||" << getEEReference[0].transpose() << "||" << getEEReference[2].transpose() << "||" << getEEReference[1].transpose() << "||" << getEEReference[3].transpose() << "\n";
     xNominal.tail(12) = qj;
-    // std::cout << "IK result: " << qj.transpose() << "\n";
+    std::cout << "IK result: " << qj.transpose() << "\n";
   }
   // std::cout << "qj: " << qj.transpose() << "\n";
 

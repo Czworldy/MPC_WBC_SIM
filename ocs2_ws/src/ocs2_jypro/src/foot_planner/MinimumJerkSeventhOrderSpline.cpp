@@ -81,7 +81,7 @@ vector_t MinimumJerkSeventhOrderSplineSolver::solveCoffectient(Node liftOff, sca
     }
     else{
       qp_.getPrimalSolution(primalSolution.data());
-      std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
+      // std::cout << "primalSolution: " << primalSolution.transpose() << "\n";
     }
 
     return primalSolution;

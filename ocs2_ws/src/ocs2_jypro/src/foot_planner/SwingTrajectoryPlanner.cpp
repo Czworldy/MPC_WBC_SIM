@@ -631,7 +631,7 @@ void SwingTrajectoryPlanner::updateUsingMultiHeightAndSwingMiddleTime(const Mode
 
   for (size_t j = 0; j < numFeet_; j++) {
     // if (eesContactFlagStocks[j][initIndex] || true){
-    if (eesContactFlagStocks[j][initIndex]){
+    if (eesContactFlagStocks[j][initIndex]){ 
     // feetHeightTrajectories_[j].clear();
     // feetHeightTrajectories_[j].reserve(modeSequence.size());
 
@@ -929,6 +929,7 @@ SwingTrajectoryPlanner::Config loadSwingTrajectorySettings(const std::string& fi
   loadData::loadPtreeValue(pt, config.defaultFootYposition, prefix + "defaultFootYposition", verbose);
 
   loadData::loadPtreeValue(pt, config.useDefaultHeuristicFootholds, prefix + "useDefaultHeuristicFootholds", verbose);
+  loadData::loadPtreeValue(pt, config.useFootholdsAdjuestTrajectory, prefix + "useFootholdsAdjuestTrajectory", verbose);
   loadData::loadPtreeValue(pt, config.comHeight, prefix + "comHeight", verbose);
 
   if (verbose) {

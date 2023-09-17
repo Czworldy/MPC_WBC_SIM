@@ -80,6 +80,7 @@ class LeggedController : public controller_interface::MultiInterfaceController<H
   // std::shared_ptr<LeggedSelfCollisionVisualization> selfCollisionVisualization_;
   ros::Publisher observationPublisher_, policyPublisher_;
   ros::Publisher lf_foot_pub_, lh_foot_pub_, rf_foot_pub_, rh_foot_pub_;
+  ros::Publisher robot_state_pub_;
 
  private:
   std::thread mpcThread_;

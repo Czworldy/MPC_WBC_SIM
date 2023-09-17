@@ -54,6 +54,7 @@ class SwingTrajectoryPlanner {
     scalar_t defaultFootYposition = 0.18;
 
     bool useDefaultHeuristicFootholds = false;
+    bool useFootholdsAdjuestTrajectory = false;
     scalar_t comHeight = 0.436;
   };
 
