@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot name="X20" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:property name="motor_damp" value="1.2"/>
-  <xacro:property name="motor_fric" value="0.1"/>
+  <xacro:property name="motor_damp" value="1.2" />
+  <xacro:property name="motor_fric" value="0.1" />
 
   <!-- <link name="origin_link">
     </link>
@@ -21,7 +21,8 @@
         rpy="0 0 0" />
       <mass
         value="26.398" />
-      <inertia ixx="0.1632" ixy="-5.2136E-05" ixz="-0.00019406" iyy="0.40648" iyz="8.2679E-05" izz="0.52596" />
+      <inertia ixx="0.1632" ixy="-5.2136E-05" ixz="-0.00019406" iyy="0.40648" iyz="8.2679E-05"
+        izz="0.52596" />
     </inertial>
     <visual>
       <geometry>
@@ -44,28 +45,28 @@
 
   <link name="imu_link">
     <inertial>
-      <mass value="0.0000001"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.0000000001" ixy="0" ixz="0" iyy="0.00000000001" iyz="0" izz="0.000000001"/>
+      <mass value="0.0000001" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <inertia ixx="0.0000000001" ixy="0" ixz="0" iyy="0.00000000001" iyz="0" izz="0.000000001" />
     </inertial>
-  <visual>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <geometry>
-      <box size="0.001 0.001 0.001"/>
-    </geometry>
-  </visual>
-  <collision>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <geometry>
-      <box size=".001 .001 .001"/>
-    </geometry>
-  </collision>
- </link>
- <joint name="imu_joint" type="fixed">
-    <axis xyz="0 0 0"/> 
-    <origin xyz="0 0 0"/>
-    <parent link="BASE"/>
-    <child link="imu_link"/>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size=".001 .001 .001" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="0 0 0" />
+    <parent link="BASE" />
+    <child link="imu_link" />
   </joint>
 
   <!-- <link name="velodyne">
@@ -88,20 +89,20 @@
   </collision>
  </link>
  <joint name="velodyne_joint" type="fixed">
-    <axis xyz="0 0 0"/> 
+    <axis xyz="0 0 0"/>
     <origin xyz="0.4 0 0.2"/>
     <parent link="BASE"/>
     <child link="velodyne"/>
   </joint> -->
 
- <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
-  <xacro:HDL-32E parent="BASE" name="lidar_link" topic="/point_cloud2"  hz="10" samples="220" >
+  <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro" />
+  <xacro:HDL-32E parent="BASE" name="lidar_link" topic="/point_cloud2" hz="10" samples="220">
 
-    <origin xyz="0.7 0 0.4" rpy="0 1 0" />
-
+    <origin xyz="0.5 0 0.6" rpy="0 0.4 0" />
+    <!-- <origin xyz="0.7 0 0.4" rpy="0 1 0" /> -->
   </xacro:HDL-32E>
-  
-    <!-- <link name="camerlink">
+
+  <!-- <link name="camerlink">
     <inertial>
       <mass value="0.0000001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -134,7 +135,8 @@
     <inertial>
       <origin xyz="-0.00075689 -0.0089129 -5.0528E-05" />
       <mass value="1.5767" />
-      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="2.8652E-06" iyy="0.0016912" iyz="3.7E-06" izz="0.0013431" />
+      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="2.8652E-06" iyy="0.0016912" iyz="3.7E-06"
+        izz="0.0013431" />
     </inertial>
     <visual>
       <geometry>
@@ -157,7 +159,7 @@
       lower="-0.38397"
       upper="0.38397"
       effort="126.1"
-      velocity="12"  />
+      velocity="12" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -167,7 +169,8 @@
     <inertial>
       <origin xyz="-0.0025264 -0.022118 -0.0292" />
       <mass value="3.0063" />
-      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0437E-06" iyy="0.0080686" iyz="-6.889E-05" izz="0.003874" />
+      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0437E-06" iyy="0.0080686" iyz="-6.889E-05"
+        izz="0.003874" />
     </inertial>
     <visual>
       <geometry>
@@ -190,7 +193,7 @@
       lower="-2.75762"
       upper="0.48869"
       effort="111.4"
-      velocity="19"/>
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -223,7 +226,7 @@
       lower="0.66322"
       upper="2.84488"
       effort="195.8"
-      velocity="19"  />
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -256,7 +259,7 @@
       lower="-0.38397"
       upper="0.38397"
       effort="126.1"
-      velocity="12"  />
+      velocity="12" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -266,7 +269,8 @@
     <inertial>
       <origin xyz="-0.0025264 -0.022118 -0.0292" />
       <mass value="3.0063" />
-      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0433E-06" iyy="0.008" iyz="-6.8889E-05" izz="0.003874" />
+      <inertia ixx="0.0058102" ixy="4.2848E-05" ixz="-3.0433E-06" iyy="0.008" iyz="-6.8889E-05"
+        izz="0.003874" />
     </inertial>
     <visual>
       <geometry>
@@ -289,7 +293,7 @@
       lower="-2.75762"
       upper="0.48869"
       effort="111.4"
-      velocity="19"/>
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -322,7 +326,7 @@
       lower="0.66322"
       upper="2.84488"
       effort="195.8"
-      velocity="19"  />
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -332,7 +336,8 @@
     <inertial>
       <origin xyz="-0.000757 0.009 5.0528E-05" />
       <mass value="1.5767" />
-      <inertia ixx="0.0012141" ixy="-6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="3.7E-06" izz="0.0013431" />
+      <inertia ixx="0.0012141" ixy="-6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="3.7E-06"
+        izz="0.0013431" />
     </inertial>
     <visual>
       <geometry>
@@ -355,7 +360,7 @@
       lower="-0.38397"
       upper="0.38397"
       effort="126.1"
-      velocity="12"  />
+      velocity="12" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -365,7 +370,8 @@
     <inertial>
       <origin xyz="-0.0025266 0.022119 -0.029194" />
       <mass value="3.0062" />
-      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0682E-06" iyy="0.0080684" iyz="6.8812E-05" izz="0.0038739" />
+      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0682E-06" iyy="0.0080684" iyz="6.8812E-05"
+        izz="0.0038739" />
     </inertial>
     <visual>
       <geometry>
@@ -388,7 +394,7 @@
       lower="-2.75762"
       upper="0.48869"
       effort="111.4"
-      velocity="19"/>
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -421,7 +427,7 @@
       lower="0.66322"
       upper="2.84488"
       effort="195.8"
-      velocity="19"  />
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -431,7 +437,8 @@
     <inertial>
       <origin xyz="0.00075689 0.0089129 -5.0528E-05" />
       <mass value="1.5767" />
-      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="-3.7E-06" izz="0.0013431" />
+      <inertia ixx="0.0012141" ixy="6.1989E-06" ixz="-2.8652E-06" iyy="0.0016912" iyz="-3.7E-06"
+        izz="0.0013431" />
     </inertial>
     <visual>
       <geometry>
@@ -454,7 +461,7 @@
       lower="-0.38397"
       upper="0.38397"
       effort="126.1"
-      velocity="12"  />
+      velocity="12" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -464,7 +471,8 @@
     <inertial>
       <origin xyz="-0.0025266 0.022119 -0.029194" />
       <mass value="3.0062" />
-      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0681E-06" iyy="0.0080684" iyz="6.8812E-05" izz="0.0038739" />
+      <inertia ixx="0.00581" ixy="-4.2781E-05" ixz="-3.0681E-06" iyy="0.0080684" iyz="6.8812E-05"
+        izz="0.0038739" />
     </inertial>
     <visual>
       <geometry>
@@ -487,7 +495,7 @@
       lower="-2.75762"
       upper="0.48869"
       effort="111.4"
-      velocity="19"/>
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
@@ -497,7 +505,8 @@
     <inertial>
       <origin xyz="0.0075224 2.589E-05 -0.17586" />
       <mass value="0.54849" />
-      <inertia ixx="0.0056981" ixy="1.1608E-07" ixz="0.00015292" iyy="0.0059026" iyz="-1.1243E-06" izz="0.00028822" />
+      <inertia ixx="0.0056981" ixy="1.1608E-07" ixz="0.00015292" iyy="0.0059026" iyz="-1.1243E-06"
+        izz="0.00028822" />
     </inertial>
     <visual>
       <geometry>
@@ -520,82 +529,81 @@
       lower="0.66322"
       upper="2.84488"
       effort="195.8"
-      velocity="19"  />
+      velocity="19" />
     <dynamics
       damping="${motor_damp}"
       friction="${motor_fric}" />
   </joint>
 
-  <joint name = "LF_FOOT_joint" type = "fixed">
-    <origin xyz="0 0 -0.33" rpy = "0 0 0"/>
-    <parent link="LF_SHANK"/>
-    <child link = "LF_FOOT"/>
+  <joint name="LF_FOOT_joint" type="fixed">
+    <origin xyz="0 0 -0.33" rpy="0 0 0" />
+    <parent link="LF_SHANK" />
+    <child link="LF_FOOT" />
   </joint>
 
-  <joint name = "LH_FOOT_joint" type = "fixed">
-    <origin xyz="0 0 -0.33" rpy = "0 0 0"/>
-    <parent link="LH_SHANK"/>
-    <child link = "LH_FOOT"/>
+  <joint name="LH_FOOT_joint" type="fixed">
+    <origin xyz="0 0 -0.33" rpy="0 0 0" />
+    <parent link="LH_SHANK" />
+    <child link="LH_FOOT" />
   </joint>
 
-  <joint name = "RF_FOOT_joint" type = "fixed">
-    <origin xyz="0 0 -0.33" rpy = "0 0 0"/>
-    <parent link="RF_SHANK"/>
-    <child link = "RF_FOOT"/>
+  <joint name="RF_FOOT_joint" type="fixed">
+    <origin xyz="0 0 -0.33" rpy="0 0 0" />
+    <parent link="RF_SHANK" />
+    <child link="RF_FOOT" />
   </joint>
 
-  <joint name = "RH_FOOT_joint" type = "fixed">
-    <origin xyz="0 0 -0.33" rpy = "0 0 0"/>
-    <parent link="RH_SHANK"/>
-    <child link = "RH_FOOT"/>
+  <joint name="RH_FOOT_joint" type="fixed">
+    <origin xyz="0 0 -0.33" rpy="0 0 0" />
+    <parent link="RH_SHANK" />
+    <child link="RH_FOOT" />
   </joint>
-  
-  <xacro:property name="foot_mass" value="0.001"/>
-  <xacro:property name="foot_radius" value="0.036"/>
+
+  <xacro:property name="foot_mass" value="0.001" />
+  <xacro:property name="foot_radius" value="0.036" />
   <xacro:macro name="setup_foot" params="link_name">
     <link name="${link_name}">
-        <visual>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
-            <geometry>
-                <sphere radius="${foot_radius-0.01}"/>
-            </geometry>
-            <material name="orange"/>
-        </visual>
-        <collision>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
-            <geometry>
-                <sphere radius="${foot_radius}"/>
-            </geometry>
-        </collision>
-        <inertial>
-            <mass value="${foot_mass}"/>
-            <inertia
-                    ixx="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}" ixy="0.0" ixz="0.0"
-                    iyy="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}" iyz="0.0"
-                    izz="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}"/>
-        </inertial>
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+          <sphere radius="${foot_radius-0.01}" />
+        </geometry>
+        <material name="orange" />
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+          <sphere radius="${foot_radius}" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${foot_mass}" />
+        <inertia
+          ixx="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}" ixy="0.0" ixz="0.0"
+          iyy="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}" iyz="0.0"
+          izz="${(2*foot_mass)/5.0*(foot_radius*foot_radius)}" />
+      </inertial>
     </link>
     <gazebo reference="${link_name}_joint">
       <disableFixedJointLumping>true</disableFixedJointLumping>
     </gazebo>
     <gazebo reference="${link_name}">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
-        <self_collide>1</self_collide>
-        <material>Gazebo/DarkGrey</material>
-        <kp value="1000000.0"/>
-        <kd value="100.0"/>
+      <mu1>0.8</mu1>
+      <mu2>0.8</mu2>
+      <self_collide>1</self_collide>
+      <material>Gazebo/DarkGrey</material>
+      <kp value="1000000.0" />
+      <kd value="100.0" />
     </gazebo>
   </xacro:macro>
-  
-  <xacro:setup_foot link_name="LF_FOOT"/>
-  <xacro:setup_foot link_name="LH_FOOT"/>
-  <xacro:setup_foot link_name="RF_FOOT"/>
-  <xacro:setup_foot link_name="RH_FOOT"/>
+
+  <xacro:setup_foot link_name="LF_FOOT" />
+  <xacro:setup_foot link_name="LH_FOOT" />
+  <xacro:setup_foot link_name="RF_FOOT" />
+  <xacro:setup_foot link_name="RH_FOOT" />
 
 
-
-    <!-- ros_control plugin -->
+  <!-- ros_control plugin -->
   <gazebo reference="BASE">
     <material>Gazebo/Blue</material>
   </gazebo>
@@ -631,7 +639,7 @@
   <gazebo reference="LF_THIGH">
     <material>Gazebo/Green</material>
   </gazebo>
-  
+
   <!-- <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>/X20</robotNamespace>
@@ -661,7 +669,7 @@
   </gazebo> -->
 
 
-<!-- <gazebo reference="camerlink">
+  <!-- <gazebo reference="camerlink">
     <sensor type="camera" name="camernode">
       <update_rate>15.0</update_rate>
       <camera name="head">
@@ -766,15 +774,15 @@
       <mu2>0.6</mu2>
       <self_collide>1</self_collide>
       <material>Gazebo/DarkGrey</material>
-      <kp value="1000000.0"/>
-      <kd value="100.0"/>
+      <kp value="1000000.0" />
+      <kd value="100.0" />
     </gazebo>
   </xacro:macro>
-  <xacro:link_setup_block link_name="LF_SHANK"/>  
-  <xacro:link_setup_block link_name="LH_SHANK"/>
-  <xacro:link_setup_block link_name="RF_SHANK"/>
-  <xacro:link_setup_block link_name="RH_SHANK"/>
-  
+  <xacro:link_setup_block link_name="LF_SHANK" />
+  <xacro:link_setup_block link_name="LH_SHANK" />
+  <xacro:link_setup_block link_name="RF_SHANK" />
+  <xacro:link_setup_block link_name="RH_SHANK" />
+
   <xacro:macro name="link_setup_block_hip" params="link_name">
     <gazebo reference="${link_name}">
       <mu1>0.2</mu1>
@@ -788,17 +796,17 @@
       <mu2>0.2</mu2>
       <self_collide>0</self_collide>
       <material>Gazebo/DarkGrey</material>
-      <kp value="1000000.0"/>
-      <kd value="100.0"/>
+      <kp value="1000000.0" />
+      <kd value="100.0" />
     </gazebo>
   </xacro:macro>
-  <xacro:link_setup_block_hip link_name="LF_HIP"/>
-  <xacro:link_setup_block_thight link_name="LF_THIGH"/>
-  <xacro:link_setup_block_hip link_name="RF_HIP"/>
-  <xacro:link_setup_block_thight link_name="RF_THIGH"/>
-  <xacro:link_setup_block_hip link_name="LH_HIP"/>
-  <xacro:link_setup_block_thight link_name="LH_THIGH"/>
-  <xacro:link_setup_block_hip link_name="RH_HIP"/>
-  <xacro:link_setup_block_thight link_name="RH_THIGH"/>
+  <xacro:link_setup_block_hip link_name="LF_HIP" />
+  <xacro:link_setup_block_thight link_name="LF_THIGH" />
+  <xacro:link_setup_block_hip link_name="RF_HIP" />
+  <xacro:link_setup_block_thight link_name="RF_THIGH" />
+  <xacro:link_setup_block_hip link_name="LH_HIP" />
+  <xacro:link_setup_block_thight link_name="LH_THIGH" />
+  <xacro:link_setup_block_hip link_name="RH_HIP" />
+  <xacro:link_setup_block_thight link_name="RH_THIGH" />
 
 </robot>

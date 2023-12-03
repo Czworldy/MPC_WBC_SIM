@@ -39,7 +39,7 @@ WBC中RBDL为四元数表达；
     source devel/setup.sh
     roslaunch pronto_x20 pronto_x20.launch #用于提供接触状态
 
-    5.cd ocs2_ws/
+    5.cd ocs2_ws/roslaunch legged_controllers load_controller.launch
     source devel/setup.sh
     rosrun ocs2_jypro legged_robot_target_traj #开启轨迹接口
 
