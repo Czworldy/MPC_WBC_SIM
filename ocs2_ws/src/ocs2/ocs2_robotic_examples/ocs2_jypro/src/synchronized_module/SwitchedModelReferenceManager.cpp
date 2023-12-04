@@ -234,10 +234,6 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   }
     // std::cout << targetTrajectories;
 
-
-
-
-
   LeggedIKSolverPtr_->setBodyState(initState.segment<6>(6));
   const auto& _O_B_tfMatrix =  LeggedIKSolverPtr_->getBodyTfMatrix();
   feet_array_t<vector3_t> hipNominalPoints;
@@ -282,7 +278,7 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     // std::cout << "leg: " << leg << "\t" << feetEETouchDownPositions_[leg].transpose() << "\t";
   }
   // std::cout << "\n";
-  if(0){
+  if(1){
     for(int leg = 0; leg < 4; leg++ ){
       vector3_t footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.2*commandedVelocity;
       (*mpcNominalFeetholdsPtr_)[leg].clear();
@@ -290,17 +286,12 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
       (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
       feetTargeEEPositions[leg].clear();
       feetTargeEEPositions[leg].push_back(footHold);
-      // std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
 
       footHold = hipNominalPoints[leg] + 0.21 * (currentVelocity - commandedVelocity) + 0.4*commandedVelocity;
       feetTargeEEPositions[leg].push_back(footHold);
       (*mpcNominalFeetholdsPtr_)[leg].push_back(footHold);
 
-
-      // std::cout << "leg: " << leg << " footHold: " << footHold.transpose() << std::endl;
     }
-    // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); //这种情况下target需要有两个点
-
   }
   // else{
   //   swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetCurrentEEPositions); // 默认的情况下不用这个函数？
@@ -313,8 +304,9 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions,
   //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence(), isLateTouchdown_); // 默认的情况下不用这个函数？
   // std::cout << "swingTrajectoryPtr_ update start!" << "\n";
-  swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
-      footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
+  // swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,
+  //     footPlacementPlannerPtr_->getSwingHeightSequence(), footPlacementPlannerPtr_->getSwingMiddleTimeSequence()); 
+  swingTrajectoryPtr_->update(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_, false);
   // swingTrajectoryPtr_->update(modeSchedule, feetCurrentEEPositions, initTime, feetTargeEEPositions); 
   // swingTrajectoryPtr_->update(modeSchedule, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions, isLateTouchdown_);
 
