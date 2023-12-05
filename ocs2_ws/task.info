@@ -201,9 +201,9 @@ Q
   (5,5)   30.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;'
-  (6,6)   300.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
-  (7,7)   300.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
-  (8,8)   100.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
+  (6,6)   1000.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
+  (7,7)   200.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
+  (8,8)   200.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
   (9,9)   100.0    ; theta_base_z
   (10,10) 100.0    ; theta_base_y
   (11,11) 100.0    ; theta_base_x
@@ -269,7 +269,7 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.0001
+  mu                     0.01
   delta                  0.07
 }
 

@@ -12,9 +12,12 @@
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/stair_pipe4_swing.world"/> -->
         <!-- niuqu test  -->
-        <arg name="world_name" value="$(find legged_gazebo)/worlds/slope_1.world" />
-        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_6.world"/> -->
-        <!-- <arg name="pause" value="true"/> -->
+
+        <!-- TESTME: -->
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/uneven/dersert.world" /> -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/uneven/uneven.world" />
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/uneven/xueshan.world" /> -->
+
     </include>
     <!-- push robot_description to factory and spawn robot in gazebo -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
