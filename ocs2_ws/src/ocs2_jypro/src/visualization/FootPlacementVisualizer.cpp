@@ -1,5 +1,7 @@
 #include "ocs2_jypro/visualization/FootPlacementVisualizer.h"
 
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
+
 namespace ocs2 {
 namespace legged_robot {
 
@@ -18,13 +20,21 @@ void FootPlacementVisualizer::preSolverRun(scalar_t initTime, scalar_t finalTime
   feet_array_t<std::vector<geometry_msgs::Point>> feetMsgs;
   // std::for_each(feetMsgs.begin(), feetMsgs.end(), [&](std::vector<geometry_msgs::Point>& v) { v.reserve(mpcStateTrajectory.size()); });
 
+  // Add transform to base frame
+  matrix_t tfMatrix = matrix_t::Identity(4,4);
+  const vector3_t ZyxEulerAngles = initState.tail(3);
+  const matrix3_t rotationMatrix = getRotationMatrixFromZyxEulerAngles(ZyxEulerAngles);
+  tfMatrix.topLeftCorner(3, 3) = rotationMatrix;
+  tfMatrix.topRightCorner(3,1) = initState.head(3);
+
   for (int i = 0; i < 4; i++){
     for(scalar_t time = initTime; time < finalTime; time += 0.01){
       vector3_t position;
       position << swingTrajectoryPlannerPtr_->getXpositionConstraint(i, time),
                   swingTrajectoryPlannerPtr_->getYpositionConstraint(i, time),
                   swingTrajectoryPlannerPtr_->getZpositionConstraint(i, time);
-      const auto point = getPointMsg(position);
+      const auto& transformedNominalPoint = tfMatrix * position.homogeneous();
+      const auto point = getPointMsg(transformedNominalPoint.head(3));
       feetMsgs[i].push_back(point);
     }
     auto line = getLineMsg(std::move(feetMsgs[i]), feetColorMap_[i], trajectoryLineWidth_);

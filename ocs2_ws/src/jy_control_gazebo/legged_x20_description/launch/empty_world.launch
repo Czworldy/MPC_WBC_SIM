@@ -12,7 +12,10 @@
         <!-- niuqu test  -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_22_shousuo.world"/>  -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_11_hard_gaodi.world"/>  -->
-        <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_gaodi_nostair.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_gaodi_nostair.world"/>  -->
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_for_zhongqi.world"/>  -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/pipe_for_zhongqi.world"/> 
+        <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/warehouse.world"/>  -->
         <!-- <arg name="world_name" value="$(find legged_gazebo)/worlds/mhz_19_wainiu_1.world"/>  -->
         
         

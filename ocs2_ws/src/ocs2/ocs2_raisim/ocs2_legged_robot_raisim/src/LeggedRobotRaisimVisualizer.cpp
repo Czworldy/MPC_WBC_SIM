@@ -53,6 +53,7 @@ void LeggedRobotRaisimVisualizer::update(const SystemObservation& observation, c
   // height relative to terrain
   if (terrainPtr_ != nullptr) {
     raisimObservation.state(8) += terrainPtr_->getHeight(observation.state(6), observation.state(7));
+    std::cout << "terrain height: " << terrainPtr_->getHeight(observation.state(6), observation.state(7)) << std::endl;
     for (size_t i = 0; i < primalSolution.stateTrajectory_.size(); i++) {
       raisimPrimalSolution.stateTrajectory_[i](8) +=
           terrainPtr_->getHeight(primalSolution.stateTrajectory_[i](6), primalSolution.stateTrajectory_[i](7));

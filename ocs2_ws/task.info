@@ -1,7 +1,7 @@
-centroidalModelType             0     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      false
+centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
+useFeetPlacementConstraint      true
 useIKresult                     false
-useEndEffectorTrackingCost      false
+useEndEffectorTrackingCost      true
 
 legged_robot_interface
 {
@@ -16,8 +16,8 @@ model_settings
   phaseTransitionStanceTime     0.4
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       false
-  modelFolderCppAd              /tmp/cppad/x20/CD
+  recompileLibrariesCppAd       true
+  modelFolderCppAd              /tmp/cppad/x20/SRBD
 }
 
 swing_trajectory_config
@@ -30,7 +30,7 @@ swing_trajectory_config
 
   defaultFootXposition            0.291
   defaultFootYposition            0.20325
-  useDefaultHeuristicFootholds    true
+  useDefaultHeuristicFootholds    false
   useFootholdsAdjuestTrajectory   false
 
   comHeight                       0.45
@@ -65,7 +65,7 @@ defaultModeSequenceTemplate
 ; multiple_shooting settings
 multiple_shooting
 {
-  nThreads                              1
+  nThreads                              3
   dt                                    0.015
   sqpIteration                          1
   deltaTol                              1e-4
@@ -77,7 +77,7 @@ multiple_shooting
   printSolverStatistics                 true
   printSolverStatus                     false
   printLinesearch                       false
-  useFeedbackPolicy                     false
+  useFeedbackPolicy                     true
   integratorType                        RK2
   threadPriority                        10
 }
@@ -197,26 +197,26 @@ Q
   (5,5)   30.0     ; L_z / robotMass
 
   ;; Base Pose: [position, orientation] ;;
-  (6,6)   300.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
-  (7,7)   300.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
+  (6,6)   100.0    ; p_base_x                         reduce to 250.0 for foot placement constraints.
+  (7,7)   100.0    ; p_base_y                         reduce to 250.0 for foot placement constraints.
   (8,8)   100.0    ; p_base_z                         reduce to 250.0 for foot placement constraints.
   (9,9)   100.0    ; theta_base_z
-  (10,10) 100.0    ; theta_base_y
-  (11,11) 100.0    ; theta_base_x
+  (10,10) 300.0    ; theta_base_y
+  (11,11) 300.0    ; theta_base_x
 
   ;; Leg Joint Positions: [LF, LH, RF, RH] ;; 不能太低
-  (12,12) 10.0     ; LF_HAA
-  (13,13) 10.0     ; LF_HFE
-  (14,14) 10.0     ; LF_KFE
-  (15,15) 10.0     ; LH_HAA
-  (16,16) 10.0     ; LH_HFE
-  (17,17) 10.0     ; LH_KFE
-  (18,18) 10.0     ; RF_HAA
-  (19,19) 10.0     ; RF_HFE
-  (20,20) 10.0     ; RF_KFE
-  (21,21) 10.0     ; RH_HAA
-  (22,22) 10.0     ; RH_HFE
-  (23,23) 10.0     ; RH_KFE
+  (12,12) 3.0     ; LF_HAA
+  (13,13) 3.0     ; LF_HFE
+  (14,14) 3.0     ; LF_KFE
+  (15,15) 3.0     ; LH_HAA
+  (16,16) 3.0     ; LH_HFE
+  (17,17) 3.0     ; LH_KFE
+  (18,18) 3.0     ; RF_HAA
+  (19,19) 3.0     ; RF_HFE
+  (20,20) 3.0     ; RF_KFE
+  (21,21) 3.0     ; RH_HAA
+  (22,22) 3.0     ; RH_HFE
+  (23,23) 3.0     ; RH_KFE
 }
 
 ; control weight matrix
@@ -265,8 +265,8 @@ frictionConeSoftConstraint
 footPlancementSoftConstraint
 {
   ; relaxed log barrier parameters
-  mu                     0.01
-  delta                  0.1
+  mu                     0.03
+  delta                  0.05
 }
 
 Qee

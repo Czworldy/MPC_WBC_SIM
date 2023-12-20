@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         ocs2_wbc
         ocs2_msgs
         pronto_msgs
-        ocs2_legged_robot_raisim)
+        ocs2_raisim_ros)
 find_package(PCL 1.1 REQUIRED)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -31,7 +31,7 @@ catkin_package(
         roscpp
         ocs2_wbc
         ocs2_msgs
-        ocs2_legged_robot_raisim
+        ocs2_raisim_ros
 
 )
 
@@ -55,6 +55,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}
         src/SingleWbcRos.cpp
+        src/LeggedRobotRaisimConversions.cpp
         )
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}

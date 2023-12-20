@@ -237,14 +237,14 @@ void SwitchedModelReferenceManager::modifyReferences(scalar_t initTime, scalar_t
     footPlacementPlannerPtr_->setMpcTrajectoryAccordingToFootPlacement(initTime, modeSchedule, targetTrajectories, swingConfig.comHeight);
   }
   else {
-    // if(targetTrajectories.timeTrajectory.size() >= 2) {
-    // for(auto& stateTrajectory : targetTrajectories.stateTrajectory) {
-    //   stateTrajectory(8) = zReference;
-    //   stateTrajectory(10) = 0.7*terrainZyx[1]; //pitch
-    //   stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
-    // }
-    // // std::cout << "desired pitch: " << targetTrajectories.stateTrajectory[1](10) << "\t desired roll: " << targetTrajectories.stateTrajectory[1](11) << std::endl;
-    // }
+    if(targetTrajectories.timeTrajectory.size() >= 2) {
+    for(auto& stateTrajectory : targetTrajectories.stateTrajectory) {
+      stateTrajectory(8) = zReference;
+      stateTrajectory(10) = 0.7*terrainZyx[1]; //pitch
+      stateTrajectory(11) = 0.1*terrainZyx[2]; //roll
+    }
+    // std::cout << "desired pitch: " << targetTrajectories.stateTrajectory[1](10) << "\t desired roll: " << targetTrajectories.stateTrajectory[1](11) << std::endl;
+    }
   }
   // Swing Trajectory Planner
   swingTrajectoryPtr_->updateUsingMultiHeightAndSwingMiddleTime(tempModeSchedule_, footPlacementPlannerPtr_->getfeetPlacement(), initTime, feetEETouchDownPositions_,

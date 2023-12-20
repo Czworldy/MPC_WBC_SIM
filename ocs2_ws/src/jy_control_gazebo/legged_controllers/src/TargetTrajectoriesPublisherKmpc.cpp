@@ -99,7 +99,8 @@ TargetTrajectories gbplToTargetTrajectories(const quad_msgs::RobotPlan::ConstPtr
   std::cout << "rosTimenow.toSec(): " << ros::Time::now().toSec() << std::endl;
 
   scalar_t currentTime = observation.time;
-  scalar_t currentRosTime = msg->states[0].header.stamp.toSec();
+  // scalar_t currentRosTime = msg->states[0].header.stamp.toSec();
+  scalar_t currentRosTime = ros::Time::now().toSec();
   
   for(size_t i = 0; i < msg->plan_indices.size(); i++) {
     

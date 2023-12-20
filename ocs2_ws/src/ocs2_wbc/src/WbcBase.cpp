@@ -18,6 +18,7 @@
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_centroidal_model/ModelHelperFunctions.h>
 
+#include <ocs2_jypro/gait/MotionPhaseDefinition.h>
 
 namespace ocs2{
 namespace wbc{
@@ -108,7 +109,7 @@ void WbcBase::modifyWbcParameters() {
 
 vector_t WbcBase::update(const ocs2::vector_t &stateDesired, const ocs2::vector_t &inputDesired,
                          const ocs2::vector_t &rbdStateMeasured, size_t mode, ocs2::scalar_t period, scalar_t time) {
-    contactFlag_ = modeNumber2StanceLeg(mode);
+    contactFlag_ = ocs2::legged_robot::modeNumber2StanceLeg(mode);
     numContacts_ = 0;
     for (bool flag : contactFlag_) {
         if (flag) {

@@ -52,8 +52,14 @@ RaisimRollout::RaisimRollout(std::string urdfFile, std::string resourcePath,
       dataExtractionCallback_(std::move(dataExtractionCallback)),
       inputToRaisimPdTargets_(std::move(inputToRaisimPdTargets)) {
   world_.setTimeStep(this->settings().timeStep);
+  std::cout << "[RaisimRollout] World time step is set to " << this->settings().timeStep << std::endl;
 
   system_ = world_.addArticulatedSystem(urdfFile_, resourcePath_, raisimRolloutSettings_.orderedJointNames_);
+  system_->getCollisionBody("LF_SHANK/0").setMaterial("rubber");
+  system_->getCollisionBody("LH_SHANK/0").setMaterial("rubber");
+  system_->getCollisionBody("RF_SHANK/0").setMaterial("rubber");
+  system_->getCollisionBody("RH_SHANK/0").setMaterial("rubber");
+  world_.setMaterialPairProp("steel", "rubber", 0.95, 0.15, 0.001);
   system_->setControlMode(raisimRolloutSettings_.controlMode_);
   if (raisimRolloutSettings_.controlMode_ != raisim::ControlMode::FORCE_AND_TORQUE) {
     system_->setPdGains(raisimRolloutSettings_.pGains_, raisimRolloutSettings_.dGains_);
@@ -180,13 +186,22 @@ void RaisimRollout::setTerrain(const raisim::HeightMap& heightMap) {
   heightMap_ = world_.addHeightMap(&heightMap);
 }
 
+// /******************************************************************************************************/
+// /******************************************************************************************************/
+// /******************************************************************************************************/
+// void RaisimRollout::setTerrain(const std::string& pngFileName, double centerX, double centerY, double xSize, double ySize,
+//                                double heightScale, double heightOffset) {
+//   deleteGroundPlane();
+//   heightMap_ = world_.addHeightMap(pngFileName, centerX, centerY, xSize, ySize, heightScale, heightOffset);
+// }
+
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
 void RaisimRollout::setTerrain(const std::string& pngFileName, double centerX, double centerY, double xSize, double ySize,
-                               double heightScale, double heightOffset) {
+                               double heightScale, double heightOffset, const std::string &material) {
   deleteGroundPlane();
-  heightMap_ = world_.addHeightMap(pngFileName, centerX, centerY, xSize, ySize, heightScale, heightOffset);
+  heightMap_ = world_.addHeightMap(pngFileName, centerX, centerY, xSize, ySize, heightScale, heightOffset, material);
 }
 
 /******************************************************************************************************/

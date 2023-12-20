@@ -9,6 +9,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   ocs2_legged_robot_ros
   ocs2_raisim_core
   ocs2_raisim_ros
+  ocs2_wbc_ros
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -64,6 +65,34 @@ target_link_libraries(legged_robot_raisim_dummy
   ${catkin_LIBRARIES}
 )
 target_compile_options(legged_robot_raisim_dummy PRIVATE ${OCS2_CXX_FLAGS})
+
+# Kmpc RaiSim dummy
+add_executable(legged_robot_raisim_dummy_kmpc
+  src/LeggedRobotRaisimKmpcDummyNode.cpp
+)
+add_dependencies(legged_robot_raisim_dummy_kmpc
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(legged_robot_raisim_dummy_kmpc
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+target_compile_options(legged_robot_raisim_dummy_kmpc PRIVATE ${OCS2_CXX_FLAGS})
+
+# Kmpc RaiSim dummy
+add_executable(legged_robot_raisim_wbc
+  src/LeggedRobotRaisimWbcNode.cpp
+)
+add_dependencies(legged_robot_raisim_wbc
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(legged_robot_raisim_wbc
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+target_compile_options(legged_robot_raisim_wbc PRIVATE ${OCS2_CXX_FLAGS})
 
 #########################
 ###   CLANG TOOLING   ###

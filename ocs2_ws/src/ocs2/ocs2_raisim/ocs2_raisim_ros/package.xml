@@ -19,6 +19,7 @@
   <depend>roscpp</depend>
   <depend>ocs2_raisim_core</depend>
   <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
 
   <exec_depend>grid_map_rviz_plugin</exec_depend>
 

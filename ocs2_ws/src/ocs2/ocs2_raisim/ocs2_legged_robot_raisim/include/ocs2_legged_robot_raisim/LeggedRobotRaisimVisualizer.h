@@ -52,6 +52,8 @@ class LeggedRobotRaisimVisualizer : public LeggedRobotVisualizer {
    */
   void updateTerrain(double timeout = 5.0);
 
+  void setTerrain(std::unique_ptr<raisim::HeightMap>& terrainPtr) { terrainPtr_ = std::move(terrainPtr); }
+
  private:
   std::unique_ptr<raisim::HeightMap> terrainPtr_;
 };

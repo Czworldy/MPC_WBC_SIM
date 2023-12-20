@@ -40,7 +40,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_robotic_tools/common/SkewSymmetricMatrix.h>
 
 #include <ocs2_pinocchio_interface/urdf.h>
-#include <urdf_parser/urdf_parser.h>
 
 #include <gtest/gtest.h>
 
@@ -66,44 +65,17 @@ class DummyMapping final : public ocs2::PinocchioStateInputMapping<SCALAR> {
   }
 };
 
-using namespace ocs2;
-PinocchioInterface createPinocchioInterface(const std::string& robotUrdfPath) {
-  using joint_pair_t = std::pair<const std::string, std::shared_ptr<::urdf::Joint>>;
-
-  urdf::ModelInterfaceSharedPtr urdfTree = urdf::parseURDFFile(robotUrdfPath);
-  if (urdfTree == nullptr) {
-    throw std::invalid_argument("The file " + robotUrdfPath + " does not contain a valid URDF model!");
-  }
-
-  // remove extraneous joints from urdf
-  std::vector<std::string> jointNames{"LF_HAA", "LF_HFE", "LF_KFE", "RF_HAA", "RF_HFE", "RF_KFE", 
-                                      "LH_HAA", "LH_HFE", "LH_KFE", "RH_HAA", "RH_HFE", "RH_KFE"};
-  urdf::ModelInterfaceSharedPtr newModel = std::make_shared<::urdf::ModelInterface>(*urdfTree);
-  for (joint_pair_t& jointPair : newModel->joints_) {
-    if (std::find(jointNames.begin(), jointNames.end(), jointPair.first) == jointNames.end()) {
-      jointPair.second->type = urdf::Joint::FIXED;
-    }
-  }
-
-  // add 6 DoF for the floating base
-  pinocchio::JointModelComposite jointComposite(2);
-  jointComposite.addJoint(pinocchio::JointModelTranslation());
-  jointComposite.addJoint(pinocchio::JointModelSphericalZYX());
-
-  return getPinocchioInterfaceFromUrdfModel(newModel, jointComposite);
-}
-
 class TestSphereKinematics : public ::testing::Test {
  public:
   using quaternion_t = Eigen::Quaternion<ocs2::scalar_t>;
 
   TestSphereKinematics() {
-    const std::string urdfFile = "/home/yjy/MPC_WBC_sim/ocs2_ws/src/X20/urdf/X20_rsm.urdf";
+    const std::string urdfFile = ocs2::robotic_assets::getPath() + "/resources/mobile_manipulator/mabi_mobile/urdf/mabi_mobile.urdf";
     std::cout << "urdfFile: " << urdfFile << "\n";
-    pinocchioInterfacePtr.reset(new ocs2::PinocchioInterface(createPinocchioInterface(urdfFile)));
+    pinocchioInterfacePtr.reset(new ocs2::PinocchioInterface(ocs2::getPinocchioInterfaceFromUrdfFile(urdfFile)));
     std::cout << "pinocchioInterfacePtr->getModel().nv: " << pinocchioInterfacePtr->getModel().nv << '\n';
-    pinocchioSphereInterfacePtr.reset(new ocs2::PinocchioSphereInterface(*pinocchioInterfacePtr, {"BASE", "LF_HIP"},
-                                                                         {0.20, 0.20}, 0.7));
+    pinocchioSphereInterfacePtr.reset(new ocs2::PinocchioSphereInterface(*pinocchioInterfacePtr, {"ARM", "SHOULDER", "FOREARM", "WRIST_1"},
+                                                                         {0.20, 0.10, 0.05, 0.05}, 0.7));
     std::cout << "pinocchioSphereInterfacePtr->getNumSpheresInTotal(): " << pinocchioSphereInterfacePtr->getNumSpheresInTotal() << '\n';
     sphereKinematicsPtr.reset(new ocs2::PinocchioSphereKinematics(*pinocchioSphereInterfacePtr, pinocchioMapping));
     std::cout << "sphereKinematicsPtr done \n";
@@ -113,11 +85,11 @@ class TestSphereKinematics : public ::testing::Test {
         std::cout << "names[" << i << "]: " << names[i] << '\n';
     }
     sphereKinematicsCppAdPtr.reset(new ocs2::PinocchioSphereKinematicsCppAd(
-        *pinocchioInterfacePtr, *pinocchioSphereInterfacePtr, pinocchioMappingCppAd, 18, 0,
+        *pinocchioInterfacePtr, *pinocchioSphereInterfacePtr, pinocchioMappingCppAd, pinocchioInterfacePtr->getModel().njoints - 1, 0,
         "pinocchio_sphere_kinematics", "/home/yjy/ocs2_cppad", true, true));
         std::cout << "sphereKinematicsCppAdPtr done \n";
 
-    x.resize(18);
+    x.resize(pinocchioInterfacePtr->getModel().njoints - 1);
     std::cout << "x size:" << x.size() << '\n';
     // taken form config/mpc/task.info
     x(0) = 2.5;   // SH_ROT
@@ -133,17 +105,17 @@ class TestSphereKinematics : public ::testing::Test {
 
   void compareApproximation(const ocs2::VectorFunctionLinearApproximation& f1, const ocs2::VectorFunctionLinearApproximation& f2,
                             bool functionOfInput = false) {
-     {
+    if (!f1.f.isApprox(f2.f)) {
       std::cerr << "f1.f  " << f1.f.transpose() << '\n';
       std::cerr << "f2.f  " << f2.f.transpose() << '\n';
     }
 
-     {
+    if (!f1.dfdx.isApprox(f2.dfdx)) {
       std::cerr << "f1.dfdx\n" << f1.dfdx << '\n';
       std::cerr << "f2.dfdx\n" << f2.dfdx << '\n';
     }
 
-     {
+    if (functionOfInput && !f1.dfdu.isApprox(f2.dfdu)) {
       std::cerr << "f1.dfdu\n" << f1.dfdu << '\n';
       std::cerr << "f2.dfdu\n" << f2.dfdu << '\n';
     }
@@ -221,8 +193,8 @@ TEST_F(TestSphereKinematics, testPositionApproximation) {
 
   sphereKinematicsPtr->setPinocchioInterface(*pinocchioInterfacePtr);
 
-  const auto spherePosLin = sphereKinematicsPtr->getPositionLinearApproximation(x)[1];
-  const auto spherePosLinAd = sphereKinematicsCppAdPtr->getPositionLinearApproximation(x)[1];
+  const auto spherePosLin = sphereKinematicsPtr->getPositionLinearApproximation(x)[0];
+  const auto spherePosLinAd = sphereKinematicsCppAdPtr->getPositionLinearApproximation(x)[0];
   compareApproximation(spherePosLin, spherePosLinAd);
 }
 
@@ -239,7 +211,7 @@ TEST_F(TestSphereKinematics, testClone) {
 
   clonePtr->setPinocchioInterface(*pinocchioInterfacePtr);
 
-  const auto spherePos = clonePtr->getPosition(x)[1];
-  const auto spherePosAd = cloneCppAdPtr->getPosition(x)[1];
+  const auto spherePos = clonePtr->getPosition(x)[0];
+  const auto spherePosAd = cloneCppAdPtr->getPosition(x)[0];
   EXPECT_TRUE(spherePos.isApprox(spherePosAd));
 }

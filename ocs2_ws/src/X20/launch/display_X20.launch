@@ -6,7 +6,7 @@
     default="True" />
   <param
     name="robot_description"
-    textfile="$(find X20)/urdf/X20_ocs2.urdf" />
+    textfile="$(find X20)/urdf/X20_rsm.urdf" />
 
   <node
     name="joint_state_publisher_gui"
@@ -25,4 +25,5 @@
     pkg="rviz"
     type="rviz"
     args="-d $(find X20)/urdf.rviz" />
+    <!-- <node name="odom_to_map"  pkg="tf" type="static_transform_publisher" output="screen"  args="10 2 0 1.57 0.3 0.2  /map /base 200" /> -->
 </launch>

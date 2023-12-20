@@ -45,7 +45,7 @@
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
-#include <ocs2_legged_robot_raisim/LeggedRobotRaisimConversions.h>
+#include <ocs2_wbc_ros/LeggedRobotRaisimConversions.h>
 #include <signal.h>
 #include <atomic>
 
@@ -214,6 +214,8 @@ int main(int argc, char* argv[]) {
   auto lh_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/lh_foot_pos", 1);
   auto rf_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/rf_foot_pos", 1);
   auto rh_foot_pub = nodeHandle.advertise<geometry_msgs::PointStamped>("/rh_foot_pos", 1);
+
+  auto torque_pub = nodeHandle.advertise<std_msgs::Float32MultiArray>("/torque", 1);
 
   auto interfacePtr = std::make_unique<ocs2::legged_robot::LeggedRobotInterface>(taskfile, urdffile, referencefile);
   // auto mpc = std::make_unique<ocs2::legged_robot::LeggedRobotPyBindings>(std::move(interfacePtr), gaitfile);
@@ -670,7 +672,13 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     vector_t x = wbc->update(optimizedState, optimizedInput, rbdState, plannedMode, simulation_dt_, currentObservation.time);
     // std::cout << "wbc update: " << x.rows() << std::endl; //rows = 42
     // after solve the mpc problem, set target trajectory
+    std_msgs::Float32MultiArray torque_msg;
+    torque_msg.data.resize(12);
     vector_t torque = x.tail(12);
+    for (size_t i = 0; i < torque.rows(); i++) {
+      torque_msg.data[i] = static_cast<float>(torque(i));
+    }
+    torque_pub.publish(torque_msg);
     // std::cout << "torque: " << torque.transpose() << std::endl;
 
     // if (resetMpcTargetCounter % 100 == 0 && resetMpcTargetCounter > 10 && setTarget) {
@@ -680,6 +688,8 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
     // resetMpcTargetCounter++;
     command_out.head(6).setZero(); // IMPORTANT: set zero for base
     command_out.tail(12) << torque.head(3), torque.segment(6, 3), torque.segment(3, 3), torque.tail(3);
+
+
 
     robot->setGeneralizedForce(command_out);
     // std::cout << "command_out: " << command_out.transpose() << std::endl;

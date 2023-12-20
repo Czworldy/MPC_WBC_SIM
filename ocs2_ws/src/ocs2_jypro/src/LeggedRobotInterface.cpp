@@ -318,7 +318,7 @@ void LeggedRobotInterface::setupOptimalConrolProblem(const std::string& taskFile
     }
 
     // Self Collision Constraint
-    problemPtr_->stateSoftConstraintPtr->add("selfCollision", getSelfCollisionConstraint(*pinocchioInterfacePtr_, taskFile, "selfCollision"));
+    // problemPtr_->stateSoftConstraintPtr->add("selfCollision", getSelfCollisionConstraint(*pinocchioInterfacePtr_, taskFile, "selfCollision"));
 
     // Pre-computation
     problemPtr_->preComputationPtr.reset(new LeggedRobotPreComputation(*pinocchioInterfacePtr_, centroidalModelInfo_,

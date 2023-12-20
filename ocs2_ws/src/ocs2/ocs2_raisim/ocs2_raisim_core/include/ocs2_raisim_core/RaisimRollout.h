@@ -112,7 +112,7 @@ class RaisimRollout final : public RolloutBase {
    * @param[in] heightOffset Height offset of the zero level [m]
    */
   void setTerrain(const std::string& pngFileName, double centerX, double centerY, double xSize, double ySize, double heightScale,
-                  double heightOffset);
+                  double heightOffset, const std::string& material = "default");
 
   /**
    * @brief Returns the heightMap, which can be read for terrain information

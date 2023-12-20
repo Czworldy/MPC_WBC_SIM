@@ -30,6 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ros/topic.h>
 
 #include "ocs2_raisim_ros/RaisimHeightmapRosConverter.h"
+#include <grid_map_ros/GridMapMsgHelpers.hpp>
+#include <algorithm>
 
 namespace ocs2 {
 
@@ -56,14 +58,20 @@ grid_map_msgs::GridMapPtr RaisimHeightmapRosConverter::convertHeightmapToGridmap
 
   gridMapMsg->layers.emplace_back("elevation");
   std_msgs::Float32MultiArray dataArray;
-  dataArray.layout.dim.resize(2);
-  dataArray.layout.dim[0].label = "column_index";
-  dataArray.layout.dim[0].stride = heightMap.getHeightVector().size();
-  dataArray.layout.dim[0].size = heightMap.getXSamples();
-  dataArray.layout.dim[1].label = "row_index";
-  dataArray.layout.dim[1].stride = heightMap.getYSamples();
-  dataArray.layout.dim[1].size = heightMap.getYSamples();
-  dataArray.data.insert(dataArray.data.begin(), heightMap.getHeightVector().rbegin(), heightMap.getHeightVector().rend());
+
+  //[Jiyu Fixed] using Eigen::Map to copy data from heightMap.getHeightVector() to dataArray.data
+  std::vector<double> heights = heightMap.getHeightVector();
+  std::reverse(heights.begin(), heights.end());
+  auto mat = Eigen::Map<const Eigen::Matrix<double, -1, -1>>(heights.data(), heightMap.getXSamples(), heightMap.getYSamples());
+  grid_map::matrixEigenCopyToMultiArrayMessage(mat, dataArray);
+  // dataArray.layout.dim.resize(2);
+  // dataArray.layout.dim[0].label = "column_index";
+  // dataArray.layout.dim[0].stride = heightMap.getHeightVector().size();
+  // dataArray.layout.dim[0].size = heightMap.getXSamples();
+  // dataArray.layout.dim[1].label = "row_index";
+  // dataArray.layout.dim[1].stride = heightMap.getYSamples();
+  // dataArray.layout.dim[1].size = heightMap.getYSamples();
+  // dataArray.data.insert(dataArray.data.begin(), heightMap.getHeightVector().rbegin(), heightMap.getHeightVector().rend());
   gridMapMsg->data.push_back(dataArray);
 
   return gridMapMsg;

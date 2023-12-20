@@ -206,9 +206,7 @@ Visualization Manager:
       Marker Topic: /legged_robot/optimizedStateTrajectory
       Name: Optimized State Trajectory
       Namespaces:
-        CoM Trajectory: true
-        EE Trajectories: true
-        Future footholds: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -216,10 +214,7 @@ Visualization Manager:
       Marker Topic: /legged_robot/currentState
       Name: Current State
       Namespaces:
-        Center of Pressure: true
-        EE Forces: true
-        EE Positions: true
-        Support Polygon: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Group
@@ -283,7 +278,7 @@ Visualization Manager:
       Marker Topic: /legged_robot/Footplacement
       Name: MarkerArray
       Namespaces:
-        EE design Trajectories: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Image
@@ -423,5 +418,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1535
-  X: 3410
-  Y: 882
+  X: 650
+  Y: 611

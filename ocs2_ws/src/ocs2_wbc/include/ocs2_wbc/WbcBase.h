@@ -8,7 +8,7 @@
 #include "ocs2_wbc/Task.h"
 
 #include <ocs2_centroidal_model/PinocchioCentroidalDynamics.h>
-#include <ocs2_jypro/gait/MotionPhaseDefinition.h>
+#include <ocs2_jypro/common/Types.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 
 #include "ocs2_wbc/UserParameter.h"
@@ -26,6 +26,10 @@ using namespace legged_robot;
 class WbcBase{
     using Vector6 = Eigen::Matrix<scalar_t, 6, 1>;
     using Matrix6 = Eigen::Matrix<scalar_t, 6, 6>;
+
+    using contact_flag_t = std::array<bool, 4>;
+    // using vector3_t = Eigen::Matrix<scalar_t, 3, 6>;
+    // using matrix3_t = Eigen::Matrix<scalar_t, 3, 3>;
 
 public:
     WbcBase(const PinocchioInterface& pinocchioInterface, CentroidalModelInfo info,

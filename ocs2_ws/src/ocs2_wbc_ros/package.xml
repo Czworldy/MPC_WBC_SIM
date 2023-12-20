@@ -15,5 +15,5 @@
     <depend>dynamic_reconfigure</depend>
     <depend>ocs2_wbc</depend>
     <depend>ocs2_msgs</depend>
-    <depend>ocs2_legged_robot_raisim</depend>
+    <depend>ocs2_raisim_ros</depend>
 </package>

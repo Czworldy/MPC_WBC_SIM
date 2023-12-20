@@ -8,6 +8,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   roscpp
   ocs2_raisim_core
   grid_map_msgs
+  grid_map_ros
 )
 
 find_package(catkin REQUIRED COMPONENTS

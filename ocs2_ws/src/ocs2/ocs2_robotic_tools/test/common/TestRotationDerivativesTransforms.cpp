@@ -78,3 +78,17 @@ TEST(RotationDerivativesTransforms, localVsGlobal) {
 
   ASSERT_TRUE(globalAngularVelocity.isApprox(R * localAngularVelocity));
 }
+
+TEST(rot_error, rot_error) {
+  const vector3_t eulerAngles_1(0.1, 0.2, 0.3);
+  const vector3_t eulerAngles_2(0.2, 0.3, 0.3);
+
+  const matrix3_t R_1 = getRotationMatrixFromZyxEulerAngles(eulerAngles_1);
+  const matrix3_t R_2 = getRotationMatrixFromZyxEulerAngles(eulerAngles_2);
+
+  const vector3_t rotError = rotationErrorInWorld(R_1, R_2);
+
+  std::cout << "rotError: " << rotError.transpose() << std::endl;
+
+  ASSERT_TRUE(true);
+}

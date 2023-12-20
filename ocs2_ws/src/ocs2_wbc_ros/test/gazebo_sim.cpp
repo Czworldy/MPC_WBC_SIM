@@ -42,7 +42,7 @@
 #include <ocs2_core/thread_support/SetThreadPriority.h>
 #include <ocs2_core/thread_support/ExecuteAndSleep.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
-#include <ocs2_legged_robot_raisim/LeggedRobotRaisimConversions.h>
+#include <ocs2_wbc_ros/LeggedRobotRaisimConversions.h>
 
 
 using namespace std;
