@@ -131,7 +131,7 @@ add_library(ocs2_jypro
   src/gait/GaitPythonInterface.cpp
   src/gait/GaitSchedule.cpp
   src/gait/ModeSequenceTemplate.cpp
-  src/LeggedRobotInterface.cpp
+  # src/LeggedRobotInterface.cpp
   src/LeggedRobotPreComputation.cpp
   src/LeggedRobotPinocchioMapping.cpp
   src/visualization/LeggedRobotVisualizer.cpp
@@ -152,154 +152,154 @@ target_link_libraries(ocs2_jypro
 )
 target_compile_options(ocs2_jypro PUBLIC PUBLIC ${pinocchio_CFLAGS_OTHER} -DPINOCCHIO_URDFDOM_TYPEDEF_SHARED_PTR -DPINOCCHIO_URDFDOM_USE_STD_SHARED_PTR)
 
-# Mpc node
-add_executable(legged_robot_mpc
-  src/LeggedRobotMpcNode.cpp
-)
-add_dependencies(legged_robot_mpc
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_mpc
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
-target_compile_options(legged_robot_mpc PUBLIC ${pinocchio_CFLAGS_OTHER})
-
-# MPC_WBC_Conversions
-# add_executable(MPC_WBC_Conversions
-#   src/MPC_WBC_Conversions.cpp
+# # Mpc node
+# add_executable(legged_robot_mpc
+#   src/LeggedRobotMpcNode.cpp
 # )
-# add_dependencies(MPC_WBC_Conversions
+# add_dependencies(legged_robot_mpc
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #   ${catkin_EXPORTED_TARGETS}
 # )
-# target_link_libraries(MPC_WBC_Conversions
+# target_link_libraries(legged_robot_mpc
 #   ${PROJECT_NAME}
 #   ${catkin_LIBRARIES}
 #   ${Boost_LIBRARIES}
 # )
-# target_compile_options(MPC_WBC_Conversions PUBLIC ${pinocchio_CFLAGS_OTHER})
+# target_compile_options(legged_robot_mpc PUBLIC ${pinocchio_CFLAGS_OTHER})
 
-# MPCProntoConversion
-# add_executable(MPCProntoConversion
-#   src/MPCProntoConversion.cpp
+# # MPC_WBC_Conversions
+# # add_executable(MPC_WBC_Conversions
+# #   src/MPC_WBC_Conversions.cpp
+# # )
+# # add_dependencies(MPC_WBC_Conversions
+# #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+# #   ${catkin_EXPORTED_TARGETS}
+# # )
+# # target_link_libraries(MPC_WBC_Conversions
+# #   ${PROJECT_NAME}
+# #   ${catkin_LIBRARIES}
+# #   ${Boost_LIBRARIES}
+# # )
+# # target_compile_options(MPC_WBC_Conversions PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# # MPCProntoConversion
+# # add_executable(MPCProntoConversion
+# #   src/MPCProntoConversion.cpp
+# # )
+# # add_dependencies(MPCProntoConversion
+# #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+# #   ${catkin_EXPORTED_TARGETS}
+# # )
+# # target_link_libraries(MPCProntoConversion
+# #   ${PROJECT_NAME}
+# #   ${catkin_LIBRARIES}
+# #   ${Boost_LIBRARIES}
+# # )
+# # target_compile_options(MPCProntoConversion PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# # MPCProntoConversionUDP
+# # add_executable(MPCProntoConversionUDP
+# #   src/MPCProntoConversionUDP.cpp
+# # )
+# # add_dependencies(MPCProntoConversionUDP
+# #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+# #   ${catkin_EXPORTED_TARGETS}
+# # )
+# # target_link_libraries(MPCProntoConversionUDP
+# #   ${PROJECT_NAME}
+# #   ${catkin_LIBRARIES}
+# #   ${Boost_LIBRARIES}
+# # )
+# # target_compile_options(MPCProntoConversionUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# # MPC_WBC_ConversionsUDP
+# # add_executable(MPC_WBC_ConversionsUDP
+# #   src/MPC_WBC_ConversionsUDP.cpp
+# # )
+# # add_dependencies(MPC_WBC_ConversionsUDP
+# #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+# #   ${catkin_EXPORTED_TARGETS}
+# # )
+# # target_link_libraries(MPC_WBC_ConversionsUDP
+# #   ${PROJECT_NAME}
+# #   ${catkin_LIBRARIES}
+# #   ${Boost_LIBRARIES}
+# # )
+# # target_compile_options(MPC_WBC_ConversionsUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# # Dummy node
+# add_executable(legged_robot_dummy
+#   src/LeggedRobotDummyNode.cpp
 # )
-# add_dependencies(MPCProntoConversion
+# add_dependencies(legged_robot_dummy
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(legged_robot_dummy
+#   ${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+# )
+# target_compile_options(legged_robot_dummy PUBLIC ${pinocchio_CFLAGS_OTHER})
+
+# # Keyboard Command node for legged robot walking (gait selection and target selection)
+# add_executable(legged_robot_target
+#   src/LeggedRobotPoseCommandNode.cpp
+# )
+# add_dependencies(legged_robot_target
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #   ${catkin_EXPORTED_TARGETS}
 # )
-# target_link_libraries(MPCProntoConversion
+# target_link_libraries(legged_robot_target
 #   ${PROJECT_NAME}
 #   ${catkin_LIBRARIES}
-#   ${Boost_LIBRARIES}
 # )
-# target_compile_options(MPCProntoConversion PUBLIC ${pinocchio_CFLAGS_OTHER})
+# target_compile_options(legged_robot_target PUBLIC ${pinocchio_CFLAGS_OTHER})
 
-# MPCProntoConversionUDP
-# add_executable(MPCProntoConversionUDP
-#   src/MPCProntoConversionUDP.cpp
+# # Joy Command node for legged robot walking (gait selection and target selection)
+# add_executable(legged_robot_target_joy
+#   src/LeggedRobotPoseCommandJoyNode.cpp
+#   src/command/TargetTrajectoriesJoyPublisher.cpp
 # )
-# add_dependencies(MPCProntoConversionUDP
+# add_dependencies(legged_robot_target_joy
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #   ${catkin_EXPORTED_TARGETS}
 # )
-# target_link_libraries(MPCProntoConversionUDP
+# target_link_libraries(legged_robot_target_joy
 #   ${PROJECT_NAME}
 #   ${catkin_LIBRARIES}
-#   ${Boost_LIBRARIES}
 # )
-# target_compile_options(MPCProntoConversionUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
+# target_compile_options(legged_robot_target_joy PUBLIC ${pinocchio_CFLAGS_OTHER})
 
-# MPC_WBC_ConversionsUDP
-# add_executable(MPC_WBC_ConversionsUDP
-#   src/MPC_WBC_ConversionsUDP.cpp
+# # Traj Command node for legged robot walking (gait selection and target selection)
+# add_executable(legged_robot_target_traj
+#   src/LeggedRobotPoseCommandTrajNode.cpp
+#   src/command/TargetTrajectoriesPublisher.cpp
 # )
-# add_dependencies(MPC_WBC_ConversionsUDP
+# add_dependencies(legged_robot_target_traj
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #   ${catkin_EXPORTED_TARGETS}
 # )
-# target_link_libraries(MPC_WBC_ConversionsUDP
+# target_link_libraries(legged_robot_target_traj
 #   ${PROJECT_NAME}
 #   ${catkin_LIBRARIES}
-#   ${Boost_LIBRARIES}
 # )
-# target_compile_options(MPC_WBC_ConversionsUDP PUBLIC ${pinocchio_CFLAGS_OTHER})
-
-# Dummy node
-add_executable(legged_robot_dummy
-  src/LeggedRobotDummyNode.cpp
-)
-add_dependencies(legged_robot_dummy
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_dummy
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-target_compile_options(legged_robot_dummy PUBLIC ${pinocchio_CFLAGS_OTHER})
-
-# Keyboard Command node for legged robot walking (gait selection and target selection)
-add_executable(legged_robot_target
-  src/LeggedRobotPoseCommandNode.cpp
-)
-add_dependencies(legged_robot_target
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_target
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-target_compile_options(legged_robot_target PUBLIC ${pinocchio_CFLAGS_OTHER})
-
-# Joy Command node for legged robot walking (gait selection and target selection)
-add_executable(legged_robot_target_joy
-  src/LeggedRobotPoseCommandJoyNode.cpp
-  src/command/TargetTrajectoriesJoyPublisher.cpp
-)
-add_dependencies(legged_robot_target_joy
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_target_joy
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-target_compile_options(legged_robot_target_joy PUBLIC ${pinocchio_CFLAGS_OTHER})
-
-# Traj Command node for legged robot walking (gait selection and target selection)
-add_executable(legged_robot_target_traj
-  src/LeggedRobotPoseCommandTrajNode.cpp
-  src/command/TargetTrajectoriesPublisher.cpp
-)
-add_dependencies(legged_robot_target_traj
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_target_traj
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-target_compile_options(legged_robot_target_traj PUBLIC ${pinocchio_CFLAGS_OTHER})
+# target_compile_options(legged_robot_target_traj PUBLIC ${pinocchio_CFLAGS_OTHER})
 
 
-add_executable(legged_robot_gait_command
-  src/gait/Gait.cpp
-  src/gait/ModeSequenceTemplate.cpp
-  src/command/LeggedRobotModeSequenceKeyboard.cpp
-  src/LeggedRobotGaitCommandNode.cpp
-)
-add_dependencies(legged_robot_gait_command
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(legged_robot_gait_command
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-target_compile_options(legged_robot_gait_command PUBLIC ${pinocchio_CFLAGS_OTHER})
+# add_executable(legged_robot_gait_command
+#   src/gait/Gait.cpp
+#   src/gait/ModeSequenceTemplate.cpp
+#   src/command/LeggedRobotModeSequenceKeyboard.cpp
+#   src/LeggedRobotGaitCommandNode.cpp
+# )
+# add_dependencies(legged_robot_gait_command
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+# target_link_libraries(legged_robot_gait_command
+#   ${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+# )
+# target_compile_options(legged_robot_gait_command PUBLIC ${pinocchio_CFLAGS_OTHER})
 
 # # python bindings
 # pybind11_add_module(LeggedRobotPyBindings SHARED
@@ -379,10 +379,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 install(TARGETS
-  legged_robot_mpc
-  legged_robot_dummy
-  legged_robot_target
-  legged_robot_gait_command
+  # legged_robot_mpc
+  # legged_robot_dummy
+  # legged_robot_target
+  # legged_robot_gait_command
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 install(DIRECTORY launch config rviz

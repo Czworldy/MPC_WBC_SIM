@@ -81,35 +81,35 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${OCS2_CXX_FLAGS})
 #         ${catkin_LIBRARIES}
 #         )
 # target_compile_options(angle_test PRIVATE ${OCS2_CXX_FLAGS})
-find_package(raisim REQUIRED)
+# find_package(raisim REQUIRED)
 # find_package(raisimOgre REQUIRED)
 
-add_executable(mpc_sim
-        test/mpc_sim.cpp
-        )
-add_dependencies(mpc_sim
-        ${catkin_EXPORTED_TARGETS}
-        )
-target_link_libraries(mpc_sim
-        ${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        raisim::raisim
-        # raisim::raisimOgre
-        ${PCL_LIBRARY_DIRS}
-        )
-target_compile_options(mpc_sim PRIVATE ${OCS2_CXX_FLAGS})
+# add_executable(mpc_sim
+#         test/mpc_sim.cpp
+#         )
+# add_dependencies(mpc_sim
+#         ${catkin_EXPORTED_TARGETS}
+#         )
+# target_link_libraries(mpc_sim
+#         ${PROJECT_NAME}
+#         ${catkin_LIBRARIES}
+#         raisim::raisim
+#         # raisim::raisimOgre
+#         ${PCL_LIBRARY_DIRS}
+#         )
+# target_compile_options(mpc_sim PRIVATE ${OCS2_CXX_FLAGS})
 
-add_executable(gazebo_sim
-        test/gazebo_sim.cpp
-        )
-add_dependencies(gazebo_sim
-        ${catkin_EXPORTED_TARGETS}
-        )
-target_link_libraries(gazebo_sim
-        ${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        )
-target_compile_options(gazebo_sim PRIVATE ${OCS2_CXX_FLAGS})
+# add_executable(gazebo_sim
+#         test/gazebo_sim.cpp
+#         )
+# add_dependencies(gazebo_sim
+#         ${catkin_EXPORTED_TARGETS}
+#         )
+# target_link_libraries(gazebo_sim
+#         ${PROJECT_NAME}
+#         ${catkin_LIBRARIES}
+#         )
+# target_compile_options(gazebo_sim PRIVATE ${OCS2_CXX_FLAGS})
 #########################
 ###   CLANG TOOLING   ###
 #########################

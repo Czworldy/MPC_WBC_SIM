@@ -1,0 +1,416 @@
+received modeSchedule: 
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 56.65
+modeSchedule: 
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1, 60.45, 60.55, 60.9, 61}
+mode sequence: {15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+24
+modeIdx :7
+hipNominalPoints:  4.34226 -1.11163 0.102986
+After hipNominalPoints:  4.66216 -0.91666   -0.024
+hipNominalPoints:   4.66216  -1.07235 -0.150873
+After hipNominalPoints:   5.14396 -0.916062    -0.074
+hipNominalPoints:    5.03636  -0.991902 -0.0645594
+After hipNominalPoints:   5.21666 -0.883746    -0.074
+hipNominalPoints:   5.37667 -0.883746  -0.12591
+After hipNominalPoints:   5.21666 -0.883746    -0.074
+finalTime: 59.15
+
+
+
+received modeSchedule: 
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 56.4
+modeSchedule: 
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+24
+modeIdx :5
+hipNominalPoints:  4.34226 -1.11163 0.102986
+After hipNominalPoints:  4.66216 -0.91666   -0.024
+hipNominalPoints:   4.66216  -1.07235 -0.150873
+After hipNominalPoints:   5.14396 -0.916062    -0.074
+hipNominalPoints:    5.03636  -0.991902 -0.0645594
+After hipNominalPoints:   5.21666 -0.883746    -0.074
+hipNominalPoints:   5.37667 -0.883746  -0.12591
+After hipNominalPoints:   5.21666 -0.883746    -0.074
+finalTime: 58.9
+
+
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 5
+hipNominalPoints:  4.34226 -1.11163 0.102986
+hipNominalPoints:   4.66216  -1.07235 -0.150873
+hipNominalPoints:    5.03636  -0.991902 -0.0645594
+hipNominalPoints:   5.37667 -0.883746  -0.12591
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.0780668
+######### Solver result #########
+targetTrajectories.timeTrajectory.size: 100
+Observation time: 56.25
+event times:   {55.15, 55.5, 55.6, 55.95, 56.05, 56.4, 56.5, 56.85, 56.95, 57.3, 57.4, 57.75, 57.85, 58.2, 58.3, 58.65, 58.75, 59.1, 59.2, 59.55, 59.65, 60, 60.1}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+
+
+
+
+
+//////////////////////////////////
+received modeSchedule: 
+event times:   {20.05, 20.4, 20.5, 20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 21.35
+modeSchedule: 
+event times:   {20.05, 20.4, 20.5, 20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {20.05, 20.4, 20.5, 20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+footholdsSequencePtr_[1].size: 24
+modeIdx :6
+hipNominalPoints:   3.90426 -0.200685  0.168929
+Original hipNominalPoints:  3.87 -0.35 0.166
+After hipNominalPoints:   4.30395 -0.343975     0.156
+
+hipNominalPoints:    4.25776  -0.204046 -0.0883286
+Original hipNominalPoints:  4.31 -0.35 0.156
+After hipNominalPoints:   4.80395 -0.343975     0.066
+
+hipNominalPoints:    4.61019  -0.198082 -0.0356842
+Original hipNominalPoints:  4.81 -0.35 0.066
+After hipNominalPoints:   4.87603 -0.343966     0.066
+
+hipNominalPoints:     4.93928   -0.197803 -0.00741276
+Original hipNominalPoints:  4.87 -0.35 0.066
+After hipNominalPoints:   4.87603 -0.343966     0.066
+
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 5
+hipNominalPoints:   3.90426 -0.200685  0.168929
+hipNominalPoints:    4.25776  -0.204046 -0.0883286
+hipNominalPoints:    4.61019  -0.198082 -0.0356842
+hipNominalPoints:     4.93928   -0.197803 -0.00741276
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.061511
+######### Solver result #########
+targetTrajectories.timeTrajectory.size: 100
+Observation time: 21.05
+event times:   {20.05, 20.4, 20.5, 20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+
+
+////////////////////////////////////////
+received modeSchedule: 
+event times:   {23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 24.75
+modeSchedule: 
+event times:   {23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+footholdsSequencePtr_[1].size: 25
+modeIdx :6
+stanceTime: 25.35
+hipNominalPoints:      3.777  -0.201902 -0.0595735
+Original hipNominalPoints:  3.81 -0.35 0.166
+After hipNominalPoints:   4.30395 -0.343975     0.156
+stanceTime: 26.25
+hipNominalPoints:   4.09675 -0.205556  0.154227
+Original hipNominalPoints:  4.31 -0.35 0.156
+After hipNominalPoints:   4.37603 -0.343966     0.156
+stanceTime: 27.15
+hipNominalPoints:   4.41078 -0.215637 -0.196528
+Original hipNominalPoints:   4.35   0.09 -0.054
+After hipNominalPoints:   4.80395 -0.343975     0.066
+stanceTime: 28.05
+hipNominalPoints:    4.77427  -0.198762 -0.0406352
+Original hipNominalPoints:  4.81 -0.35 0.066
+After hipNominalPoints:   4.80395 -0.343975     0.066
+finalTime: 27.25
+received modeSchedule: 
+event times:   {23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 24.8
+modeSchedule: 
+event times:   {23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+footholdsSequencePtr_[1].size: 24
+modeIdx :5
+stanceTime: 25.35
+hipNominalPoints:      3.777  -0.201902 -0.0595735
+Original hipNominalPoints:  3.81 -0.35 0.166
+After hipNominalPoints:   4.30395 -0.343975     0.156
+
+stanceTime: 26.25
+hipNominalPoints:   4.09675 -0.205556  0.154227
+Original hipNominalPoints:  4.31 -0.35 0.156
+After hipNominalPoints:   4.37603 -0.343966     0.156
+
+stanceTime: 27.15
+hipNominalPoints:   4.41078 -0.215637 -0.196528
+Original hipNominalPoints:   4.35   0.09 -0.054
+After hipNominalPoints:   4.80395 -0.343975     0.066
+
+stanceTime: 28.05
+hipNominalPoints:    4.77427  -0.198762 -0.0406352
+Original hipNominalPoints:  4.81 -0.35 0.066
+After hipNominalPoints:   4.80395 -0.343975     0.066
+
+finalTime: 27.3
+
+
+
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 5
+stanceTime: 25.35
+hipNominalPoints:      3.777  -0.201902 -0.0595735
+stanceTime: 26.25
+hipNominalPoints:   4.09675 -0.205556  0.154227
+stanceTime: 27.15
+hipNominalPoints:   4.41078 -0.215637 -0.196528
+stanceTime: 28.05
+hipNominalPoints:    4.77427  -0.198762 -0.0406352
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.0547838
+######### Solver result #########
+targetTrajectories.timeTrajectory.size: 100
+Observation time: 24.65
+event times:   {23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9, 26.25, 26.35, 26.7, 26.8, 27.15, 27.25, 27.6, 27.7, 28.05, 28.15, 28.5, 28.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+
+
+////////
+received modeSchedule: 
+event times:   {20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 22
+modeSchedule: 
+event times:   {20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+footholdsSequencePtr_[1].size: 25
+modeIdx :6
+stanceTime: 22.65
+hipNominalPoints:  3.97415 -0.20621 0.208311
+Original hipNominalPoints:  3.87 -0.35 0.166
+After hipNominalPoints:     4.31 -0.34334    0.156
+
+stanceTime: 23.55
+hipNominalPoints:   4.30647 -0.208427  -0.19439
+Original hipNominalPoints: 4.30647    0.09  -0.054
+After hipNominalPoints:   4.80395 -0.343975     0.066
+
+stanceTime: 24.45
+hipNominalPoints:    4.68414  -0.197228 -0.0325331
+Original hipNominalPoints:  4.81 -0.35 0.066
+After hipNominalPoints:   4.87603 -0.343966     0.066
+
+stanceTime: 25.35
+hipNominalPoints:   5.00665 -0.199493 0.0352267
+Original hipNominalPoints:  4.87 -0.35 0.066
+After hipNominalPoints:   4.87603 -0.343966     0.066
+
+
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 6
+stanceTime: 22.65
+hipNominalPoints:  3.97415 -0.20621 0.208311
+stanceTime: 23.55
+hipNominalPoints:   4.30647 -0.208427  -0.19439
+stanceTime: 24.45
+hipNominalPoints:    4.68414  -0.197228 -0.0325331
+stanceTime: 25.35
+hipNominalPoints:   5.00665 -0.199493 0.0352267
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.0722129
+######### Solver result #########
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 3	->  4.87603 -0.343966
+
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+footholdsOrder: 3	->  4.87603 -0.343966
+targetTrajectories.timeTrajectory.size: 100
+Observation time: 21.85
+event times:   {20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 6
+stanceTime: 22.65
+hipNominalPoints:  3.97415 -0.20621 0.208311
+stanceTime: 23.55
+hipNominalPoints:   4.30647 -0.208427  -0.19439
+stanceTime: 24.45
+hipNominalPoints:    4.68414  -0.197228 -0.0325331
+stanceTime: 25.35
+hipNominalPoints:   5.00665 -0.199493 0.0352267
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.066853
+######### Solver result #########
+footholdsOrder: 0	->  3.87603 -0.343966
+footholdsOrder: 1	->    4.31 -0.34334
+footholdsOrder: 2	->  4.80395 -0.343975
+footholdsOrder: 3	->  4.87603 -0.343966
+targetTrajectories.timeTrajectory.size: 100
+Observation time: 21.9
+event times:   {20.85, 20.95, 21.3, 21.4, 21.75, 21.85, 22.2, 22.3, 22.65, 22.75, 23.1, 23.2, 23.55, 23.65, 24, 24.1, 24.45, 24.55, 24.9, 25, 25.35, 25.45, 25.8, 25.9}
+mode sequence: {15, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+
+///////////////////////////
+received modeSchedule: 
+event times:   {14.65, 15, 15.1, 15.45, 15.55, 15.9, 16, 16.35, 16.45, 16.8, 16.9, 17.25, 17.35, 17.7, 17.8, 18.15, 18.25, 18.6, 18.7, 19.05, 19.15, 19.5, 19.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+initTime: 15.8
+modeSchedule: 
+event times:   {14.65, 15, 15.1, 15.45, 15.55, 15.9, 16, 16.35, 16.45, 16.8, 16.9, 17.25, 17.35, 17.7, 17.8, 18.15, 18.25, 18.6, 18.7, 19.05, 19.15, 19.5, 19.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+NewModeSchedule: 
+event times:   {14.65, 15, 15.1, 15.45, 15.55, 15.9, 16, 16.35, 16.45, 16.8, 16.9, 17.25, 17.35, 17.7, 17.8, 18.15, 18.25, 18.6, 18.7, 19.05, 19.15, 19.5, 19.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}
+
+footholdsSequencePtr_[1].size: 24
+modeIdx :5
+After modeIdx :5
+stanceTime: 16.35
+hipNominalPoints:  2.59408 -0.20325    -0.01
+Original hipNominalPoints:     2.41 -0.20325    0.036
+After hipNominalPoints:   2.87603 -0.343966    -0.054
+stanceTime: 17.25
+hipNominalPoints:   2.91208 -0.196539 -0.133566
+Original hipNominalPoints:   2.87  -0.35 -0.054
+After hipNominalPoints:   3.30395 -0.343975     0.096
+stanceTime: 18.15
+hipNominalPoints:   3.23516 -0.194591 -0.138195
+Original hipNominalPoints:  3.31 -0.35 0.096
+After hipNominalPoints:   3.37603 -0.343966     0.096
+stanceTime: 19.05
+hipNominalPoints:    3.56077  -0.202973 -0.0788006
+Original hipNominalPoints:  3.37 -0.35 0.096
+After hipNominalPoints:   3.37603 -0.343966     0.096
+
+
+
+[FootholdsOptimizationProblem] TrajectoriesSegments: 4
+modeIndex: 5
+stanceTime: 16.35
+hipNominalPoints:  2.59408 -0.20325    -0.01
+stanceTime: 17.25
+hipNominalPoints:   2.91208 -0.196539 -0.133566
+stanceTime: 18.15
+hipNominalPoints:   3.23516 -0.194591 -0.138195
+stanceTime: 19.05
+hipNominalPoints:    3.56077  -0.202973 -0.0788006
+######### Solver success? #########
+1
+Solver name: Gurobi
+Solver optimizer time: 0.0429561
+######### Solver result #########
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 1	->  2.87603 -0.343966
+footholdsOrder: 2	->  3.30395 -0.343975
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 0	-> 2.41666 -0.20325
+footholdsOrder: 1	->  2.87603 -0.343966
+footholdsOrder: 1	->  2.87603 -0.343966
+footholdsOrder: 1	->  2.87603 -0.343966
+footholdsOrder: 1	->  2.87603 -0.343966
+footholdsOrder: 2	->  3.30395 -0.343975
+footholdsOrder: 2	->  3.30395 -0.343975
+footholdsOrder: 2	->  3.30395 -0.343975
+footholdsOrder: 2	->  3.30395 -0.343975
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+footholdsOrder: 3	->  3.37603 -0.343966
+Observation time: 15.7
+event times:   {14.65, 15, 15.1, 15.45, 15.55, 15.9, 16, 16.35, 16.45, 16.8, 16.9, 17.25, 17.35, 17.7, 17.8, 18.15, 18.25, 18.6, 18.7, 19.05, 19.15, 19.5, 19.6}
+mode sequence: {15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 9, 15, 6, 15, 15}

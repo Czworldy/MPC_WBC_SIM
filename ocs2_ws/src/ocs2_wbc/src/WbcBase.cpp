@@ -354,7 +354,7 @@ Task WbcBase::formulateBaseAccelTask() {
   return {a, b, matrix_t(), vector_t()};
 }
 
-// [J, 0] x = \dot V - \dotJ v
+// [J, 0] x = \dot V - \dotJ v // active only in swing phase -> always active
 Task WbcBase::formulateSwingLegTask() {
     eeKinematics_->setPinocchioInterface(pinocchioInterfaceMeasured_);
     std::vector<vector3_t> posMeasured = eeKinematics_->getPosition(vector_t());
@@ -376,6 +376,8 @@ Task WbcBase::formulateSwingLegTask() {
     for (size_t i = 0; i < info_.numThreeDofContacts; ++i) {
         if (!contactFlag_[i]) {
             vector3_t accel = Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
+            //Lu Chen: 
+            // (on z-axis) Kf * (F_d - F_current) + Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
             a.block(3 * j, 0, 3, info_.generalizedCoordinatesNum) = j_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum);
             b.segment(3 * j, 3) = accel - dj_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum) * vMeasured_;
             j++;
@@ -433,7 +435,7 @@ Task WbcBase::formulateTorqueLimitsTask() {
     return {matrix_t(), vector_t(), d, f};
 }
 
-// [J, 0] x = -\dot J v
+// [J, 0] [ddq, F] = -\dot J v // active only in stance phase
 Task WbcBase::formulateNoContactMotionTask() {
     matrix_t a(3 * numContacts_, numDecisionVars_);
     vector_t b(a.rows());

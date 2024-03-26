@@ -113,7 +113,7 @@ class ThreadPool {
 };
 
 /**
- * Task callback interface class.
+ * Task callback interface class.th
  */
 struct ThreadPool::TaskBase {
   TaskBase() = default;

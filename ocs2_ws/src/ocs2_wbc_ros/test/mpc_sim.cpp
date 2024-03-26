@@ -323,7 +323,7 @@ int main(int argc, char* argv[]) {
   // heightMap_->setName("gnd");
   raisim::Mat<3, 3> inertia;
   inertia.setIdentity();
-  const raisim::Vec<3> com = {0, 0, 0};
+  const raisim::Vec<3> com = {0, -10, 0};
   auto map = world->addMesh("/home/yjy/Documents/ICRA2023/meshes/part/map_easy.obj", 1.0, inertia, com, 1.0,"default");
   double map_scale = 1.0;
   nodeHandle.getParam("/map_scale", map_scale);

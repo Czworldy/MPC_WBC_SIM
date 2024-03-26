@@ -1,7 +1,7 @@
 centroidalModelType             1     // 0: FullCentroidalDynamics, 1: Single Rigid Body Dynamics
-useFeetPlacementConstraint      true
+useFeetPlacementConstraint      false
 useIKresult                     false
-useEndEffectorTrackingCost      true
+useEndEffectorTrackingCost      false
 
 legged_robot_interface
 {
