@@ -4,7 +4,7 @@
     <!-- <param name="/use_sim_time" value="true" /> -->
     <arg name="robot_name"         default="legged_robot"/>
     <arg name="config_name"        default="mpc"/>
-    <arg name="target_command"     default="$(find ocs2_jypro)/config/command/targetTrajectories.info"/>
+    <arg name="target_command"     default="$(find    )/config/command/targetTrajectories.info"/>
     <arg name="gait_command"       default="$(find ocs2_jypro)/config/command/gait.info"/>
     <arg name="rviz"               default="false" />
     <arg name="multiplot"          default="false"/>

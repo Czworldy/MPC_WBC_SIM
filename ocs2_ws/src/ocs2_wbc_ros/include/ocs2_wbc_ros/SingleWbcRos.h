@@ -29,12 +29,18 @@ public:
     vector_t update(const vector_t &stateDesired, const vector_t &inputDesired, const vector_t &rbdStateMeasured,
                     size_t mode,
                     scalar_t period, scalar_t time) override;
+    
+    vector_t updateWithContactInfo(const vector_t &stateDesired, const vector_t &inputDesired, const vector_t &rbdStateMeasured,
+           const vector_t& forceDesired, size_t mode, scalar_t period, scalar_t time, const ModeSchedule& modeSchedule);
+
 private:
     void dynamicCallback(ocs2_wbc_ros::wbcWeightConfig& config, uint32_t /*level*/);
     std::shared_ptr<dynamic_reconfigure::Server<ocs2_wbc_ros::wbcWeightConfig>> dynamic_srv_{};
     vector_t taskWeight_;
     std::shared_ptr<TrackingQP> qpPtr_;
     bool isInitRun_ = true;
+
+    ros::Publisher pub_, solved_force_pub_;
 
     benchmark::RepeatedTimer singleQpTimer_;
 

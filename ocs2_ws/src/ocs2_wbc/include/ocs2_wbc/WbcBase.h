@@ -12,7 +12,7 @@
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 
 #include "ocs2_wbc/UserParameter.h"
-
+#include "ocs2_wbc/LegLogic.h"
 // #include <ros/ros.h>
 
 // #include <dynamic_reconfigure/server.h>
@@ -62,7 +62,10 @@ protected:
     Task formulateBaseHeightMotionTask(); 
     Task formulateBaseAngularMotionTask();
     Task formulateBaseXYLinearAccelTask();
+    // Task formulateSwingLegTask(const vector_t& inputDesired);
     Task formulateSwingLegTask();
+    Task formulateSwingLegTask(const ocs2::legged_robot::feet_array_t<LegPhase>& legSwingPhases,
+                               const ocs2::legged_robot::feet_array_t<LegPhase>& legStancePhases);
 
     Task formulateBaseXYZMotionTask(); //yujiyu
     Task formulateBaseAccelTask(); // acording to the TRO paper in wbc part, they tracking linear and auglar acc in wbc.
@@ -74,6 +77,9 @@ protected:
     Task formulatejointDampTrackingTask();
 
     Task formulateContactForceTask(const vector_t& inputDesired) const;
+    Task formulateContactForceTask(const vector_t& inputDesired,
+                                   const ocs2::legged_robot::feet_array_t<LegPhase>& legSwingPhases,
+                                   const ocs2::legged_robot::feet_array_t<LegPhase>& legStancePhases) const;
 private:
     // void dynamicCallback(qm_wbc::WbcWeightConfig& config, uint32_t /*level*/);
     // void publishMsg();

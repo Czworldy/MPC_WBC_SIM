@@ -376,7 +376,7 @@ Task WbcBase::formulateSwingLegTask() {
     for (size_t i = 0; i < info_.numThreeDofContacts; ++i) {
         if (!contactFlag_[i]) {
             vector3_t accel = Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
-            //Lu Chen: 
+            //Lu Chen: //TODO
             // (on z-axis) Kf * (F_d - F_current) + Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
             a.block(3 * j, 0, 3, info_.generalizedCoordinatesNum) = j_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum);
             b.segment(3 * j, 3) = accel - dj_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum) * vMeasured_;
@@ -386,6 +386,59 @@ Task WbcBase::formulateSwingLegTask() {
 
     return {a, b, matrix_t(), vector_t()};
 }
+
+// Chen Lu Advised.
+// If leg in swing, returns a value between 0.0 (at start of swing phase) and 1.0 (at end of swing phase).
+Task WbcBase::formulateSwingLegTask(const feet_array_t<LegPhase>& legSwingPhases,
+                                    const feet_array_t<LegPhase>& legStancePhases) {
+    eeKinematics_->setPinocchioInterface(pinocchioInterfaceMeasured_);
+    std::vector<vector3_t> posMeasured = eeKinematics_->getPosition(vector_t());
+    std::vector<vector3_t> velMeasured = eeKinematics_->getVelocity(vector_t(), vector_t());
+    eeKinematics_->setPinocchioInterface(pinocchioInterfaceDesired_);
+    std::vector<vector3_t> posDesired = eeKinematics_->getPosition(vector_t());
+    std::vector<vector3_t> velDesired = eeKinematics_->getVelocity(vector_t(), vector_t());
+
+    matrix_t a(3 * (info_.numThreeDofContacts - numContacts_), numDecisionVars_);
+    vector_t b(a.rows());
+    a.setZero();
+    b.setZero();
+
+    matrix3_t Kp = matrix3_t::Identity(3, 3);
+    matrix3_t Kd = matrix3_t::Identity(3, 3);
+    Kp.diagonal() = Kp_swing_;
+    Kd.diagonal() = Kd_swing_;
+    size_t j = 0;
+    for (size_t i = 0; i < info_.numThreeDofContacts; ++i) {
+      if (!contactFlag_[i]) {
+        scalar_t weightSqrt = 1;
+        const scalar_t p = (userParam_.contactPhaseThreshold - 1) * (userParam_.contactPhaseThreshold - 1);
+        const scalar_t coeff_a = 1.0 / p;
+        const scalar_t coeff_b = -2.0 / p;
+        const scalar_t coeff_c = coeff_a;
+        const auto swingPhase = legSwingPhases[i].phase;
+        const auto stancePhase = legStancePhases[i].phase;
+        if (swingPhase >= userParam_.contactPhaseThreshold) {
+          Kp(2, 2) = 0; Kd(2, 2) = 0; // z-axis
+          // The weight decreases to 0 in  curve to 0 when the phase close to 1.0
+          weightSqrt = coeff_a * swingPhase * swingPhase + coeff_b * swingPhase + coeff_c;
+        }
+        if (stancePhase <= (1 - userParam_.contactPhaseThreshold) && stancePhase >= 0.0) {
+          Kp(2, 2) = 0; Kd(2, 2) = 0; // z-axis
+          scalar_t phase = 1 + stancePhase;
+          weightSqrt = coeff_a * phase * phase + coeff_b * phase + coeff_c;
+        }
+        vector3_t accel = Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
+        //Lu Chen: //TODO
+        // (on z-axis) Kf * (F_d - F_current) + Kp * (posDesired[i] - posMeasured[i]) + Kd * (velDesired[i] - velMeasured[i]);
+        a.block(3 * j, 0, 3, info_.generalizedCoordinatesNum) = weightSqrt * j_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum);
+        b.segment(3 * j, 3) = weightSqrt * (accel - dj_.block(3 * i, 0, 3, info_.generalizedCoordinatesNum) * vMeasured_);
+        j++;
+      }
+    }
+
+    return {a, b, matrix_t(), vector_t()};
+}
+
 
 // EoM
 // [Mb, -J^Tb]x = -hb
@@ -435,7 +488,7 @@ Task WbcBase::formulateTorqueLimitsTask() {
     return {matrix_t(), vector_t(), d, f};
 }
 
-// [J, 0] [ddq, F] = -\dot J v // active only in stance phase
+// [J, 0] [ddq, F] = -\dot J v // active only in stance phase // TODO
 Task WbcBase::formulateNoContactMotionTask() {
     matrix_t a(3 * numContacts_, numDecisionVars_);
     vector_t b(a.rows());
@@ -654,6 +707,31 @@ Task WbcBase::formulateContactForceTask(const vector_t& inputDesired) const {
     b = inputDesired.head(a.rows());
 
     return {a, b, matrix_t(), vector_t()};
+}
+
+// inputDesired [LF, RF, LH, RH] 
+Task WbcBase::formulateContactForceTask(const vector_t& inputDesired, 
+                                        const feet_array_t<LegPhase>& legSwingPhases,
+                                        const feet_array_t<LegPhase>& legStancePhases) const {
+  matrix_t a(3 * info_.numThreeDofContacts, numDecisionVars_);
+  vector_t b(a.rows());
+  a.setZero();
+  b.setZero();
+
+  for (size_t i = 0; i < info_.numThreeDofContacts; ++i) {
+    scalar_t weight = 1.0;
+    if(legSwingPhases[i].phase >= userParam_.contactPhaseThreshold) {
+      weight = 1;
+    }
+    if (legStancePhases[i].phase <= (1 - userParam_.contactPhaseThreshold) && legStancePhases[i].phase >= 0.0) {
+      weight = 10;
+    }
+    a.block(3 * i, info_.generalizedCoordinatesNum + 3 * i, 3, 3) = weight * matrix_t::Identity(3, 3);
+    b.segment(3 * i, 3) = weight * inputDesired.segment(3 * i, 3);
+  }
+  // b = weight * inputDesired.head(a.rows());
+
+  return {a, b, matrix_t(), vector_t()};
 }
 
 vector_t WbcBase::updateCmd(ocs2::vector_t x_optimal) {

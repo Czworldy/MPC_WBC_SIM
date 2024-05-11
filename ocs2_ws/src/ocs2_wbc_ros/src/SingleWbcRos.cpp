@@ -8,7 +8,9 @@
 
 #include "ocs2_wbc/TrackingQP.h"
 #include "ocs2_wbc/HoQp.h"
+#include "ocs2_wbc/LegLogic.h"
 
+#include <std_msgs/Float32MultiArray.h>
 namespace ocs2{
 namespace wbc{
 SingleWbcRos::SingleWbcRos(const ocs2::PinocchioInterface &pinocchioInterface, ocs2::CentroidalModelInfo info,
@@ -17,6 +19,8 @@ SingleWbcRos::SingleWbcRos(const ocs2::PinocchioInterface &pinocchioInterface, o
         : WbcBase(pinocchioInterface, info, eeKinematics, paramFile){
     taskWeight_ = vector_t::Ones(4);
     ros::NodeHandle nh_weight = ros::NodeHandle(nh, "wbc");
+    pub_ = nh_weight.advertise<std_msgs::Float32MultiArray>("phase", 1);
+    solved_force_pub_ = nh_weight.advertise<std_msgs::Float32MultiArray>("solved_force", 1);
 
     Task constraints = formulateFloatingBaseEomTask() + formulateNoContactMotionTask()
                  + formulateTorqueLimitsTask() + formulateFrictionConeTask();
@@ -69,9 +73,58 @@ void SingleWbcRos::dynamicCallback(ocs2_wbc_ros::wbcWeightConfig &config, uint32
     ROS_INFO_STREAM("\033[32m Update the wbc param. \033[0m");
 }
 
+vector_t SingleWbcRos::updateWithContactInfo(const vector_t &stateDesired, const vector_t &inputDesired, 
+                                             const vector_t &rbdStateMeasured, const vector_t& forceDesired, 
+                                             size_t mode, scalar_t period, scalar_t time, const ModeSchedule& modeSchedule) {
+  feet_array_t<LegPhase> legSwingPhases = getSwingPhasePerLeg(time, modeSchedule);
+  feet_array_t<LegPhase> legStancePhases = getContactPhasePerLeg(time, modeSchedule);
+  WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
+  std_msgs::Float32MultiArray phase_msg;
+  for (size_t i = 0; i < 4; i++) {
+    phase_msg.data.push_back(legSwingPhases[i].phase*300);
+  }
+  pub_.publish(phase_msg);
+  // taskWeight_ (sqrt):   1   1  10 0.1
+  Task trackingTask = formulateBaseAccelTask() * taskWeight_(0)
+                        + formulateBaseAngularMotionTask() * taskWeight_(1)
+                        + formulateSwingLegTask(legSwingPhases, legStancePhases) * taskWeight_(2)
+                        // + formulateSwingLegTask() * taskWeight_(2)
+                        // + formulateContactForceTask(forceDesired, legSwingPhases, legStancePhases) * taskWeight_(3) ;
+                        // + formulateSwingLegTask() * taskWeight_(2)
+                        + formulateContactForceTask(inputDesired) * taskWeight_(3) ;
 
-vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured, size_t mode,
-                                 scalar_t period, scalar_t time) {
+  Task constraints = formulateFloatingBaseEomTask() + formulateNoContactMotionTask()
+                 + formulateTorqueLimitsTask() + formulateFrictionConeTask();
+    
+  int res = qpPtr_->setQpProblem(trackingTask, constraints,isInitRun_);
+  isInitRun_ = false;
+  if(res != 0){
+      ROS_ERROR_STREAM(">>>>Whole-Body Control QP solver failed!<<<<");
+      std::cout << "rbdStateMeasured:\n" << rbdStateMeasured.transpose() << "\n";
+      std::cout << "stateDesired:\n" << stateDesired.transpose() << "\n";
+      std::cout << "inputDesired:\n" << inputDesired.transpose() << "\n";
+      std::cout << "mode: " << mode << " period: " << period << " time: " << time << "\n";
+      std::cout << "trackingTask\n";
+      trackingTask.print();
+      std::cout << "constraints\n";
+      constraints.print();
+  }
+
+  vector_t x_optimal = qpPtr_->getSolutions();
+  singleQpTimer_.endTimer();
+
+  std_msgs::Float32MultiArray x_optimal_msg;
+  x_optimal_msg.data.reserve(12);
+  for (size_t i = 0; i < 12; i++) {
+    x_optimal_msg.data.push_back(x_optimal[18 + i]);
+  }
+  solved_force_pub_.publish(x_optimal_msg);
+
+  return WbcBase::updateCmd(x_optimal);
+}
+
+vector_t SingleWbcRos::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured,
+                              size_t mode, scalar_t period, scalar_t time) {
     singleQpTimer_.startTimer();
     WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
 

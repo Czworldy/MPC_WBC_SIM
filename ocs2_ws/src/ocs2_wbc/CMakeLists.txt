@@ -74,6 +74,8 @@ add_library(${PROJECT_NAME}
         src/UserParameter.cpp
         src/TrackingQP.cpp
         src/SingleWbc.cpp
+
+        src/LegLogic.cpp
         )
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}

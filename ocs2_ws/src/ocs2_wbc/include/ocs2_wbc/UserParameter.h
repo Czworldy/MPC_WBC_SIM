@@ -90,6 +90,8 @@ class UserParameter{
         scalar_t Kp_rh_haa_pd_safe, Kd_rh_haa_pd_safe;
         scalar_t Kp_rh_hfe_pd_safe, Kd_rh_hfe_pd_safe;
         scalar_t Kp_rh_kfe_pd_safe, Kd_rh_kfe_pd_safe;
+
+        scalar_t contactPhaseThreshold;
         
 
         UserParameter(const std::string& filename);

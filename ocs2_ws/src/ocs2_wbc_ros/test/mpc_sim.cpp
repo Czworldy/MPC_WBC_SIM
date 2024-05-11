@@ -445,6 +445,7 @@ Eigen::Matrix<bool, 4, 1> contact_flag_real = {false, false, false, false};
       if (LFfootIndex == contact.getlocalBodyIndex()){
           if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")
               estStatesOutput.contact.lf = 1.;
+          std::cout << "force " << contact.getImpulse().e().transpose() << std::endl;
       }
       if (LHfootIndex == contact.getlocalBodyIndex()){
           if(world->getObject(contact.getPairObjectIndex())->getName() == "gnd" || world->getObject(contact.getPairObjectIndex())->getName() == "terrain")

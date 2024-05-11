@@ -198,6 +198,9 @@ UserParameter::UserParameter(const std::string& filename){
     loadData::loadPtreeValue(pt, Kd_rh_kfe_pd_safe, safeGuardCfg + ".Kd_rh_kfe_pd_safe", verbose);
     loadData::loadPtreeValue(pt, Kp_rh_kfe_pd_safe, safeGuardCfg + ".Kp_rh_kfe_pd_safe", verbose);
 
+    loadData::loadPtreeValue(pt, contactPhaseThreshold, wbcCfg + ".contactPhaseThreshold", verbose);
+    std::cout << "###########contactPhaseThreshold###########: " << contactPhaseThreshold << "\n";
+
     std::cerr << "\nUserParamerter Construction Finished!\n";
 }
 
