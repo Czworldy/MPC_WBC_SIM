@@ -40,7 +40,7 @@ private:
     std::shared_ptr<TrackingQP> qpPtr_;
     bool isInitRun_ = true;
 
-    ros::Publisher pub_, solved_force_pub_;
+    ros::Publisher pub_, solved_force_pub_, desiredForcePub_;
 
     benchmark::RepeatedTimer singleQpTimer_;
 

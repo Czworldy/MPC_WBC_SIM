@@ -19,6 +19,7 @@
 #include <ocs2_centroidal_model/ModelHelperFunctions.h>
 
 #include <ocs2_jypro/gait/MotionPhaseDefinition.h>
+#include <std_msgs/Float32MultiArray.h>
 
 namespace ocs2{
 namespace wbc{
@@ -81,8 +82,8 @@ WbcBase::WbcBase(const ocs2::PinocchioInterface& pinocchioInterface, ocs2::Centr
     // zyx2xyz_.setZero();
     // zyx2xyz_ << 0., 0., 1., 0., 1., 0., 1., 0., 0.;
 
-    // ros::NodeHandle nh;
-    // ee_pub_ = nh.advertise<nav_msgs::Odometry>("qm_wbc_ee", 1);
+    ros::NodeHandle nh;
+    endEfferotMeasuredVelPub_ = nh.advertise<std_msgs::Float32MultiArray>("wbc/eeMeasuredVel", 1);
     // last_time_ = 0.;
 
     // ros::NodeHandle nh_weight = ros::NodeHandle(controller_nh, "wbc");
@@ -106,9 +107,7 @@ void WbcBase::modifyWbcParameters() {
     Kd_swing_ = userParam_.Kd_foot;
 }
 
-
-vector_t WbcBase::update(const ocs2::vector_t &stateDesired, const ocs2::vector_t &inputDesired,
-                         const ocs2::vector_t &rbdStateMeasured, size_t mode, ocs2::scalar_t period, scalar_t time) {
+void WbcBase::updateMode(size_t mode) {
     contactFlag_ = ocs2::legged_robot::modeNumber2StanceLeg(mode);
     numContacts_ = 0;
     for (bool flag : contactFlag_) {
@@ -116,7 +115,11 @@ vector_t WbcBase::update(const ocs2::vector_t &stateDesired, const ocs2::vector_
             numContacts_++;
         }
     }
+}
 
+vector_t WbcBase::update(const ocs2::vector_t &stateDesired, const ocs2::vector_t &inputDesired,
+                         const ocs2::vector_t &rbdStateMeasured, size_t mode, ocs2::scalar_t period, scalar_t time) {
+    updateMode(mode);
     updateMeasured(rbdStateMeasured);
     updateDesired(stateDesired, inputDesired, period);
 
@@ -126,7 +129,6 @@ vector_t WbcBase::update(const ocs2::vector_t &stateDesired, const ocs2::vector_
     //     last_time_ = time;
     // }
     last_time_ = time;
-
 
     return {};
 }
@@ -397,6 +399,16 @@ Task WbcBase::formulateSwingLegTask(const feet_array_t<LegPhase>& legSwingPhases
     eeKinematics_->setPinocchioInterface(pinocchioInterfaceDesired_);
     std::vector<vector3_t> posDesired = eeKinematics_->getPosition(vector_t());
     std::vector<vector3_t> velDesired = eeKinematics_->getVelocity(vector_t(), vector_t());
+
+    //publish ee vel
+    std_msgs::Float32MultiArray eeVelMsg;
+    eeVelMsg.data.reserve(12);
+    for (size_t i = 0; i < 4; i++) {
+        eeVelMsg.data.push_back(velMeasured[i](0) * 100);
+        eeVelMsg.data.push_back(velMeasured[i](1) * 100);
+        eeVelMsg.data.push_back(velMeasured[i](2) * 100);
+    }
+    endEfferotMeasuredVelPub_.publish(eeVelMsg);
 
     matrix_t a(3 * (info_.numThreeDofContacts - numContacts_), numDecisionVars_);
     vector_t b(a.rows());

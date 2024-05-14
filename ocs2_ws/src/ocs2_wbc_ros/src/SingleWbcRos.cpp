@@ -21,6 +21,7 @@ SingleWbcRos::SingleWbcRos(const ocs2::PinocchioInterface &pinocchioInterface, o
     ros::NodeHandle nh_weight = ros::NodeHandle(nh, "wbc");
     pub_ = nh_weight.advertise<std_msgs::Float32MultiArray>("phase", 1);
     solved_force_pub_ = nh_weight.advertise<std_msgs::Float32MultiArray>("solved_force", 1);
+    desiredForcePub_ = nh_weight.advertise<std_msgs::Float32MultiArray>("desired_forceZ", 1);
 
     Task constraints = formulateFloatingBaseEomTask() + formulateNoContactMotionTask()
                  + formulateTorqueLimitsTask() + formulateFrictionConeTask();
@@ -78,20 +79,42 @@ vector_t SingleWbcRos::updateWithContactInfo(const vector_t &stateDesired, const
                                              size_t mode, scalar_t period, scalar_t time, const ModeSchedule& modeSchedule) {
   feet_array_t<LegPhase> legSwingPhases = getSwingPhasePerLeg(time, modeSchedule);
   feet_array_t<LegPhase> legStancePhases = getContactPhasePerLeg(time, modeSchedule);
-  WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
+
+  // WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period, time);
+  WbcBase::updateMode(mode);
+  WbcBase::updateMeasured(rbdStateMeasured);
+
   std_msgs::Float32MultiArray phase_msg;
   for (size_t i = 0; i < 4; i++) {
     phase_msg.data.push_back(legSwingPhases[i].phase*300);
   }
   pub_.publish(phase_msg);
+
+  // get Ee Measured Velocity call after WbcBase::updateMeasured
+  std_msgs::Float32MultiArray desiredForceMsg;
+  desiredForceMsg.data.reserve(4);
+  auto eeKinematicsPtr = getEeKinematicsPtr();
+  eeKinematicsPtr->setPinocchioInterface(getPinocchioInterfaceMeasured());
+  std::vector<vector3_t> velMeasured = eeKinematicsPtr->getVelocity(vector_t(), vector_t());
+  auto& usrParam = getUserParam();
+  vector_t costomInputDesried = inputDesired;
+  for (size_t leg = 0; leg < velMeasured.size(); leg++) {
+    if (legSwingPhases[leg].phase > usrParam.contactPhaseThreshold) {
+      costomInputDesried.segment(3 * leg, 3).z() = inputDesired.segment(3 * leg, 3).z() + 500 * velMeasured[leg].z();
+    }
+    desiredForceMsg.data.push_back(costomInputDesried.segment(3 * leg, 3).z());
+  }
+  desiredForcePub_.publish(desiredForceMsg);
+
+  // modify inputDesired
+  WbcBase::updateDesired(stateDesired, costomInputDesried, period);
+  
+
   // taskWeight_ (sqrt):   1   1  10 0.1
   Task trackingTask = formulateBaseAccelTask() * taskWeight_(0)
                         + formulateBaseAngularMotionTask() * taskWeight_(1)
                         + formulateSwingLegTask(legSwingPhases, legStancePhases) * taskWeight_(2)
-                        // + formulateSwingLegTask() * taskWeight_(2)
-                        // + formulateContactForceTask(forceDesired, legSwingPhases, legStancePhases) * taskWeight_(3) ;
-                        // + formulateSwingLegTask() * taskWeight_(2)
-                        + formulateContactForceTask(inputDesired) * taskWeight_(3) ;
+                        + formulateContactForceTask(costomInputDesried, legSwingPhases, legStancePhases) * taskWeight_(3);
 
   Task constraints = formulateFloatingBaseEomTask() + formulateNoContactMotionTask()
                  + formulateTorqueLimitsTask() + formulateFrictionConeTask();

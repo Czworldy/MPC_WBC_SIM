@@ -13,7 +13,7 @@
 
 #include "ocs2_wbc/UserParameter.h"
 #include "ocs2_wbc/LegLogic.h"
-// #include <ros/ros.h>
+#include <ros/ros.h>
 
 // #include <dynamic_reconfigure/server.h>
 // #include "ocs2_wbc/WbcWeightConfig.h"
@@ -47,7 +47,11 @@ public:
     UserParameter& getUserParam() { return userParam_; }
     void setUserParam(const UserParameter& userParam) { userParam_ = std::move(userParam); }
 
+    const PinocchioInterface& getPinocchioInterfaceMeasured() const { return pinocchioInterfaceMeasured_; }
+    PinocchioEndEffectorKinematics* getEeKinematicsPtr() const { return eeKinematics_.get(); }
+
 protected:
+    void updateMode(size_t mode); 
     void updateMeasured(const vector_t& rbdStateMeasured);
     void updateDesired(const vector_t& stateDesired, const vector_t& inputDesired, ocs2::scalar_t period);
     vector_t updateCmd(vector_t x_optimal);
@@ -128,7 +132,7 @@ private:
 
     // Eigen::Matrix3d zyx2xyz_;
 
-    // ros::Publisher ee_pub_;s
+    ros::Publisher endEfferotMeasuredVelPub_;
     scalar_t last_time_;
 };
 
