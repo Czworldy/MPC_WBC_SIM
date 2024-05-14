@@ -1,0 +1,3 @@
+[submodule "ocs2_ws/src/legged_footholds"]
+	path = ocs2_ws/src/legged_footholds
+	url = git@github.com:Czworldy/legged_footholds.git

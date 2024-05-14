@@ -2,7 +2,7 @@ build/
 devel/
 install/
 logs/
-legged_footholds/
+# legged_footholds/
 .catkin_tools/
 .vscode/
 .catkin_workspace
