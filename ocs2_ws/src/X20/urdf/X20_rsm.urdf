@@ -2,7 +2,7 @@
 <robot name="X20">
 
 
-  <link name="BASE">
+  <link name="base">
     <!-- <inertial>
       <origin
         xyz="0.005 0.000413 0.004"
@@ -39,7 +39,7 @@
   </link>
 
   <joint name="Base2Inertia" type="fixed">
-    <parent link="BASE" />
+    <parent link="base" />
     <child link="INERTIA" />
   </joint>
 
@@ -59,7 +59,7 @@
 
   <joint name="LF_HAA" type="revolute">
     <origin xyz="0.292 0.08 0" />
-    <parent link="BASE" />
+    <parent link="base" />
     <child link="LF_HIP" />
     <axis xyz="1 0 0" />
     <limit
@@ -152,7 +152,7 @@
 
   <joint name="RF_HAA" type="revolute">
     <origin xyz="0.292 -0.08 0" />
-    <parent link="BASE" />
+    <parent link="base" />
     <child link="RF_HIP" />
     <axis xyz="-1 0 0" />
     <limit
@@ -245,7 +245,7 @@
 
   <joint name="LH_HAA" type="revolute">
     <origin xyz="-0.292 0.08 0" />
-    <parent link="BASE" />
+    <parent link="base" />
     <child link="LH_HIP" />
     <axis xyz="1 0 0" />
     <limit
@@ -338,7 +338,7 @@
 
   <joint name="RH_HAA" type="revolute">
     <origin xyz="-0.292 -0.08 0" />
-    <parent link="BASE" />
+    <parent link="base" />
     <child link="RH_HIP" />
     <axis xyz="-1 0 0" />
     <limit
@@ -459,7 +459,7 @@
   </link>
   <joint name="lidar_joint" type="fixed">
     <origin rpy="0 0.0 0" xyz="0.13 0 0.2"/>
-    <parent link="BASE"/>
+    <parent link="base"/>
     <child link="lidar_link"/>
   </joint>
 

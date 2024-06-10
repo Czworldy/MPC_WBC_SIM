@@ -210,9 +210,9 @@ void WbcBase::updateMeasured(const ocs2::vector_t &rbdStateMeasured) {
     base_j.setZero(6, info_.generalizedCoordinatesNum);
     base_dj.setZero(6, info_.generalizedCoordinatesNum);
 
-    // std::cout << "base id: " << model.getBodyId("BASE") << "\n";
-    pinocchio::getFrameJacobian(model, data, model.getBodyId("BASE"), pinocchio::LOCAL_WORLD_ALIGNED, base_j);
-    pinocchio::getFrameJacobianTimeVariation(model, data, model.getBodyId("BASE"), pinocchio::LOCAL_WORLD_ALIGNED, base_dj);
+    // std::cout << "base id: " << model.getBodyId("base") << "\n";
+    pinocchio::getFrameJacobian(model, data, model.getBodyId("base"), pinocchio::LOCAL_WORLD_ALIGNED, base_j);
+    pinocchio::getFrameJacobianTimeVariation(model, data, model.getBodyId("base"), pinocchio::LOCAL_WORLD_ALIGNED, base_dj);
     base_j_.setZero(); base_j_ = base_j;
     base_dj_.setZero(); base_dj_ = base_dj;
 

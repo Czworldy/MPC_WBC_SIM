@@ -102,7 +102,7 @@ class TestSphereKinematics : public ::testing::Test {
     std::cout << "urdfFile: " << urdfFile << "\n";
     pinocchioInterfacePtr.reset(new ocs2::PinocchioInterface(createPinocchioInterface(urdfFile)));
     std::cout << "pinocchioInterfacePtr->getModel().nv: " << pinocchioInterfacePtr->getModel().nv << '\n';
-    pinocchioSphereInterfacePtr.reset(new ocs2::PinocchioSphereInterface(*pinocchioInterfacePtr, {"BASE", "LF_HIP"},
+    pinocchioSphereInterfacePtr.reset(new ocs2::PinocchioSphereInterface(*pinocchioInterfacePtr, {"base", "LF_HIP"},
                                                                          {0.20, 0.20}, 0.7));
     std::cout << "pinocchioSphereInterfacePtr->getNumSpheresInTotal(): " << pinocchioSphereInterfacePtr->getNumSpheresInTotal() << '\n';
     sphereKinematicsPtr.reset(new ocs2::PinocchioSphereKinematics(*pinocchioSphereInterfacePtr, pinocchioMapping));
