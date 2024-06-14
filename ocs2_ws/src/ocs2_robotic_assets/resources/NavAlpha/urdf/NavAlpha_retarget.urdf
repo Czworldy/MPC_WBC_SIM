@@ -1,0 +1,766 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="NavAlpha">
+    <link name="world"/>
+    <joint name="root_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 1.5"/>
+        <parent link="world"/>
+        <child link="TORSO"/>
+        <limit effort="0" velocity="0" lower="0" upper="0" />
+    </joint>
+
+    <link name="SACRUM">
+    <inertial>
+      <origin xyz="0.000569714509520716 -9.48284002073307E-05 -0.0606580407006534" rpy="0 0 0"/>
+      <mass value="3.458573"/>
+      <inertia ixx="0.010625" ixy="0.000004" ixz="0.000124" iyy="0.005360" iyz="-0.000007" izz="0.010317"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SACRUM.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+
+  <link name="TORSO">
+    <inertial>
+      <origin xyz="0.00269333207946619 2.57176120144198E-05 -0.0909703884621722" rpy="0 0 0"/>
+      <mass value="14.580685"/>
+      <inertia ixx="0.514238" ixy="0.000002" ixz="0.008349" iyy="0.398774" iyz="0.000033" izz="0.182275"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/TORSO.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+
+    <joint name="A_Waist" type="revolute">
+        <origin xyz="0 0 -0.301" rpy="0 0 0"/>
+        <parent link="TORSO"/>
+        <child link="SACRUM"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-0.698" upper="0.698" effort="84.0" velocity="7.85"/>
+    </joint>
+
+    <link name="SCAPULA_R">
+    <inertial>
+      <origin xyz="-0.0359375208638265 -0.000349064955816131 0.047552710249039" rpy="0 0 0"/>
+      <mass value="1.05706915234352"/>
+      <inertia ixx="0.000686" ixy="-0.000011" ixz="-0.000085" iyy="0.000951" iyz="0.000013" izz="0.000883"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SCAPULA_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_Z_R" type="revolute">
+    <origin xyz="0 -0.1725 0.00475" rpy="0 0 0"/>
+    <parent link="TORSO"/>
+    <child link="SCAPULA_R"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.366" upper="0.366" effort="100.0" velocity="4.1"/>
+  </joint>
+  
+<link name="SHOULDER_R">
+    <inertial>
+      <origin xyz="0.0447478321035898 0.0359103520426701 0.000349580289073392" rpy="0 0 0"/>
+      <mass value="1.06139016607673"/>
+      <inertia ixx="0.000887" ixy="0.000088" ixz="-0.000013" iyy="0.000690" iyz="-0.000011" izz="0.000952"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SHOULDER_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_X_R" type="revolute">
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <parent link="SCAPULA_R"/>
+    <child link="SHOULDER_R"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.366" upper="0.366" effort="100.0" velocity="4.1"/>
+  </joint>
+  
+<link name="UPPERARM_R">
+    <inertial>
+      <origin xyz="-0.00273344310050272 -0.0676321929880091 -0.0520319713874517" rpy="0 0 0"/>
+      <mass value="1.92341746668597"/>
+      <inertia ixx="0.016157" ixy="0.000329" ixz="0.000560" iyy="0.014414" iyz="0.002964" izz="0.003754"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/UPPERARM_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_Y_R" type="revolute">
+    <origin xyz="0.04725 0 0" rpy="0 0 0"/>
+    <parent link="SHOULDER_R"/>
+    <child link="UPPERARM_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.788" upper="0.714" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="FOREARM_R">
+    <inertial>
+      <origin xyz="0.102047308378174 -0.000130605149704421 -0.0192537062823929" rpy="0 0 0"/>
+      <mass value="0.78"/>
+      <inertia ixx="0.006731" ixy="0.001134" ixz="-0.001486" iyy="0.005645" iyz="-0.002849" izz="0.003448"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/FOREARM_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Elbow_R" type="revolute">
+    <origin xyz="0 -0.09925 -0.25" rpy="0 1.047197551 0"/>
+    <parent link="UPPERARM_R"/>
+    <child link="FOREARM_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0" upper="0.1" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="WRIST_REVOLUTE_R">
+    <inertial>
+      <origin xyz="0.0543219306382472 4.27531756233557E-05 -0.00326211047130864" rpy="0 0 0"/>
+      <mass value="0.715"/>
+      <inertia ixx="0.000276" ixy="-0.000001" ixz="-0.000006" iyy="0.000327" iyz="0.000000" izz="0.000341"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/WRIST_REVOLUTE_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_X_R" type="revolute">
+    <origin xyz="0.137199999978107 0 -0.0201175060455345" rpy="0 0 0"/>
+    <parent link="FOREARM_R"/>
+    <child link="WRIST_REVOLUTE_R"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-2.6616" upper="2.6616" effort="13.36" velocity="53.04"/>
+  </joint>
+  
+<link name="WRIST_UPDOWN_R">
+    <inertial>
+      <origin xyz="0.028526656311576 -0.0202838165215166 0.0188060739195478" rpy="0 0 0"/>
+      <mass value="0.0817221006239077"/>
+      <inertia ixx="0.000048" ixy="-0.000020" ixz="-0.000020" iyy="0.000083" iyz="0.000013" izz="0.000083"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/WRIST_UPDOWN_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_Z_R" type="revolute">
+    <origin xyz="0.0552999999999993 0 0" rpy="0 0 0"/>
+    <parent link="WRIST_REVOLUTE_R"/>
+    <child link="WRIST_UPDOWN_R"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.829" upper="0.567" effort="13.36" velocity="53.04"/>
+  </joint>
+  
+<link name="HAND_R">
+    <inertial>
+      <origin xyz="0.0695464229734349 0.00473318090191974 0.00160875540199368" rpy="0 0 0"/>
+      <mass value="1.312"/>
+      <inertia ixx="0.000915" ixy="0.000421" ixz="0.000174" iyy="0.006870" iyz="0.000111" izz="0.006840"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/HAND_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_Y_R" type="revolute">
+    <origin xyz="0.0569999999994681 0 -0.00145000000000028" rpy="0 0 0"/>
+    <parent link="WRIST_UPDOWN_R"/>
+    <child link="HAND_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.829" upper="0.567" effort="13.36" velocity="53.04"/>
+  </joint>
+  
+<link name="SCAPULA_L">
+    <inertial>
+      <origin xyz="-0.0360059483123602 0.000114116376275453 0.0476690864481293" rpy="0 0 0"/>
+      <mass value="1.05467523393413"/>
+      <inertia ixx="0.000688" ixy="0.000011" ixz="-0.000087" iyy="0.000955" iyz="-0.000015" izz="0.000886"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SCAPULA_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_Z_L" type="revolute">
+    <origin xyz="0 0.1725 0.00475" rpy="0 0 0"/>
+    <parent link="TORSO"/>
+    <child link="SCAPULA_L"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.366" upper="0.366" effort="100.0" velocity="4.1"/>
+  </joint>
+  
+<link name="SHOULDER_L">
+    <inertial>
+      <origin xyz="0.0447310113171761 -0.0359348096066185 0.000250121210978893" rpy="0 0 0"/>
+      <mass value="1.06139021637706"/>
+      <inertia ixx="0.000887" ixy="-0.000088" ixz="-0.000015" iyy="0.000690" iyz="0.000011" izz="0.000952"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SHOULDER_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_X_L" type="revolute">
+    <origin xyz="0 0 0.0499999999999998" rpy="0 0 0"/>
+    <parent link="SCAPULA_L"/>
+    <child link="SHOULDER_L"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.366" upper="0.366" effort="100.0" velocity="4.1"/>
+  </joint>
+  
+<link name="UPPERARM_L">
+    <inertial>
+      <origin xyz="-0.00243736548578334 0.0685555032525328 -0.0524308433640039" rpy="0 0 0"/>
+      <mass value="1.924905"/>
+      <inertia ixx="0.016125" ixy="-0.000323" ixz="0.000586" iyy="0.014383" iyz="-0.002951" izz="0.003755"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/UPPERARM_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Shoulder_Y_L" type="revolute">
+    <origin xyz="0.0472499999999873 0 0" rpy="0 0 0"/>
+    <parent link="SHOULDER_L"/>
+    <child link="UPPERARM_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.788" upper="0.714" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="FOREARM_L">
+    <inertial>
+      <origin xyz="0.0999506825074519 1.21970257412896E-05 -0.0192163862821584" rpy="0 0 0"/>
+      <mass value="0.751"/>
+      <inertia ixx="0.000329" ixy="-0.000003" ixz="-0.000060" iyy="0.000900" iyz="0.000000" izz="0.000885"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/FOREARM_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Elbow_L" type="revolute">
+    <origin xyz="0 0.0992500045419094 -0.25000000701341" rpy="0 1.047197551 0"/>
+    <parent link="UPPERARM_L"/>
+    <child link="FOREARM_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0" upper="0.1" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="WRIST_REVOLUTE_L">
+    <inertial>
+      <origin xyz="0.0523763798011389 8.63085236631478E-05 -0.00310940640535751" rpy="0 0 0"/>
+      <mass value="0.715"/>
+      <inertia ixx="0.000276" ixy="-0.000001" ixz="-0.000006" iyy="0.000327" iyz="0.000000" izz="0.000341"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/WRIST_REVOLUTE_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_X_L" type="revolute">
+    <origin xyz="0.137199999978108 0 -0.0201174863908047" rpy="0 0 0"/>
+    <parent link="FOREARM_L"/>
+    <child link="WRIST_REVOLUTE_L"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-2.6616" upper="2.6616" effort="13.36" velocity="53.04"/>
+  </joint>
+  
+<link name="WRIST_UPDOWN_L">
+    <inertial>
+      <origin xyz="0.0284733436318894 0.0202560729794343 0.0188338170120957" rpy="0 0 0"/>
+      <mass value="0.0817220743836156"/>
+      <inertia ixx="0.000048" ixy="0.000020" ixz="-0.000020" iyy="0.000083" iyz="-0.000013" izz="0.000083"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/WRIST_UPDOWN_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_Z_L" type="revolute">
+    <origin xyz="0.0553 0 0" rpy="0 0 0"/>
+    <parent link="WRIST_REVOLUTE_L"/>
+    <child link="WRIST_UPDOWN_L"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.829" upper="0.567" effort="13.36" velocity="53.04"/>
+  </joint>
+  
+<link name="HAND_L">
+    <inertial>
+      <origin xyz="0.0695462422687315 -0.00473318366683667 0.00164644484525589" rpy="0 0 0"/>
+      <mass value="1.312"/>
+      <inertia ixx="0.000915" ixy="-0.000421" ixz="0.000171" iyy="0.006870" iyz="-0.000112" izz="0.006840"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/HAND_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Wrist_Y_L" type="revolute">
+    <origin xyz="0.0569999999994686 0 -0.00145000000000017" rpy="0 0 0"/>
+    <parent link="WRIST_UPDOWN_L"/>
+    <child link="HAND_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.829" upper="0.567" effort="13.36" velocity="53.04"/>
+  </joint>
+    
+<link name="ILIUM_R">
+    <inertial>
+      <origin xyz="-0.0789427130932882 -0.0299918162329412 0.0109754797045423" rpy="0 0 0"/>
+      <mass value="1.77596540967189"/>
+      <inertia ixx="0.003119" ixy="0.000333" ixz="0.001473" iyy="0.006598" iyz="0.000284" izz="0.005569"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ILIUM_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_Z_R" type="revolute">
+    <origin xyz="0 -0.045 -0.186999999999999" rpy="0 0 0"/>
+    <parent link="SACRUM"/>
+    <child link="ILIUM_R"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.174" upper="0.174" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="ISCHIUM_R">
+    <inertial>
+      <origin xyz="-0.00467153472554872 0.0104027366135314 -5.65804917362911E-07" rpy="0 0 0"/>
+      <mass value="1.58838717764759"/>
+      <inertia ixx="0.001280" ixy="0.000086" ixz="0.000018" iyy="0.002080" iyz="0.000011" izz="0.001700"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ISCHIUM_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_X_R" type="revolute">
+    <origin xyz="0 -0.0324999999999999 0" rpy="0 0 0"/>
+    <parent link="ILIUM_R"/>
+    <child link="ISCHIUM_R"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.349" upper="0.174" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="THIGH_R">
+    <inertial>
+      <origin xyz="0.00600101882380678 -0.0302294369375905 -0.044440578997517" rpy="0 0 0"/>
+      <mass value="3.47790562742139"/>
+      <inertia ixx="0.029855" ixy="0.000245" ixz="-0.001917" iyy="0.030591" iyz="-0.001595" izz="0.005636"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/THIGH_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_Y_R" type="revolute">
+    <origin xyz="0 -0.0431999999999967 0" rpy="0 0 0"/>
+    <parent link="ISCHIUM_R"/>
+    <child link="THIGH_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.98967" upper="0.681" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="SHANK_R">
+    <inertial>
+      <origin xyz="0.0137265660926262 -0.00971227146254366 -0.0609390132907167" rpy="0 0 0"/>
+      <mass value="2.63959020809851"/>
+      <inertia ixx="0.017780" ixy="0.000333" ixz="-0.000188" iyy="0.017967" iyz="-0.001069" izz="0.003074"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SHANK_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Knee_R" type="revolute">
+    <origin xyz="0 0 -0.300000000000003" rpy="0 0 0"/>
+    <parent link="THIGH_R"/>
+    <child link="SHANK_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.071" upper="2.617" effort="180.0" velocity="12.0"/>
+  </joint>
+  
+<link name="ASTRAGALUS_R">
+    <inertial>
+      <origin xyz="0.000903301888718205 -1.06456613413464E-07 1.68359249291816E-07" rpy="0 0 0"/>
+      <mass value="0.0142406828215175"/>
+      <inertia ixx="0.000001" ixy="0.000000" ixz="0.000000" iyy="0.000003" iyz="0.000000" izz="0.000003"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ASTRAGALUS_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Ankle_Y_R" type="revolute">
+    <origin xyz="0 0 -0.3" rpy="0 0 0"/>
+    <parent link="SHANK_R"/>
+    <child link="ASTRAGALUS_R"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.134" upper="0.261" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="FOOT_R">
+    <inertial>
+      <origin xyz="0.0109830217241716 -0.000738288840988243 -0.0315328595060989" rpy="0 0 0"/>
+      <mass value="0.55710095562192"/>
+      <inertia ixx="0.000365" ixy="0.000002" ixz="-0.000011" iyy="0.002153" iyz="-0.000005" izz="0.002411"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/FOOT_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Ankle_X_R" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="ASTRAGALUS_R"/>
+    <child link="FOOT_R"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.222" upper="0.222" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="TIPTOE_R">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="5.23598775598299E-07"/>
+      <inertia ixx="5.23598775598299E-14" ixy="0" ixz="0" iyy="5.23598775598299E-14" iyz="0" izz="5.23598775598299E-14"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/TIPTOE_Z_R.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+    <collision>
+        <origin xyz="0 0 0.005"/>
+        <geometry>
+            <box size="0.18 0.08 0.01"/>
+        </geometry>
+    </collision>
+    </link>
+  
+<joint name="Tiptoe_Z_R" type="fixed">
+    <origin xyz="0 0 -0.0480000000000014" rpy="0 0 0"/>
+    <parent link="FOOT_R"/>
+    <child link="TIPTOE_R"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  
+<link name="ILIUM_L">
+    <inertial>
+      <origin xyz="-0.0789423587794769 0.0297316857714713 0.011083201129421" rpy="0 0 0"/>
+      <mass value="1.77597125972768"/>
+      <inertia ixx="0.003112" ixy="-0.000308" ixz="0.001463" iyy="0.006591" iyz="-0.000276" izz="0.005569"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ILIUM_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_Z_L" type="revolute">
+    <origin xyz="0 0.045 -0.187" rpy="0 0 0"/>
+    <parent link="SACRUM"/>
+    <child link="ILIUM_L"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.174" upper="0.174" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="ISCHIUM_L">
+    <inertial>
+      <origin xyz="-0.00492147244930066 -0.0102624003359874 -0.000332615029094097" rpy="0 0 0"/>
+      <mass value="1.588381"/>
+      <inertia ixx="0.001280" ixy="-0.000086" ixz="0.000013" iyy="0.002080" iyz="0.000006" izz="0.001700"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ISCHIUM_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_X_L" type="revolute">
+    <origin xyz="0 0.0325000000000001 0" rpy="0 0 0"/>
+    <parent link="ILIUM_L"/>
+    <child link="ISCHIUM_L"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.349" upper="0.174" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="THIGH_L">
+    <inertial>
+      <origin xyz="0.00682661465630239 0.0286138528747395 -0.0444866062740956" rpy="0 0 0"/>
+      <mass value="3.48982515058213"/>
+      <inertia ixx="0.029856" ixy="-0.000312" ixz="-0.001911" iyy="0.030814" iyz="0.001645" izz="0.005536"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/THIGH_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.776470588235294 0.756862745098039 0.737254901960784 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Hip_Y_L" type="revolute">
+    <origin xyz="0 0.0431999999999993 0" rpy="0 0 0"/>
+    <parent link="ISCHIUM_L"/>
+    <child link="THIGH_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.98967" upper="0.681" effort="84.0" velocity="7.85"/>
+  </joint>
+  
+<link name="SHANK_L">
+    <inertial>
+      <origin xyz="0.0140630119930577 0.00982214094796127 -0.0608873192363056" rpy="0 0 0"/>
+      <mass value="2.64136625492495"/>
+      <inertia ixx="0.017775" ixy="-0.000346" ixz="-0.000199" iyy="0.018014" iyz="0.001085" izz="0.003096"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/SHANK_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Knee_L" type="revolute">
+    <origin xyz="0 0 -0.299999999999975" rpy="0 0 0"/>
+    <parent link="THIGH_L"/>
+    <child link="SHANK_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.071" upper="2.617" effort="180.0" velocity="12.0"/>
+  </joint>
+  
+<link name="ASTRAGALUS_L">
+    <inertial>
+      <origin xyz="0.000903301888783382 1.06456609527683E-07 -1.68359277907815E-07" rpy="0 0 0"/>
+      <mass value="0.0142406828215176"/>
+      <inertia ixx="0.000001" ixy="0.000000" ixz="0.000000" iyy="0.000003" iyz="0.000000" izz="0.000003"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/ASTRAGALUS_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Ankle_Y_L" type="revolute">
+    <origin xyz="0 0 -0.299999999999999" rpy="0 0 0"/>
+    <parent link="SHANK_L"/>
+    <child link="ASTRAGALUS_L"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.134" upper="0.261" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="FOOT_L">
+    <inertial>
+      <origin xyz="0.01098302167634 0.000737382999283498 -0.0315328592994139" rpy="0 0 0"/>
+      <mass value="0.55710096069042"/>
+      <inertia ixx="0.000365" ixy="-0.000002" ixz="-0.000011" iyy="0.002153" iyz="0.000005" izz="0.002411"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/FOOT_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.223529411764706 0.223529411764706 0.223529411764706 1"/>
+      </material>
+    </visual>
+    </link>
+  
+<joint name="Ankle_X_L" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="ASTRAGALUS_L"/>
+    <child link="FOOT_L"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.222" upper="0.222" effort="28.0" velocity="14.65"/>
+  </joint>
+  
+<link name="TIPTOE_L">
+    <inertial>
+      <origin xyz="6.93889390390723E-18 5.55111512312578E-17 6.93889390390723E-18" rpy="0 0 0"/>
+      <mass value="5.23598775598299E-07"/>
+      <inertia ixx="5.23598775598299E-14" ixy="-1.9672616879394E-58" ixz="0" iyy="5.23598775598299E-14" iyz="0" izz="5.23598775598299E-14"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ocs2_robotic_assets/resources/NavAlpha/meshes/TIPTOE_Z_L.STL"/>
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+    <collision>
+        <origin xyz="0 0 0.005"/>
+        <geometry>
+            <box size="0.18 0.08 0.01"/>
+        </geometry>
+    </collision>
+    </link>
+  
+<joint name="Tiptoe_Z_L" type="fixed">
+    <origin xyz="0 0 -0.0480000000000287" rpy="0 0 0"/>
+    <parent link="FOOT_L"/>
+    <child link="TIPTOE_L"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+</robot>

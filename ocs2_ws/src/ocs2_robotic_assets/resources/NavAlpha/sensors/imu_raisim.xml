@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sensor_set name="imu_raisim">
+    <origin rpy="0.0 0.0 0.0" xyz="0 0 0.0"/>
+    <link>
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0.01"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.10 0.10 0.10"/>
+            </geometry>
+        </visual>
+        <sensor name="imu" type="imu" update_rate="200">
+            <origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
+            <limit acc_limit="500" ang_vel_limit="400"/>
+            <noise type="gaussian" mean="0.0" stddev="0.01"/>
+        </sensor>
+    </link>
+</sensor_set>
