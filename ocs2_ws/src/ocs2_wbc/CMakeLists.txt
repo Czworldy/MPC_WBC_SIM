@@ -8,6 +8,7 @@ set(QPOASES_INLUDE_DIRS /usr/local/include/qpOASES)
 find_package(catkin REQUIRED
         COMPONENTS
         ocs2_jypro
+        ocs2_anymal_models
         )
 
 find_package(raisim CONFIG REQUIRED)
@@ -31,6 +32,7 @@ catkin_package(
         simple_motion
         CATKIN_DEPENDS
         ocs2_jypro
+        ocs2_anymal_models
         DEPENDS
         pinocchio
 )
@@ -69,6 +71,7 @@ target_compile_options(simple_motion PUBLIC ${OCS2_CXX_FLAGS})
 add_library(${PROJECT_NAME}
         src/HoQp.cpp
         src/WbcBase.cpp
+        src/QuadrupedWbc.cpp
         # src/HierarchicalWbc.cpp
 
         src/UserParameter.cpp

@@ -347,11 +347,11 @@ Task WbcBase::formulateBaseXYZMotionTask() {
 }
 
 Task WbcBase::formulateBaseAccelTask() {
-  matrix_t a(6, numDecisionVars_);
+  matrix_t a(3, numDecisionVars_);
   a.setZero();
   a.block(0, 0, 3, 3) = matrix_t::Identity(3, 3);
 
-  Vector6 b = baseAccDesired_.head(3);
+  vector3_t b = baseAccDesired_.head(3);
 
   return {a, b, matrix_t(), vector_t()};
 }

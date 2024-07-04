@@ -16,4 +16,6 @@
     <depend>ocs2_wbc</depend>
     <depend>ocs2_msgs</depend>
     <depend>ocs2_raisim_ros</depend>
+    <depend>ocs2_anymal_models</depend>
+    
 </package>

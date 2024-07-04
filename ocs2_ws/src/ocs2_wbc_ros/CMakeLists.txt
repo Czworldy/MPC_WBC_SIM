@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         ocs2_wbc
         ocs2_msgs
         pronto_msgs
+        ocs2_anymal_models
         ocs2_raisim_ros)
 find_package(PCL 1.1 REQUIRED)
 
@@ -55,6 +56,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}
         src/SingleWbcRos.cpp
+        src/QuadrupedWbcRos.cpp
         src/LeggedRobotRaisimConversions.cpp
         )
 add_dependencies(${PROJECT_NAME}
