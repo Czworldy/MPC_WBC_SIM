@@ -43,6 +43,13 @@
     <child link="INERTIA" />
   </joint>
 
+  <joint name="base_to_imu" type="fixed">
+      <parent link="base"/>
+      <child link="imu_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+  </joint>
+  <link name="imu_link" sensor="imu.xml"/>
+
 
   <link name="LF_HIP">
     <inertial>
