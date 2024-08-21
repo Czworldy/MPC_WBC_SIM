@@ -165,7 +165,7 @@ void QuadrupedWbc::updateDesired(const ocs2::vector_t &stateDesired, const ocs2:
   lastBaseTwist_ = vDesired_.head<6>();
 
   baseAccDesired_ = ddq_base;
-  std::cout << "baseAccDesired_: " << baseAccDesired_.transpose() << "\n";
+  // std::cout << "baseAccDesired_: " << baseAccDesired_.transpose() << "\n";
   // const auto& A = getCentroidalMomentumMatrix(pinocchioInterfaceDesired_);
   // const Matrix6 Ab = A.template leftCols<6>();
   // const auto AbInv = computeFloatingBaseCentroidalMomentumMatrixInverse(Ab);
@@ -249,6 +249,8 @@ Task QuadrupedWbc::formulateFloatingBaseEomTask() {
   Mb = data.M.topRows(6);
   hb = data.nle.topRows(6);
   Jb_T = j_.transpose().topRows(6);
+
+  std::cout << "Mb: \n" << Mb << "\n";
 
   a << Mb, -Jb_T;
   b = -hb;
@@ -349,17 +351,19 @@ Task QuadrupedWbc::formulateBaseAngularMotionTask(){
   b.setZero();
 
   a.block(0, 0, 3, BASE_COORDINATE_SIZE+JOINT_COORDINATE_SIZE) = base_j_.block(3, 0, 3, BASE_COORDINATE_SIZE+JOINT_COORDINATE_SIZE);
-  // std::cout << "[formulateBaseAngularMotionTask] a: \n" << a << "\n";
+  a.middleCols(3, 3) = matrix_t::Identity(3, 3);
+  std::cout << "[formulateBaseAngularMotionTask] a: \n" << a << "\n";
+  std::cout << "base_j: \n" << base_j_ << "\n";
 
   Eigen::Quaterniond quatMeasured(qMeasured_.segment<4>(3));
   vector3_t eulerXYZ = eulerAnglesFromQuaternionBaseToOrigin(quatMeasured);
 
   // from derivative euler to angular
   vector3_t omegaMeasuredInBase = vMeasured_.segment<3>(3);
-  vector3_t vMeasuredGlobal = rotateVectorBaseToOrigin(omegaMeasuredInBase, eulerXYZ);
+  vector3_t vMeasuredGlobal = omegaMeasuredInBase;//rotateVectorBaseToOrigin(omegaMeasuredInBase, eulerXYZ);
           // getGlobalAngularVelocityFromEulerAnglesZyxDerivatives<scalar_t>(eulerAngles, vMeasured_.segment<3>(3));
   vector3_t omegaDesiredInBase = vDesired_.segment<3>(3);
-  vector3_t vDesiredGlobal =  rotateVectorBaseToOrigin(omegaDesiredInBase, eulerXYZ);
+  vector3_t vDesiredGlobal =  omegaDesiredInBase;//rotateVectorBaseToOrigin(omegaDesiredInBase, eulerXYZ);
           // getGlobalAngularVelocityFromEulerAnglesZyxDerivatives<scalar_t>(eulerAngles, vDesired_.segment<3>(3));
 
   // from euler to rotation
@@ -372,16 +376,21 @@ Task QuadrupedWbc::formulateBaseAngularMotionTask(){
           // getRotationMatrixFromZyxEulerAngles<scalar_t>(eulerAnglesDesired);
 
   vector3_t error = rotationErrorInWorld<scalar_t>(rotationBaseReferenceToWorld, rotationBaseMeasuredToWorld);
+  error.setZero();
 
   // desired acc
   const vector3_t base_angular_acc = baseAccDesired_.head(3);
-  vector3_t accDesired = rotateVectorBaseToOrigin(base_angular_acc, eulerXYZ);
+  vector3_t accDesired = base_angular_acc;//rotateVectorBaseToOrigin(base_angular_acc, eulerXYZ);
+  accDesired.setZero();
+  vDesiredGlobal.setZero();
+  vMeasuredGlobal.setZero();
+  // vector3_t accDesired = rotateVectorBaseToOrigin(base_angular_acc, eulerXYZ);
     // getGlobalAngularAccelerationFromEulerAnglesZyxDerivatives<scalar_t>(eulerAngles, vDesired_.segment<3>(3), baseAccDesired_.segment<3>(3));
 
   b = accDesired + baseAngularKp_  * error + baseAngularKd_ * (vDesiredGlobal - vMeasuredGlobal)
                 - base_dj_.block(3, 0, 3, BASE_COORDINATE_SIZE+JOINT_COORDINATE_SIZE) * vMeasured_;
 
-  return {a, b, matrix_t(), vector_t()};
+  return {matrix_t(), vector_t(), matrix_t(), vector_t()};
 }
 
 // [J, 0] x = \dot V - \dotJ v // active only in swing phase -> always active

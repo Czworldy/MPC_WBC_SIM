@@ -89,7 +89,7 @@ vector_t QuadrupedWbcRos::update(const vector_t& stateDesired, const vector_t& i
                         + formulateContactForceTask(inputDesired) * taskWeight_(3) ;
 
     Task constraints = formulateFloatingBaseEomTask() + formulateNoContactMotionTask()
-                 + formulateTorqueLimitsTask() + formulateFrictionConeTask();
+                 + formulateTorqueLimitsTask() ;//+ formulateFrictionConeTask();
     
 
     // TrackingQP singQp(trackingTask, costraints);

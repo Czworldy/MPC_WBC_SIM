@@ -66,6 +66,16 @@ visualization_msgs::Marker getLineMsg(std::vector<geometry_msgs::Point>&& points
   return line;
 }
 
+visualization_msgs::Marker getLineMsg(std::vector<geometry_msgs::Point>&& points, Color color, double alaph, double lineWidth) {
+  visualization_msgs::Marker line;
+  line.type = visualization_msgs::Marker::LINE_STRIP;
+  line.scale.x = lineWidth;
+  line.color = getColor(color, alaph);
+  line.points = std::move(points);
+  line.pose.orientation = getOrientationMsg({1., 0., 0., 0.});
+  return line;
+}
+
 geometry_msgs::Point getPointMsg(const Eigen::Vector3d& point) {
   geometry_msgs::Point pointMsg;
   pointMsg.x = point.x();

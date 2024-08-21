@@ -69,6 +69,8 @@ void assignIncreasingId(It firstIt, It lastIt, int startId = 0) {
 
 visualization_msgs::Marker getLineMsg(std::vector<geometry_msgs::Point>&& points, Color color, double lineWidth);
 
+visualization_msgs::Marker getLineMsg(std::vector<geometry_msgs::Point>&& points, Color color, double alaph, double lineWidth);
+
 geometry_msgs::Point getPointMsg(const Eigen::Vector3d& point);
 
 geometry_msgs::Vector3 getVectorMsg(const Eigen::Vector3d& vec);

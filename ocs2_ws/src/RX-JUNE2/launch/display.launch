@@ -1,0 +1,23 @@
+<launch>
+  <arg
+    name="model" />
+  <param
+    name="robot_description"
+    textfile="$(find RX-JUNE2)/urdf/RX-JUNE2.urdf" />
+  <node
+    name="joint_state_publisher_gui"
+    pkg="joint_state_publisher_gui"
+    type="joint_state_publisher_gui" />
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="robot_state_publisher" />
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find RX-JUNE2)/urdf.rviz" />
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="odom_init_to_world" 
+        args="0 0 0 0 0 0 loc_high_frequency TORSO" />
+</launch>
